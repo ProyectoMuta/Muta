@@ -1,2 +1,0 @@
-# Muta
-Proyecto Muta 
