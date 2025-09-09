@@ -15,3 +15,127 @@ nav a {
   padding: 1rem;
   text-decoration: none;
 }
+
+/* Barra promocional */
+.promo-bar {
+  background-color: rgba(20, 20, 20, 1);
+  color:rgba(240, 240, 240, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
+  padding: 3px;
+  font-family: 'Red Rose', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+
+}
+/* Círculo decorativo */
+.circle {
+  width: 10px;
+  height: 10px;
+  background-color: #dfd9da; /* Color rosa claro o el que prefieras */
+  border-radius: 50%;
+  margin-left:80px;
+  margin-top:  2px;
+}
+
+
+/* Navbar principal */
+.main-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 30px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  fill : currentColor;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  font-family: 'REM', sans-serif;
+  color: #333;
+  -webkit-text-stroke: 2px #333;
+}
+
+.menu a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+.menu a {
+  margin: 0 15px;
+  font-family: 'NATS',sans-serif;
+  font-weight: regular;
+  font-size: 14px;
+  /*text-shadow:1px 1px 1px 1px #333,
+     1px 1px 1px 1px #333,
+    1px  1px 1px 1px #333,
+     1px  1px 1px 1px #333;*/
+ 
+  -webkit-text-stroke: 1px #333;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+.menu a:hover {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #bcbcbc;
+  -webkit-text-stroke: 0.5px #bcbcbc; /* Borde negro de 2px */
+
+  font-weight: 500;
+}
+
+.search-bar input {
+     width: 350px;
+     color: #F0F0F0;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+
+.icons a  {
+  width: 24px;
+  margin-left: 15px;
+}
+/* usuario */
+/*.icono a img{
+position: absolute;
+width: 25px;
+height: 25px;
+left: 328px;
+top: 1052px;
+}*/
+/*.icons {
+  width: 24px;
+  margin-left: 15px;
+  color: #141414; /* Color base del ícono 
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.icons:hover {
+  color: #00a3d9; /* Color al pasar el mouse 
+}*/
+.icono_navbar {
+  fill: #f5c6cb;
+  transition: fill 0.3s ease;
+}
+
+.icono_navbar:hover {
+  fill: #00bfff;
+}
+
+/* Body home */
+.fondo {
+  width: 100%;
+  height: 800px;
+  background-image: url('.../img/FONDO ROPA NEGRA.jpg');
+  background-size: cover;
+  background-position: center;
+}
