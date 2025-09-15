@@ -1,6 +1,5 @@
 footer {
   width: 100%;
-  position: fixed;
   bottom: 0;
   left: 0;
   background: #e4e4e4;
@@ -40,7 +39,7 @@ main {
   flex-direction: column;
   align-items: flex-start;
   flex: 1 1 250px;
-  margin: 0 72px;
+  margin: 0 30px;
 }
 
 .footer-logo-title {
