@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Carrito Desplegable</title>
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    <!-- Menú de navegación (ejemplo) -->
+    <nav class="navbar">
+        <div class="nav-brand">MiTienda</div>
+        <div class="nav-icons">
+            <div class="cart-icon" id="cartIcon">
+                🛒 <span class="cart-count">3</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Carrito desplegable -->
+    <div class="dropdown-cart" id="dropdownCart">
+        <div class="cart-header">
+            <h3>MI CARRITO</h3>
+            <span class="close-cart">&times;</span>
+        </div>
+        <div class="cart-items">
+            <div class="cart-item">
+                <img src="ruta-de-la-imagen/producto1.jpg" alt="Producto 1">
+                <div class="item-details">
+                    <p class="item-name">Nombre producto</p>
+                    <p class="item-description">Descripción breve del producto</p>
+                    <p class="item-size">TALLE: XL</p>
+                    <p class="item-color">COLOR: <span class="color-box"></span></p>
+                    <p class="item-quantity">CANTIDAD: 1</p>
+                </div>
+                <div class="item-price">$0000</div>
+            </div>
+            <div class="cart-item">
+                <img src="ruta-de-la-imagen/producto2.jpg" alt="Producto 2">
+                <div class="item-details">
+                    <p class="item-name">Nombre producto</p>
+                    <p class="item-description">Descripción breve del producto</p>
+                    <p class="item-size">TALLE: XL</p>
+                    <p class="item-color">COLOR: <span class="color-box"></span></p>
+                    <p class="item-quantity">CANTIDAD: 1</p>
+                </div>
+                <div class="item-price">$0000</div>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <button class="view-cart-btn">Ver todo mi Carrito</button>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar/ocultar el carrito desplegable
+        const cartIcon = document.getElementById('cartIcon');
+        const dropdownCart = document.getElementById('dropdownCart');
+        const closeCart = document.querySelector('.close-cart');
+
+        cartIcon.addEventListener('click', () => {
+            dropdownCart.style.display = dropdownCart.style.display === 'block' ? 'none' : 'block';
+        });
+
+        closeCart.addEventListener('click', () => {
+            dropdownCart.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
