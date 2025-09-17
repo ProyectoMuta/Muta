@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeAdmin</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/homeAdmin.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="js/script.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="navbar-dashboard"></div>
+
+ <div class="main">
+  <div class="analisis-producto">
+    
+  <div class="grafico-container">
+    <h2>Ventas por hora y fecha - Agosto 2023</h2>
+    <p>Producto Principal: 546.15</p>
+    <canvas id="graficoVentas"></canvas>
+  </div>
+  <section class="productos">
+      <h2>PRODUCTO MÁS VENDIDO</h2>
+      <div class="producto">
+        <img src="https://via.placeholder.com/100" alt="Producto">
+        <div>
+          <h3>Nombre producto</h3>
+          <p>Descripción breve del producto</p>
+          <p><strong>TALLE:</strong> XL</p>
+          <p><strong>COLOR:</strong> Azul</p>
+           <p><strong>CANTIDAD:</strong> 25</p>
+        </div>
+      </div>
+       <div class="producto">
+        <img src="https://via.placeholder.com/100" alt="Producto">
+        <div>
+          <h3>Nombre producto</h3>
+          <p>Descripción breve del producto</p>
+          <p><strong>TALLE:</strong> XL</p>
+          <p><strong>COLOR:</strong> Azul</p>
+          <p><strong>CANTIDAD:</strong> 20</p>
+        </div>
+      </div>
+
+    </section>
+    </div>
+<div class="calendario-agenda">
+
+<div class="calendario">
+  
+  <div class="encabezado">
+    <button id="prev">←</button>
+    <h2 id="mes-anio"></h2>
+    <button id="next">→</button>
+  </div>
+  <div class="dias-semana">
+    <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+  </div>
+  <div class="dias-mes" id="dias-mes"></div>
+</div>
+<div class="agenda">
+  <h3 id="dia-seleccionado">Seleccioná un día</h3>
+  
+  <textarea id="nota" placeholder="Escribí tu nota..."></textarea>
+  <button id="guardar">Guardar nota</button>
+</div>
+ <div class="notas-guardadas">
+    <h3>Fechas destacada</h3>
+    <ul id="lista_notas">
+      <!-- Se llenará dinámicamente -->
+    </ul>
+  </div>
+
+</div>
+    
+
+    <section class="ordenes">
+      <h2>ÚLTIMAS ÓRDENES</h2>
+      <ul>
+        <li>ORD-2025-0901</li>
+        <li>ORD-2025-0902</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

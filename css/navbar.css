@@ -108,7 +108,17 @@ height: 33px;
 left: 4px;
 top: -0.63px;
 }
-
+.modo{
+  font-family: 'NATS',sans-serif;
+  font-size: 25px;
+  font-weight: regular;
+}
+.titulo{
+  font-size: 16px;
+  padding-bottom:1px;
+  border-bottom: 1px solid rgb(175, 175, 175); /* Línea subrayada */
+  
+}
  /*categorias en navbar*/
 .opcion-navbar {
   margin: 0 15px;
@@ -162,8 +172,8 @@ top: -0.63px;
 .opcion-navbar3:hover {
   margin: 0 15px;
   text-decoration: none;
-  color: #bcbcbc;
-  -webkit-text-stroke: 0.5px #bcbcbc; /* Borde negro de 2px */
+  color: #fb3232;
+  -webkit-text-stroke: 0.5px #fb3232; /* Borde negro de 2px */
   font-weight: 500;
   background-color:  #ffffff;
 } 
