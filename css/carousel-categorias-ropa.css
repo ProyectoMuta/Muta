@@ -1,0 +1,98 @@
+/* === CARRUSELES DE CATEGORÍAS DE ROPA ===
+   Archivo: css/carousel-categorias-ropa.css
+   Uso: Para todos los carruseles de páginas de categorías (remeras, pantalones, etc.)
+*/
+
+/* Contenedor principal del carrusel */
+.categoria-carousel {
+  position: relative;
+  width: 100%;              /* Ocupa todo el ancho */
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Evita centrar, permite que la pista se estire */
+  overflow: hidden;
+}
+
+/* Pista de ítems */
+.categoria-carousel .carousel-track {
+  display: flex;
+  gap: var(--gap, 20px);
+  width: 100%;               /* La pista ocupa todo el ancho */
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+
+.categoria-carousel .carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Cards */
+.categoria-carousel .card {
+  flex: 0 0 calc((100% - 5 * var(--gap, 20px)) / 6); /* 6 visibles en desktop */
+  box-sizing: border-box;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  scroll-snap-align: start;
+  background: transparent;
+}
+
+.categoria-carousel .card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.categoria-carousel .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Botones de navegación */
+.categoria-carousel .carousel-prev,
+.categoria-carousel .carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  color: rgba(0, 0, 0, 0.4);
+  border: none;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+  width: auto;
+  height: auto;
+  transition: color 0.3s ease;
+}
+
+.categoria-carousel .carousel-prev:hover,
+.categoria-carousel .carousel-next:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.categoria-carousel .carousel-prev { left: 10px; }
+.categoria-carousel .carousel-next { right: 10px; }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .categoria-carousel .card {
+    flex: 0 0 calc((100% - 3 * var(--gap, 20px)) / 4);
+  }
+}
+
+@media (max-width: 768px) {
+  .categoria-carousel .card {
+    flex: 0 0 calc((100% - 1 * var(--gap, 20px)) / 2);
+  }
+}

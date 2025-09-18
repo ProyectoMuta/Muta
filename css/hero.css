@@ -1,0 +1,49 @@
+/* === COMPONENTE: HERO PRINCIPAL ===
+   Archivo: css/hero.css
+   HTML relacionado: componentesHTML/hero.html
+   Función: Estilos para la imagen promocional principal del home
+*/
+
+.hero {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 0; /* ajusta si necesitás espacio respecto a la navbar */
+}
+
+.hero img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  filter: blur(2px); /* solo el hero principal tiene blur */
+}
+
+/* === COMPONENTE: HERO SALE ===
+   Archivo: css/hero.css
+   HTML relacionado: componentesHTML/hero-sale.html
+   Función: Estilos para la imagen promocional de ofertas
+*/
+.hero-sale {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 0;
+  background-color: #000; /* opcional, para contraste */
+}
+
+.hero-sale img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  /* sin blur */
+}
+
+/* === Ajustes responsive === */
+@media (max-width: 768px) {
+  .hero img,
+  .hero-sale img {
+    height: auto;
+  }
+}

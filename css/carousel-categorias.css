@@ -1,0 +1,117 @@
+/* === COMPONENTE: CARRUSEL DE CATEGORÍAS MAIN ===
+   Archivo: css/carousel-categorias.css
+   HTML relacionado: componentesHTML/categorias-carousel.html
+   Función: Estilos para el carrusel horizontal de categorías
+*/
+
+/* Contenedor general del carrusel */
+/* === CARRUSEL DE CATEGORÍAS MIAN=== */
+#carousel-categorias.carousel {
+  position: relative;
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: rgb(53, 53, 53); /* color de fondo temporal, quitar luego */
+}
+
+/* Variables de espaciado */
+#carousel-categorias {
+  --gap: 20px;
+}
+
+/* Pista: sin padding lateral, con snap */
+#carousel-categorias .carousel-track {
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;     /* snap horizontal */
+  scroll-padding-inline: 0;          /* que encastre al borde del contenedor */
+}
+
+#carousel-categorias .carousel-track::-webkit-scrollbar { display: none; }
+
+/* 4 cards exactas por vista, descontando gaps */
+#carousel-categorias .card {
+  flex: 0 0 calc((100% - 3 * var(--gap)) / 4);
+  box-sizing: border-box;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  scroll-snap-align: start;          /* cada card encastra al inicio */
+  background: transparent;
+}
+
+/* Mantener proporción uniforme y cubrir sin bordes en blanco */
+#carousel-categorias .card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;               /* o 4 / 5 según tu diseño */
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover */
+#carousel-categorias .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Botones flotantes (sin crear padding visual) */
+#carousel-categorias .carousel-prev,
+#carousel-categorias .carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;                        /* encima del track, no lo empujan */
+  transition: background-color 0.3s ease;
+}
+
+#carousel-categorias .carousel-prev,
+#carousel-categorias .carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none; /* sin fondo */
+  color: rgba(0, 0, 0, 0.4); /* gris semitransparente */
+  border: none;
+  font-size: 2rem; /* tamaño de la flecha */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+  width: auto;
+  height: auto;
+  transition: color 0.3s ease;
+}
+
+#carousel-categorias .carousel-prev:hover,
+#carousel-categorias .carousel-next:hover {
+  color: rgba(0, 0, 0, 0.7); /* más oscuro al pasar el mouse */
+}
+
+#carousel-categorias .carousel-prev {
+  left: 10px;
+}
+
+#carousel-categorias .carousel-next {
+  right: 10px;
+}
