@@ -1,5 +1,5 @@
-<div class="fijar" id="navbar">    
-   <!-- Barra promocional -->
+<header class="fijar">
+  <!-- Barra promocional -->
   <div class="promo-bar">
     <div class="circle"></div>
     <span>Envío gratis desde $100.000</span>
@@ -11,46 +11,74 @@
 
   <!-- Navbar principal -->
   <nav class="main-navbar">
-    
-    <div class="logo">MUTA</div>
-    
-      <ul class="opciones-navbar">
-        <li class="opcion-navbar" >CATEGORÍAS
-        <ul class="categoria-desplegable">
-          <li class="titulo">CATEGORÍAS</li>
-          <li class="bermudas">BERMUDAS</li>
-          <li class="buzos">BUZOS</li>
-          <li class="camisas">CAMISAS</li>
-          <li class="camperas">CAMPERAS</li>
-          <li class="pantalones">PANTALONES</li>
-          <li class="remeras">REMERAS</li>
-          <li class="vestidos">VESTIDOS</li>
-          <li class="accesorios">ACCESORIOS</li>
-        </ul>
-        </li>
-        <li class="opcion-navbar2">NOVEDADES 
-        <ul class="categoria-desplegable2">
-          <li class="titulo">NOVEDADES</li>
-          <li class="primavera-verano">PRIMAVERA-VERANO</li>
-          <li class="buzos-muta">BUZOS MUTA</li>
-          <li class="new">NEW</li>
-          <li class="accesorios">NUEVOS ACCESORIOS</li>
-        </ul>
-    </li>
-    <li class="opcion-navbar3">SALE
-      <a class="sale" href="#"></a>
-    </li>
-      </ul>
-  
+    <div class="logo"><a href="index.html">MUTA</a></div>
+
+    <!-- Menú principal -->
+    <div class="nav-links">
+      <!-- Categorías -->
+      <div class="nav-item">
+        <button class="nav-btn" data-menu="categorias">CATEGORÍAS</button>
+        <div class="dropdown" id="categorias">
+          <ul>
+            <li><a href="#">BERMUDAS</a></li>
+            <li><a href="#">BUZOS</a></li>
+            <li><a href="#">CAMISAS</a></li>
+            <li><a href="#">CAMPERAS</a></li>
+            <li><a href="#">PANTALONES</a></li>
+            <li><a href="remeras.html">REMERAS</a></li>
+            <li><a href="#">VESTIDOS</a></li>
+            <li><a href="#">ACCESORIOS</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Novedades -->
+      <div class="nav-item">
+        <button class="nav-btn" data-menu="novedades">NOVEDADES</button>
+        <div class="dropdown" id="novedades">
+          <ul>
+            <li><a href="#">PRIMAVERA-VERANO</a></li>
+            <li><a href="#">BUZOS MUTA</a></li>
+            <li><a href="#">NEW</a></li>
+            <li><a href="#">NUEVOS ACCESORIOS</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sale -->
+      <div class="nav-item">
+        <button class="nav-btn" data-menu="sale">SALE</button>
+        <div class="dropdown" id="sale">
+          <ul>
+            <li><a href="#">Otoño - Invierno</a></li>
+            <li><a href="#">Outlet</a></li>
+            <li><a href="#">50% OFF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buscador -->
     <div class="search-bar">
       <input type="text" placeholder="Buscar producto...">
     </div>
 
+    <!-- Iconos -->
     <div class="icons">
-      <a href="#" class="icono_usuario" title="Mi cuenta"><i class="bi bi-person"></i></a>
-      <a href="#" class="icono_corazon" title="Mis me gusta"><i class="bi bi-suit-heart"></i></a>
-      <a href="#" class="icono_carrito" title="Carrito"><i class="bi bi-cart2"></i></a>
+      <!-- Perfil: abre modal -->
+      <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button>
+
+      <!-- Favoritos: acción interna o futura -->
+      <button class="icono_corazon" title="Mis me gusta" type="button">
+        <i class="bi bi-suit-heart"></i>
+      </button>
+
+      <!-- Carrito: navegación a página -->
+      <a href="#" class="icono_carrito" title="Ver carrito">
+        <i class="bi bi-cart2"></i>
+      </a>
     </div>
   </nav>
-</div>
-
+</header>

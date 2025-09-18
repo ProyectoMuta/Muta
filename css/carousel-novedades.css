@@ -1,0 +1,141 @@
+/* === COMPONENTE: CARRUSEL DE NOVEDADES ===
+   Archivo: css/carousel-novedades.css
+   HTML relacionado: componentesHTML/novedades-carousel.html
+   Función: Estilos para el carrusel horizontal de novedades
+*/
+
+/* Contenedor general del carrusel */
+#carousel-novedades.carousel {
+  position: relative;
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: rgb(255, 255, 255); /* color de fondo temporal, quitar luego */
+}
+
+/* Variables de espaciado */
+#carousel-novedades {
+  --gap: 20px;
+}
+
+/* Pista: sin padding lateral, con snap */
+#carousel-novedades .carousel-track {
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
+}
+
+#carousel-novedades .carousel-track::-webkit-scrollbar { display: none; }
+
+/* 6 cards exactas por vista, descontando gaps */
+#carousel-novedades .card {
+  flex: 0 0 calc((100% - 5 * var(--gap)) / 6);
+  box-sizing: border-box;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  scroll-snap-align: start;
+  background: transparent;
+}
+
+/* Mantener proporción uniforme y cubrir sin bordes en blanco */
+#carousel-novedades .card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover */
+#carousel-novedades .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Contenedor de la info dentro de la card */
+#carousel-novedades .card .info {
+  padding: 10px 12px; /* separa el texto de los bordes */
+  background-color: #fff; /* opcional, si querés contraste con la imagen */
+}
+
+/* Nombre del producto */
+#carousel-novedades .card .info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111; /* bien visible */
+  margin: 0 0 4px 0; /* espacio inferior */
+}
+
+/* Descripción */
+#carousel-novedades .card .info p:nth-of-type(1) {
+  font-size: 14px;
+  color: #666; /* gris más suave */
+  margin: 0 0 6px 0;
+}
+
+/* Precio */
+#carousel-novedades .card .info p:nth-of-type(2) {
+  font-size: 15px;
+  font-weight: 700;
+  color: #000; /* fuerte y visible */
+  margin: 0;
+}
+
+/* Botones flotantes */
+#carousel-novedades .carousel-prev,
+#carousel-novedades .carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  color: rgba(0, 0, 0, 0.4);
+  border: none;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0;
+  width: auto;
+  height: auto;
+  transition: color 0.3s ease;
+}
+
+#carousel-novedades .carousel-prev:hover,
+#carousel-novedades .carousel-next:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+#carousel-novedades .carousel-prev {
+  left: 10px;
+}
+
+#carousel-novedades .carousel-next {
+  right: 10px;
+}
+
+/* === Responsive === */
+@media (max-width: 1200px) {
+  /* 4 visibles */
+  #carousel-novedades .card {
+    flex: 0 0 calc((100% - 3 * var(--gap)) / 4);
+  }
+}
+
+@media (max-width: 768px) {
+  /* 2 visibles */
+  #carousel-novedades .card {
+    flex: 0 0 calc((100% - 1 * var(--gap)) / 2);
+  }
+}
