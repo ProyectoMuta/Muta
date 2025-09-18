@@ -1,0 +1,79 @@
+:root{ --nav-h: 76px; }  /* ajustá a la altura real del navbar (70–90px) */
+
+body{
+  padding-top: var(--nav-h);  /* empuja TODO el contenido por debajo del navbar */
+}
+:root{
+  --lav:#9b7ac7; --line:#e5e5e5; --txt:#1f1f1f; --muted:#666; --bg:#fff;
+  --shadow:0 10px 26px rgba(0,0,0,.08);
+
+  /* pago */
+  --pay-ok:#baf7c6;         /* pagado */
+  --pay-pend:#ffe8a6;       /* pendiente */
+  --pay-refund:#ffd4d4;     /* reembolsado */
+
+  /* envío */
+  --ship-ok:#dbe9ff;        /* enviado */
+  --ship-warn:#fff6d6;      /* en preparación */
+  --ship-pend:#f0f0f0;      /* pendiente */
+  --ship-cancel:#ffd4d4;    /* cancelado */
+}
+
+*{ box-sizing:border-box }
+body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--txt); background:#fdf6f9 }
+.wrap{ display:grid; grid-template-columns:220px 1fr; min-height:100vh }
+
+/* Sidebar (simple) */
+.side{ background:#efefef; border-right:1px solid var(--line); padding:14px 10px }
+.brand{ font-size:28px; font-weight:700; margin:8px 6px 14px }
+.side-nav{ display:flex; flex-direction:column; gap:6px }
+.side-nav .item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; text-decoration:none; color:#222 }
+.side-nav .item:hover{ background:#fff }
+.side-nav .item.active{ background:#fff; border:1px solid var(--line) }
+
+/* Main */
+.main{ padding:22px }
+.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px }
+.topbar h1{ font-size:22px; margin:6px 0 12px }
+.actions{ display:flex; align-items:center; gap:10px }
+.search{ display:flex; align-items:center; gap:8px; background:#eee; border:1px solid var(--line); border-radius:999px; padding:6px 10px; min-width:280px }
+.search input{ border:none; outline:none; background:transparent; width:220px; font-size:14px }
+.mode-btn,.user-btn{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer }
+
+/* Filtros */
+.filters{ display:flex; flex-wrap:wrap; gap:16px; margin-top:10px }
+.filters .group{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+.filters .label{ font-size:13px; color:var(--muted) }
+.filter{ border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:999px; cursor:pointer; font-size:13px }
+.filter.active{ background:var(--lav); color:#fff; border-color:transparent }
+
+/* Tabla */
+.card{ background:var(--bg); border:1px solid var(--line); border-radius:14px; margin-top:16px; box-shadow:var(--shadow) }
+.table-wrap{ overflow:auto }
+.table{ width:100%; border-collapse:collapse; min-width:980px }
+.table thead th{ background:#fafafa; position:sticky; top:0; z-index:1; text-align:left; font-weight:700; font-size:13px; padding:10px; border-bottom:1px solid var(--line); color:#222 }
+.table tbody td{ padding:10px; font-size:14px; border-bottom:1px solid var(--line); color:#222 }
+.table tbody tr:hover{ background:#f9f9f9 }
+.table tbody td:first-child a{ color:#3b6fd8; text-decoration:none }
+.table tbody td:first-child a:hover{ text-decoration:underline }
+
+/* Badges (texto negro en todos) */
+.badge{ display:inline-block; padding:4px 10px; border-radius:12px; font-size:.85rem; font-weight:700; color:#000 }
+
+/* Pago */
+.badge.pay-ok{ background:var(--pay-ok) }
+.badge.pay-pend{ background:var(--pay-pend) }
+.badge.pay-refund{ background:var(--pay-refund) }
+
+/* Envío */
+.badge.ship-ok{ background:var(--ship-ok) }
+.badge.ship-warn{ background:var(--ship-warn) }
+.badge.ship-pend{ background:var(--ship-pend) }
+.badge.ship-cancel{ background:var(--ship-cancel) }
+
+/* Responsive */
+@media (max-width:1000px){
+  .wrap{ grid-template-columns:1fr }
+  .topbar{ flex-direction:column; align-items:flex-start; gap:8px }
+  .search{ width:100%; min-width:unset }
+}
