@@ -1,0 +1,182 @@
+/* === COMPONENTE: GALERÍA DE PRODUCTO ===
+   Archivo: css/producto.css
+   HTML relacionado: componentesHTML/galeria-producto.html
+   Función: Estilos para la vista de detalle de producto
+*/
+
+/* Contenedor general */
+.producto-detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Galería de imágenes */
+.galeria {
+  display: flex;
+  gap: 15px;
+}
+
+.miniaturas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.miniaturas img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+
+.miniaturas img:hover {
+  border-color: #111;
+}
+
+.imagen-principal img {
+  width: 500px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Información del producto */
+.info-producto {
+  flex: 1;
+  min-width: 300px;
+}
+
+.info-producto h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.precio {
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.descripcion {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Opciones de color */
+.colores {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.color-option {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.color-option:hover {
+  border-color: #111;
+}
+
+.color-option.active {
+  border: 3px solid #111;
+}
+
+/* Opciones de talle */
+.talles {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.talle {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.talle:hover {
+  background: #eaeaea;
+}
+
+.talle.active {
+  background: #111;
+  color: #fff;
+  border: 1px solid #111;
+}
+
+/* Selector de cantidad */
+.cantidad {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.cantidad button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cantidad input {
+  width: 50px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Botón de carrito */
+.btn-carrito {
+  padding: 12px 20px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-carrito:hover {
+  background: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .producto-detalle {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .galeria {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .miniaturas {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .imagen-principal img {
+    width: 100%;
+  }
+}
