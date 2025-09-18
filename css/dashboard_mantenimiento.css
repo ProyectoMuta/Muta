@@ -1,0 +1,77 @@
+:root{
+  --nav-h: 76px;
+  --lav:#9b7ac7; --lav-2:#7d60ab;
+  --bg:#fff; --txt:#1f1f1f; --muted:#666;
+  --line:#e5e5e5; --shadow:0 10px 26px rgba(0,0,0,.08);
+}
+
+*{ box-sizing:border-box }
+body{
+  margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  color:var(--txt); background:#fdf6f9; padding-top:var(--nav-h);
+}
+
+/* Layout */
+.wrap{ display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - var(--nav-h)) }
+
+/* Sidebar */
+.side{ background:#efefef; border-right:1px solid var(--line); padding:14px 10px }
+.brand{ font-size:28px; font-weight:700; margin:8px 6px 14px }
+.side-nav{ display:flex; flex-direction:column; gap:6px }
+.side-nav .item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; text-decoration:none; color:#222 }
+.side-nav .item:hover{ background:#fff }
+.side-nav .item.active{ background:#fff; border:1px solid var(--line) }
+
+/* Main */
+.main{ padding:22px }
+.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px }
+.topbar h1{ font-size:22px; margin:6px 0 12px }
+.actions{ display:flex; align-items:center; gap:10px }
+.search{ display:flex; align-items:center; gap:8px; background:#eee; border:1px solid var(--line); border-radius:999px; padding:6px 10px; min-width:280px }
+.search input{ border:none; outline:none; background:transparent; width:220px; font-size:14px }
+.mode-btn,.user-btn{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer }
+
+/* Cards / grid */
+.grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:8px }
+.card{ background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow) }
+.card h2{ font-size:18px; margin:0 0 12px }
+.span-2{ grid-column:span 2 }
+
+/* Chart legend */
+.mini-legend{ display:flex; gap:14px; align-items:center; font-size:12px; color:var(--muted); margin-top:8px }
+.dot{ width:10px; height:10px; border-radius:50%; display:inline-block }
+.dot.blue{ background:#2f6ee9 } .dot.red{ background:#e05a5a }
+
+/* Top products */
+.top-products{ list-style:none; padding:0; margin:0; display:grid; gap:12px }
+.top-item{ display:flex; gap:12px; align-items:center }
+.thumb{ width:58px; height:58px; background:#eee; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#888; font-size:12px }
+.pdata strong{ display:block }
+.pdata .meta{ font-size:12px; color:var(--muted) }
+.badge-col{ display:inline-block; width:10px; height:10px; border-radius:2px; margin-left:6px; background:#69c07b }
+
+/* Últimas órdenes */
+.last-orders{ list-style:none; padding:0; margin:0; display:grid; gap:10px }
+.last-orders li{ display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); background:#fff; border-radius:12px; padding:10px 12px }
+.last-orders a{ text-decoration:none; color:#2f6ee9 }
+.lo-meta{ font-size:12px; color:var(--muted) }
+
+/* Calendario */
+.calendar{ border:1px solid var(--line); border-radius:12px; overflow:hidden }
+.cal-head{ display:flex; justify-content:space-between; align-items:center; background:#1f1f1f; color:#fff; padding:10px 12px }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#ddd }
+.cal-grid > span{ background:#fff; padding:10px; text-align:center; font-size:12px }
+.cal-dow{ background:#f5f5f5; font-weight:700 }
+.cal-day.today{ background:#e9e3f7; border:1px solid #cbb8ef }
+
+/* Responsive */
+@media (max-width:1100px){
+  .grid{ grid-template-columns:1fr 1fr }
+  .span-2{ grid-column:1/-1 }
+}
+@media (max-width:800px){
+  .wrap{ grid-template-columns:1fr }
+  .topbar{ flex-direction:column; align-items:flex-start; gap:8px }
+  .search{ width:100%; min-width:unset }
+  .grid{ grid-template-columns:1fr }
+}

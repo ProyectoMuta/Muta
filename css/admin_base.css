@@ -1,0 +1,87 @@
+/* ====== Base Admin (sin navbar ni footer) ====== */
+:root{
+  --lav:#9b7ac7; --lav-2:#7d60ab;
+  --bg:#fff; --txt:#1f1f1f; --muted:#666;
+  --line:#e8e8e8; --soft:#f9f2fb;
+  --shadow:0 12px 30px rgba(0,0,0,.10);
+
+  /* badges pago/envío usados en ventas */
+  --pay-ok:#baf7c6; --pay-pend:#ffe8a6; --pay-refund:#ffd4d4;
+  --ship-ok:#dbe9ff; --ship-warn:#fff6d6; --ship-pend:#f0f0f0; --ship-cancel:#ffd4d4;
+}
+
+*{ box-sizing:border-box }
+body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--txt); background:#fdf6f9 }
+
+/* Layout */
+.wrap{ display:grid; grid-template-columns:240px 1fr; min-height:100vh }
+
+/* Sidebar */
+.side{ background:#efefef; border-right:1px solid var(--line); padding:16px 12px }
+.brand{ font-size:28px; font-weight:800; margin:6px 6px 18px }
+.side-nav{ display:flex; flex-direction:column; gap:8px }
+.side-nav .item{
+  display:flex; align-items:center; gap:10px; text-decoration:none; color:#222;
+  padding:10px 12px; border-radius:12px; transition:.15s background;
+}
+.side-nav .item:hover{ background:#fff }
+.side-nav .item.active{ background:#fff; border:1px solid var(--line) }
+
+/* Main + header */
+.main{ padding:24px }
+.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px }
+.topbar h1{ margin:0; font-size:26px; letter-spacing:.2px }
+.search{
+  display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px; min-width:320px; box-shadow:var(--shadow)
+}
+.search input{ border:none; outline:none; background:transparent; width:240px; font-size:14px }
+
+/* Chips */
+.filters{ display:flex; gap:10px; margin:6px 0 14px; flex-wrap:wrap }
+.chip{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:600; font-size:13px }
+.chip.active{ background:var(--lav); color:#fff; border-color:transparent }
+
+/* Card/Table */
+.card{ background:var(--bg); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow) }
+.table-wrap{ overflow:auto }
+.table{ width:100%; min-width:1100px; border-collapse:collapse }
+.table thead th{
+  position:sticky; top:0; z-index:1; background:#fafafa; font-size:13px; text-align:left;
+  padding:12px; border-bottom:1px solid var(--line)
+}
+.table td{ padding:12px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:middle }
+
+/* Badges (texto negro por pedido) */
+.badge{ display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#000 }
+
+/* Pago (ventas) */
+.badge.pay-ok{ background:var(--pay-ok) }
+.badge.pay-pend{ background:var(--pay-pend) }
+.badge.pay-refund{ background:var(--pay-refund) }
+
+/* Envío (ventas) */
+.badge.ship-ok{ background:var(--ship-ok) }
+.badge.ship-warn{ background:var(--ship-warn) }
+.badge.ship-pend{ background:var(--ship-pend) }
+.badge.ship-cancel{ background:var(--ship-cancel) }
+
+/* Estados genéricos (órdenes) */
+.badge.ok{ background:#c9f3d2 }
+.badge.info{ background:#dbe9ff }
+.badge.warn{ background:#fff6d6 }
+.badge.gray{ background:#efefef }
+.badge.danger{ background:#ffd4d4 }
+
+/* Acciones / misc */
+.dot{ width:12px; height:12px; border-radius:50%; border:1px solid #bbb; display:inline-block }
+.actions{ display:flex; gap:6px }
+.btn-icon{ width:34px; height:34px; border:1px solid var(--line); background:#fff; border-radius:10px; cursor:pointer; display:grid; place-items:center }
+.btn-icon:hover{ background:#f7f7f7 }
+
+/* Dashboard grid */
+.grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px }
+.span-2{ grid-column:span 2 }
+
+@media (max-width:1100px){ .grid{ grid-template-columns:1fr 1fr } .span-2{ grid-column:1/-1 } }
+@media (max-width:900px){ .wrap{ grid-template-columns:1fr } .search{ min-width:unset; width:100% } .grid{ grid-template-columns:1fr } }
