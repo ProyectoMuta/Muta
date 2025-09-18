@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProductosAdministrador</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/homeAdmin.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <script src="js/script.js"></script>
+</head>
+<body>
+
+    <div id="navbar-dashboard">
+        
+    </div>
+    <section class="productos-section">
+    <div class="subnav">
+      <button class="subnav-btn">LISTA PRODUCTOS</button>
+      <button class="subnav-btn">CATEGORÍAS</button>
+      <button class="subnav-btn">INVENTARIO</button>
+  </div>
+    
+   
+      <h3>NUEVO PRODUCTO</h3>
+      <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+    
+      <form class="row g-3">
+  <div class="col-md-10">
+    <label class="form-label">Nombre del producto</label>
+    <input class="form-control" id="inputNombre">
+  </div>
+  <div class="col-md-10">
+  <label class="form-label">Descripción</label>
+  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3">Descripción del producto</textarea>
+</div>
+
+<div class="col-md-10">
+  <label for="formFile" class="form-label">Agregar imagen</label>
+  <input class="form-control" type="file" id="formFile">
+</div>
+<label class="form-label">Precio</label>
+<div class="col-md-5">
+    <label class="form-label">Precio de venta</label>
+    <input  placeholder="$0000" class="form-control" id="input-precio-venta">
+  </div>
+  <div class="col-md-5">
+    <label  class="form-label">Precio promocional</label>
+    <input  placeholder="$0000" class="form-control" id="input-precio-promocional">
+  </div>
+  <div class="col-md-5">
+    <label class="form-label">Costo</label>
+    <input placeholder="$0000"  class="form-control" id="input-costo">
+  </div>
+
+  <div class="col-md-5">
+    <label  class="form-label">Margen</label>
+    <input  class="form-control" id="input-margen">
+  </div>
+
+  <label class="form-label">Inventario</label>
+  <div class="col-md-6">
+    <label class="form-label">Cantidad</label>
+    <input  placeholder="1234" class="form-control" id="input-cantidad">
+  </div>
+  <div class="col-md-4">
+    <label for="inputState" class="form-label">Talle</label>
+    <select id="inputState" class="form-select">
+      <option selected>S</option>
+      <option selected>M</option>
+      <option selected>L</option>
+      <option selected>XL</option>
+      <option selected>XXL</option>
+      <option selected>XXL</option>
+      <option>...</option>
+    </select>
+  </div>
+  <label for="inputState" class="form-label">Variante</label>
+  <div class="col-md-2">
+    <input type="text" class="form-control" id="input-variante" placeholder="Talle">
+  </div>
+  <div class="col-md-2">
+    <input type="text" class="form-control" id="input-variante" placeholder="Stock">
+  </div>
+  <div class="col-md-2">
+    <input type="decimal" class="form-control" id="input-variante" placeholder="Peso">
+  </div>
+  <div class="col-md-2">
+    <input type="text" class="form-control" id="input-variante" placeholder="Color">
+  </div>
+    <div class="col-md-2">
+  <i class="bi bi-trash"></i>
+    </div>
+    <label for="inputState" class="form-label">Categorías</label>
+    <div class="col-md-5">
+    <label for="inputState" class="form-label">Categoría</label>
+    <select id="inputState" class="form-select">
+      <option selected>1</option>
+      <option selected>2</option>
+      <option selected>3</option>
+      <option selected>4</option>
+      <option selected>5</option>
+      <option selected>6</option>
+      <option>...</option>
+    </select>
+  </div>
+  <div class="col-md-5">
+    <label for="inputState" class="form-label">Subcategoría</label>
+    <select id="inputState" class="form-select">
+      <option selected>S</option>
+      <option selected>M</option>
+      <option selected>L</option>
+      <option selected>XL</option>
+      <option selected>XXL</option>
+      <option selected>XXL</option>
+      <option>...</option>
+    </select>
+  </div>
+  
+  <div class="col-10">
+       
+<button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+    
+
+  </div>
+</form>
+     
+   
+</section>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
