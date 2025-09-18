@@ -1,0 +1,227 @@
+body {
+  font-size: 16px;
+  font-family: 'REM', sans-serif;
+}
+
+
+/* Fondo oscuro que cubre toda la pantalla */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Contenedor principal del modal */
+.envio-modal {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 10px 10px 10px #575757fd;
+  font-family: 'REM', sans-serif;
+}
+
+/* Encabezado interno del modal */
+.envio-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Estilo base para texto de pasos */
+.paso {
+  font-weight: bold;
+  color: #aaa;
+}
+
+/* Paso activo resaltado */
+.paso.activo {
+  color: #333;
+  border-bottom: 2px solid #333;
+}
+
+/* Título principal del modal */
+.envio-titulo {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Contenedor de opciones de envío */
+.envio-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupo que une tarjeta y botón de acción simulando un rectángulo */
+.envio-group {
+  border-radius: 16px;
+  overflow: hidden; /* asegura continuidad de bordes */
+}
+
+/* Tarjeta individual de cada opción */
+.envio-card {
+  display: block;                 /* permite que <a> se comporte como bloque */
+  border: 1px solid #ddd;
+  border-bottom: none;            /* se fusiona con el botón inferior */
+  border-radius: 16px 16px 0 0;   /* solo bordes superiores */
+  padding: 20px;
+  background-color: #f9f9f9;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
+}
+
+/* Quitar estilo de enlace (subrayado/azul) de las tarjetas linkeadas */
+.envio-card,
+.envio-card:link,
+.envio-card:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Estados interactivos de las tarjetas como botones */
+.envio-card:hover {
+  background-color: #f1f1f1;
+  border-color: #cfcfcf;
+}
+.envio-card:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(51,51,51,0.15);
+}
+.envio-card:active {
+  transform: translateY(1px);
+}
+
+/* Costos de envío y total (posición superior derecha) */
+.envio-costos {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Estilo destacado para texto de envío gratis */
+.envio-gratis {
+  color: #2e7d32;       /* verde */
+  font-weight: 700;      /* más grueso */
+}
+
+/* Título de cada opción */
+.envio-info h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Dirección y horarios */
+.direccion, .horarios {
+  font-size: 14px;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* Botón de acción separado, parte inferior del grupo */
+.envio-accion {
+  display: block;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-top: none;               /* se une sin doble borde */
+  border-radius: 0 0 16px 16px;   /* bordes inferiores redondeados */
+  background-color: #444;         /* un poco menos oscuro */
+  color: #fff;
+  font-weight: bold;
+  text-align: left;
+  padding: 10px 20px;             /* altura compacta */
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.envio-accion:hover {
+  background-color: #666;
+}
+
+/* Indicador visual de pasos del checkout */
+.checkout-pasos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+  gap: 12px;
+  font-family: 'REM', sans-serif;
+}
+
+/* Cada paso del indicador */
+.checkout-paso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+/* Círculo que contiene el ícono */
+.checkout-paso .circulo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+/* Estilo para paso completado */
+.checkout-paso.completado .circulo {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Estilo para paso activo */
+.checkout-paso.activo .circulo {
+  background-color: #333;
+  color: white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+
+/* Estilo para paso pendiente */
+.checkout-paso.pendiente .circulo {
+  background-color: #ccc;
+  color: #666;
+}
+
+/* Línea entre pasos */
+.linea {
+  width: 40px;
+  height: 2px;
+  background-color: #ddd;
+  align-self: center;          /* centra respecto al contenedor flex */
+  transform: translateY(-12px); /* sube la línea para alinearla con el centro del círculo */
+}
+
+@media (max-width: 600px) {
+  .envio-modal {
+    padding: 20px;
+  }
+  .envio-card {
+    font-size: 14px;
+  }
+  .envio-costos {
+    position: static;
+    margin-top: 10px;
+  }
+  /* Ajuste fino del conector en móviles */
+  .linea {
+    transform: translateY(-10px);
+  }
+}

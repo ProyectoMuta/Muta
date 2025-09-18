@@ -1,0 +1,171 @@
+footer {
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  background: #e4e4e4;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  margin-top: 40px;
+
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 20px 0 10px 0;
+    font-family: 'Red Rose', sans-serif;
+    font-size: 14px;
+    color: #333;
+    flex-wrap: wrap;
+}
+
+/* Alinear verticalmente títulos y enlaces en cada columna */
+.footer-content > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 250px;
+  margin: 0 30px;
+}
+
+.footer-logo-title {
+  display: inline-block; /* Permite aplicar transformaciones y controlar el ancho */
+  font-size: 30px;
+  font-family: 'REM', sans-serif;
+  font-weight: 700 !important;
+  color: #333;
+  -webkit-text-fill-color: #333;
+  -webkit-text-stroke: 2px #333 !important;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-decoration: none;
+}
+.footer-logo-title:hover {
+  transform: scale(1.1);
+}
+
+.footer-logo p {
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-content h4 {
+  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.footer-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Eliminar fondo y ajustar separación de los ítems */
+.footer-content li {
+  margin-bottom: 8px;
+  background: none;
+  padding: 0;
+}
+
+
+.footer-content a {
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+
+
+.footer-separator {
+  border: none;
+  border-top: 1.5px solid #ccc;
+  margin: 4px 0 2px 0;
+  width: 100%;
+  opacity: 0.7;
+}
+
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 0 6px 0;
+}
+/* Ajuste para que el texto no empuje las imágenes hacia abajo */
+
+.footer-copyright {
+  font-size: 12px;
+  color: #888;
+  margin-left: 10px;
+  flex: 1 1 0;
+  white-space: nowrap;
+}
+
+/* Ajuste para que las imágenes se mantengan alineadas a la derecha */
+.footer-payments {
+  display: flex;
+  gap: 12px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.payment-icon {
+  height: 28px;         /* Ajusta el alto según lo que se vea mejor */
+  width: 48px;          /* Ajusta el ancho para que todas sean iguales */
+  object-fit: contain;  /* Mantiene la proporción sin deformar */
+  background: #fff;     /* Fondo blanco */
+  border-radius: 8px;   /* Bordes redondeados tipo tarjeta */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); /* Sombra suave */
+  padding: 4px 8px;     /* Espaciado interno para que no se pegue a los bordes */
+  border: 1px solid #eee; /* Borde sutil */
+  margin-left: 4px;     /* Espacio entre íconos */
+}
+
+/* Refuerzos: tipografía fina y sin trazo en categorías del footer */
+.footer-content li,
+.footer-content li a,
+.footer-content li:hover,
+.footer-content li a:hover {
+  font-weight: 400 !important;
+  -webkit-text-stroke: 0 !important;
+  -webkit-text-stroke-width: 0 !important;
+  -webkit-text-stroke-color: transparent !important;
+}
+
+/* Interacción: hover/focus para enlaces de columnas del footer */
+.footer-Categorias a,
+.footer-AYUDA a,
+.footer-FAQ a {
+  text-decoration: none;
+}
+
+.footer-Categorias a:hover,
+.footer-Categorias a:focus-visible,
+.footer-AYUDA a:hover,
+.footer-AYUDA a:focus-visible,
+.footer-FAQ a:hover,
+.footer-FAQ a:focus-visible {
+  color: #555; /* un poco más claro que #333 */
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
