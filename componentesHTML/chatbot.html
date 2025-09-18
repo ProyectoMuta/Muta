@@ -1,0 +1,102 @@
+<!-- BOTÓN FLOTANTE -->
+<button id="chatbot-toggle" class="chatbot-fab" aria-haspopup="dialog" aria-controls="chatbot-dialog">
+  <i class="bi bi-robot"></i>
+</button>
+
+<!-- OVERLAY + DIALOG -->
+<div id="chatbot-overlay" class="chatbot-overlay" hidden></div>
+
+<div id="chatbot-dialog" class="chatbot-card" role="dialog" aria-modal="true" aria-labelledby="chatbot-title" hidden>
+  <div class="chatbot-header">
+    <div class="chatbot-avatar"><i class="bi bi-robot"></i></div>
+    <h2 id="chatbot-title">ASISTENTE VIRTUAL</h2>
+    <button class="chatbot-close" aria-label="Cerrar" id="chatbot-close"><i class="bi bi-x-lg"></i></button>
+  </div>
+
+  <div class="chatbot-body">
+    <!-- VIEW: MENÚ PRINCIPAL -->
+    <section class="chatbot-view" data-view="menu" aria-live="polite">
+      <p class="chatbot-subtitle">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte?</p>
+
+      <div class="chatbot-options">
+        <button class="chatbot-option" data-goto="envios">Envíos</button>
+        <button class="chatbot-option" data-goto="devoluciones">Devoluciones y cambios</button>
+        <button class="chatbot-option" data-goto="talles">Guía de Talles</button>
+        <button class="chatbot-option" data-goto="estado">Estado de Pedido</button>
+        <button class="chatbot-option" data-goto="atencion">Atención Personalizada</button>
+      </div>
+    </section>
+
+    <!-- VIEW: ENVÍOS -->
+    <section class="chatbot-view" data-view="envios" hidden>
+      <h3>Envíos</h3>
+      <ul class="chatbot-list">
+        <li>Hacemos envíos a todo el país desde Mendoza.</li>
+        <li>Envío gratis a partir de <strong>$100.000</strong> de compra.</li>
+        <li>Entrega en Mendoza Capital y alrededores en 48–72 h.</li>
+        <li>Resto del país: 5 a 10 días hábiles, según la provincia.</li>
+      </ul>
+      <button class="chatbot-back">VOLVER</button>
+    </section>
+
+    <!-- VIEW: DEVOLUCIONES -->
+    <section class="chatbot-view" data-view="devoluciones" hidden>
+      <h3>Devoluciones y cambios</h3>
+      <ul class="chatbot-list">
+        <li>Podés cambiar tu prenda dentro de los <strong>30 días</strong> posteriores a la compra.</li>
+        <li>En Mendoza Capital: cambio en el local sin costo.</li>
+        <li>Resto del país: el envío corre por cuenta del cliente, reenvío de vuelta gratis.</li>
+      </ul>
+      <button class="chatbot-back">VOLVER</button>
+    </section>
+
+    <!-- VIEW: TALLES -->
+    <section class="chatbot-view" data-view="talles" hidden>
+      <h3>Guía de Talles</h3>
+      <p class="chatbot-mini"><strong>Remeras y Buzos</strong></p>
+      <ul class="chatbot-list compact">
+        <li>S: Busto 84–90 cm / Cintura 70–76 cm</li>
+        <li>M: Busto 90–96 cm / Cintura 76–82 cm</li>
+        <li>L: Busto 96–102 cm / Cintura 82–90 cm</li>
+        <li>XL: Busto 102–110 cm / Cintura 90–100 cm</li>
+      </ul>
+      <p class="chatbot-mini"><strong>Pantalones</strong></p>
+      <ul class="chatbot-list compact">
+        <li>S (38): Cintura 72–78 / Cadera 90–96 cm</li>
+        <li>M (40): Cintura 78–84 / Cadera 96–104 cm</li>
+        <li>L (42): Cintura 84–92 / Cadera 104–112 cm</li>
+        <li>XL (44): Cintura 92–100 / Cadera 112–116 cm</li>
+      </ul>
+      <button class="chatbot-back">VOLVER</button>
+    </section>
+
+    <!-- VIEW: ESTADO -->
+    <section class="chatbot-view" data-view="estado" hidden>
+      <h3>Estado de Pedido</h3>
+      <ul class="chatbot-list">
+        <li>Ingresá a tu <strong>e-mail</strong> del pedido y buscá el número de seguimiento.</li>
+        <li>Ir a 
+          <a href="https://www.correoargentino.com.ar/formularios/ondnc" target="_blank" rel="noopener noreferrer">
+            Correo Argentino – Seguimiento
+          </a>
+        </li>
+        <li>Pegá tu código en el formulario.</li>
+      </ul>
+      <button class="chatbot-back">VOLVER</button>
+    </section>
+
+    <!-- VIEW: ATENCIÓN -->
+    <section class="chatbot-view" data-view="atencion" hidden>
+      <h3>Atención Personalizada</h3>
+      <p class="chatbot-mini">Para recibir atención personalizada por WhatsApp o e-mail, escribinos con la siguiente info:</p>
+      <ul class="chatbot-list">
+        <li>Nombre completo</li>
+        <li>Número de orden(si aplica)</li>
+        <li>Breve descripción del motivo de la consulta</li>
+        <li>Capturas o fotos relevantes (si tenés)</li>
+      </ul>
+      <p class="chatbot-mini">Nuestro equipo responde en un plazo de 24–48 h hábiles. Si no recibís respuesta, por favor revisá la carpeta de spam.</p>
+      <button class="chatbot-back">VOLVER</button>
+    </section>
+  </div>
+</div>

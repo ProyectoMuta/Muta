@@ -20,6 +20,23 @@ function cargarComponente(id, ruta) {
       contenedor.innerHTML = "<p>Error al cargar el componente.</p>";
     });
 }
+fetch("componentesHTML/chatbot.html")
+        .then(r => r.text())
+        .then(d => { document.getElementById("chatbot").innerHTML = d });
+        // Asegurar CSS y JS cargados una sola vez
+      if (!document.getElementById("chatbotCSS")) {
+        const link = document.createElement("link");
+        link.id = "chatbotCSS";
+        link.rel = "stylesheet";
+        link.href = "css/chatbot.css";
+        document.head.appendChild(link);
+     }
+    if (!document.getElementById("chatbotJS")) {
+        const s = document.createElement("script");
+        s.id = "chatbotJS";
+        s.src = "js/chatbot.js";
+        document.body.appendChild(s);
+    }
 
 /* === INTERACCIONES === */
 function setupNavbarDropdowns() {

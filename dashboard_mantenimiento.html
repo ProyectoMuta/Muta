@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MUTA · Dashboard</title>
+  <link rel="stylesheet" href="css/admin_base.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="brand">MUTA</div>
+      <nav class="side-nav">
+        <a href="dashboard_mantenimiento.html" class="item active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
+        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
+        <a href="producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
+        <a href="#" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
+        <a href="#" class="item"><i class="bi bi-truck"></i> Envíos</a>
+        <a href="#" class="item"><i class="bi bi-life-preserver"></i> Soporte</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <h1>Resumen</h1>
+        <div class="search">
+          <i class="bi bi-search"></i>
+          <input type="search" placeholder="Buscar…">
+        </div>
+      </header>
+
+      <section class="grid">
+        <!-- Ventas por día -->
+        <article class="card span-2" style="padding:16px">
+          <h2 style="margin:0 0 10px;font-size:18px">Ventas por día</h2>
+          <canvas id="chart" width="900" height="300" aria-label="Ventas" role="img"></canvas>
+          <div style="margin-top:8px;color:#666;font-size:12px">
+            <span class="dot" style="background:#2f6ee9"></span> Ventas
+            <span class="dot" style="background:#e05a5a;margin-left:14px"></span> Promedio
+          </div>
+        </article>
+
+        <!-- Calendario mini -->
+        <article class="card" style="padding:16px">
+          <h2 style="margin:0 0 10px;font-size:18px">Calendario</h2>
+          <div id="cal"></div>
+        </article>
+
+        <!-- Top productos -->
+        <article class="card" style="padding:16px">
+          <h2 style="margin:0 0 10px;font-size:18px">Producto más vendido</h2>
+          <ul id="top" style="list-style:none;padding:0;margin:0;display:grid;gap:12px"></ul>
+        </article>
+
+        <!-- Últimas órdenes -->
+        <article class="card" style="padding:16px">
+          <h2 style="margin:0 0 10px;font-size:18px">Últimas órdenes</h2>
+          <ul id="orders" style="list-style:none;padding:0;margin:0;display:grid;gap:10px"></ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  /* ====== Chart fake sin librerías ====== */
+  const c=document.getElementById('chart')?.getContext('2d'); if(c){
+    const W=900,H=300,p=36,days=Array.from({length:30},(_,i)=>i+1),
+          vals=days.map(()=>1500+Math.random()*3500),
+          avg=vals.reduce((a,b)=>a+b,0)/vals.length,
+          max=Math.max(...vals)*1.1, x=i=>p+(W-p*2)*i/(vals.length-1), y=v=>H-p-(v/max)*(H-p*2);
+    c.fillStyle='#fff'; c.fillRect(0,0,W,H);
+    c.strokeStyle='#e5e5e5'; for(let i=0;i<=4;i++){ let Y=p+(H-p*2)*i/4; c.beginPath(); c.moveTo(p,Y); c.lineTo(W-p,Y); c.stroke(); }
+    c.strokeStyle='#e05a5a'; c.lineWidth=2; c.beginPath(); c.moveTo(p,y(avg)); c.lineTo(W-p,y(avg)); c.stroke();
+    c.strokeStyle='#2f6ee9'; c.beginPath(); vals.forEach((v,i)=>{ i?c.lineTo(x(i),y(v)):c.moveTo(x(i),y(v)) }); c.stroke();
+  }
+
+  /* ====== Top productos y últimas órdenes ====== */
+  const top=[{n:'Jean cargo bleach',m:'TALLE XL · CELESTE'},{n:'Buzo oversize',m:'TALLE M · NEGRO'}];
+  document.getElementById('top').innerHTML = top.map(p=>`
+    <li style="display:flex;gap:10px;align-items:center">
+      <div style="width:58px;height:58px;background:#eee;border-radius:10px;display:grid;place-items:center;color:#888">IMG</div>
+      <div><strong>${p.n}</strong><div style="font-size:12px;color:#666">${p.m}</div></div>
+    </li>`).join('');
+
+  const orders=['ORD-2025-0901','ORD-2025-0902','ORD-2025-0903'];
+  document.getElementById('orders').innerHTML = orders.map(id=>`
+    <li style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e8e8e8;background:#fff;border-radius:12px;padding:10px 12px">
+      <a href="orden_mantenimiento.html" style="color:#2f6ee9;text-decoration:none">${id}</a>
+      <span style="font-size:12px;color:#666">${new Date().toLocaleDateString('es-AR')}</span>
+    </li>`).join('');
+
+  /* ====== Calendario mini ====== */
+  const el=document.getElementById('cal'); if(el){
+    const d=new Date(), y=d.getFullYear(), m=d.getMonth(), f=new Date(y,m,1), l=new Date(y,m+1,0),
+          s=(f.getDay()+6)%7, total=s+l.getDate(), cells=Math.ceil(total/7)*7;
+
+    // header
+    const head=document.createElement('div');
+    head.style='display:flex;justify-content:center;gap:6px;background:#1f1f1f;color:#fff;padding:8px;border-radius:10px 10px 0 0';
+    head.textContent=d.toLocaleString('es-AR',{month:'long',year:'numeric'});
+
+    // grid
+    const grid=document.createElement('div');
+    grid.style='display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ddd';
+    ['L','M','X','J','V','S','D'].forEach(w=>{let s=document.createElement('span');s.textContent=w;s.style='background:#f5f5f5;padding:8px;text-align:center;font-weight:700';grid.appendChild(s);});
+    for(let i=0;i<cells;i++){let n=i-s+1, c=document.createElement('span');c.style='background:#fff;padding:8px;text-align:center;font-size:12px'; c.textContent=(n>0&&n<=l.getDate())?n:''; grid.appendChild(c);}
+
+    el.append(head,grid);
+  }
+  </script>
+</body>
+</html>
