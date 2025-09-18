@@ -11,6 +11,7 @@
 
   <!-- Navbar principal -->
   <nav class="main-navbar">
+    <!-- Logo -->
     <div class="logo"><a href="index.html">MUTA</a></div>
 
     <!-- Menú principal -->
@@ -65,20 +66,31 @@
 
     <!-- Iconos -->
     <div class="icons">
-      <!-- Perfil: abre modal -->
+      <!-- Perfil -->
       <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
         <i class="bi bi-person"></i>
       </button>
 
-      <!-- Favoritos: acción interna o futura -->
+      <!-- Favoritos -->
       <button class="icono_corazon" title="Mis me gusta" type="button">
         <i class="bi bi-suit-heart"></i>
       </button>
 
-      <!-- Carrito: navegación a página -->
-      <a href="#" class="icono_carrito" title="Ver carrito">
-        <i class="bi bi-cart2"></i>
-      </a>
+      <!-- Carrito con contador y dropdown -->
+      <div class="icono_carrito">
+        <button class="cart-btn" title="Carrito" id="cart-toggle">
+          <i class="bi bi-cart2"></i>
+          <span class="cart-count">0</span>
+        </button>
+
+        <!-- Aquí cart.js insertará los productos -->
+        <div class="cart-dropdown">
+          <p>Tu carrito está vacío</p>
+          <a href="cart.html" class="view-cart-btn">Ver mi carrito</a>
+          <!-- El contenido se genera dinámicamente -->
+        </div>
+      </div>
+      </div>
     </div>
   </nav>
 </header>

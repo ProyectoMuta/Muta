@@ -92,7 +92,7 @@ body {
   }
 }
 
-/* Iconos */
+/* Iconos generales */
 .icons a,
 .icons button {
   background: none;
@@ -114,13 +114,13 @@ body {
 /* === MENÚS POR CLICK === */
 .nav-links {
   display: flex;
-  align-items: center; /* centra verticalmente todos los nav-item */
+  align-items: center;
   gap: 20px;
 }
 
 .nav-item {
   position: relative;
-  display: inline-block; /* ancho y alto = contenido del botón */
+  display: inline-block;
 }
 
 .nav-btn {
@@ -187,4 +187,280 @@ body {
     flex-direction: column;
     gap: 10px;
   }
+}
+
+/* === CARRITO === */
+.icono_carrito {
+  position: relative; /* ancla el dropdown al icono */
+  display: inline-block;
+}
+
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: black;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.cart-dropdown {
+  position: absolute;
+  top: 100%; /* justo debajo del icono */
+  right: 0;
+  width: 320px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: none;
+  flex-direction: column;
+  z-index: 3000; /* más alto que navbar y otros menús */
+  padding: 10px;
+}
+
+.cart-dropdown h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cart-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-name {
+  font-weight: bold;
+  margin: 0;
+}
+
+.item-desc, .item-details, .item-price {
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+.more-items {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.cart-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.view-cart-btn {
+  display: block;
+  background: black;
+  color: white;
+  text-align: center;
+  padding: 8px;
+  text-decoration: none;
+  width: 87%;               /* O un valor fijo como 300px */
+  max-width: 450px;         /* Opcional: límite máximo de ancho */
+  margin-left: auto;       /* Centra el botón horizontalmente */
+  margin-right: auto;      /* Centra el botón horizontalmente */
+  margin-top: 20px;
+  border-radius: 10px;         /* (ya lo tenés) */
+}
+
+.view-cart-btn:hover {
+  background: #333;
+}
+
+/* Mostrar carrito al pasar el mouse */
+.icono_carrito:hover .cart-dropdown {
+  display: flex;
+}
+
+/* Opción para abrir con click */
+.icono_carrito.open .cart-dropdown {
+  display: flex;
+}
+/* === ESTADO VACÍO DEL CARRITO === */
+.cart-dropdown .empty-cart {
+  text-align: center;
+  padding: 1.5rem;
+  color: #555;
+  font-size: 0.95rem;
+  animation: fadeIn 0.3s ease-in-out; /* Animación suave */
+}
+
+.cart-dropdown .empty-cart p {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Botón "Ir a comprar" */
+.cart-dropdown .btn-ir-comprar {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background-color: #000; /* Color principal MUTA */
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.cart-dropdown .btn-ir-comprar:hover {
+  background-color: #333; /* Hover más claro */
+}
+
+/* Animación de aparición */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/**/
+/* === CARRITO DESPLEGABLE (ESTILO MEJORADO) === */
+.cart-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 340px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: none;
+  flex-direction: column;
+  z-index: 3000;
+  padding: 12px;
+  font-family: 'REM', sans-serif;
+}
+
+.cart-dropdown h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item:last-of-type {
+  border-bottom: none;
+}
+
+.cart-item img {
+  width: 65px;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.item-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  color: #222;
+}
+
+.item-details {
+  font-size: 12px;
+  color: #666;
+  margin: 2px 0;
+}
+
+.item-price {
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+}
+
+.remove-item {
+  background: none;
+  border: none;
+  color: #c00;
+  font-size: 12px;
+  padding: 0;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.remove-item:hover {
+  text-decoration: underline;
+}
+
+/* Footer del carrito */
+.cart-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.cart-total {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.view-cart-btn {
+  display: block;
+  background: black;
+  color: white;
+  text-align: center;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.view-cart-btn:hover {
+  background: #333;
+}
+
+/* Estado vacío */
+.empty-cart {
+  text-align: center;
+  padding: 20px 10px;
+  color: #555;
+  font-size: 14px;
+}
+
+.btn-ir-comprar {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: black;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.btn-ir-comprar:hover {
+  background: #333;
 }
