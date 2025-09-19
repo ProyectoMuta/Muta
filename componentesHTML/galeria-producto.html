@@ -11,7 +11,7 @@
   </div>
 
   <div class="info-producto">
-    <h1>Nombre Producto</h1>
+    <h1>Remera Oversize</h1>
     <p class="precio">$16.000</p>
     <p class="descripcion">
       Remera oversize en algodón, perfecta para el verano.  
@@ -43,6 +43,16 @@
       <button id="mas">+</button>
     </div>
 
+    <!-- Botón que engancha con la lógica de cart.js -->
     <button class="btn-carrito">Agregar al carrito</button>
   </div>
 </section>
+
+<!-- Scripts -->
+<script src="js/cart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setupCart();
+  });
+</script>
+

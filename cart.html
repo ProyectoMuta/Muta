@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart - MUTA</title>
+  <!-- Estilos globales y de componentes -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <main class="cart-page">
+      <h1>Tu carrito</h1>
+      <ul id="cart-page-items">
+        <!-- Productos generados por cart.js -->
+      </ul>
+      <div class="cart-summary">
+        <p>Subtotal: $<span id="cart-page-total">0</span></p>
+        <button class="checkout-btn">Finalizar compra</button>
+      </div>
+    </main>
+    <!-- Modal de acceso -->
+    <div id="acceso-usuario"></div>
+
+    <!-- Footer -->
+    <div id="footer"></div>
+    <div id="chatbot"></div> <!--se carga el chatbot-->
+
+    <!-- Script de carga de componentes -->
+    <script src="js/componente-loader.js"></script>
+    <!-- agrego carrito fijo-->
+    <<script src="js/cart.js"></script>
+    <script>
+      setupCart();
+    </script>
+</body>
+</html>
