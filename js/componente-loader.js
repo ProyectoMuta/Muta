@@ -14,12 +14,20 @@ function cargarComponente(id, ruta) {
     })
     .then(html => {
       contenedor.innerHTML = html;
+
+      // Evento genérico: cualquier componente inyectado
+      const evt = new CustomEvent("componente:cargado", {
+        detail: { id, ruta, contenedor }
+      });
+      document.dispatchEvent(evt);
     })
     .catch(err => {
       console.error(err);
       contenedor.innerHTML = "<p>Error al cargar el componente.</p>";
     });
 }
+
+
 fetch("componentesHTML/chatbot.html")
         .then(r => r.text())
         .then(d => { document.getElementById("chatbot").innerHTML = d });
@@ -179,9 +187,15 @@ function setupCarousel(carouselId) {
 /* === CARGA DE COMPONENTES SEGÚN LA PÁGINA === */
 document.addEventListener("DOMContentLoaded", () => {
   // Comunes
-  if (document.getElementById("navbar"))
+  if (document.getElementById("navbar")) {
   cargarComponente("navbar", "componentesHTML/navbar.html")
-    .then(setupNavbarDropdowns);
+    .then(() => {
+      setupNavbarDropdowns();
+
+      // Evento específico: navbar cargado e interactivo
+      document.dispatchEvent(new CustomEvent("navbar:ready"));
+    });
+}
 
   if (document.getElementById("footer"))
     cargarComponente("footer", "componentesHTML/footer.html");
@@ -213,3 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("producto-tabs", "componentesHTML/producto-tabs.html")
       .then(setupTabsProducto);
 });
+if (document.getElementById("producto-tabs"))
+  cargarComponente("producto-tabs", "componentesHTML/producto-tabs.html")
+    .then(() => {
+      setupTabsProducto();
+      document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
+    });
