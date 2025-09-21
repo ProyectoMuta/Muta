@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProductosAdministrador</title>
      <link rel="stylesheet" href="css/admin_base.css" />
-  <link rel="stylesheet" href="css/home_mantenimiento.css" />
+  <link rel="stylesheet" href="css/agregar_producto.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
@@ -19,10 +19,10 @@
     <aside class="side">
       <div class="brand">MUTA</div>
       <nav class="side-nav">
-        <a href="home_mantenimiento.html" class="item active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
         <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
-        <a href="producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
+        <a href="producto_mantenimiento.html" class="item active"><i class="bi bi-bag"></i> Productos</a>
         <a href="#" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
         <a href="#" class="item"><i class="bi bi-truck"></i> Envíos</a>
         <a href="#" class="item"><i class="bi bi-life-preserver"></i> Soporte</a>
@@ -38,83 +38,75 @@
           <input type="search" placeholder="Buscar…">
         </div>
       </header>
-       <h3>NUEVO PRODUCTO</h3>
-      <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
-    
+      <div class="titulo-nuevo">
+        <h3 class="titulo-nuevo-producto">NUEVO PRODUCTO</h3>
+        <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+      </div>
       <section class="grid">
         <!-- Ventas por día -->
         <article id= "formulario" class="card span-2" >
          
       <form class="row g-2">
-  <div class="col-md-10">
+  <div class="col-md-12">
     <label class="form-label">Nombre del producto</label>
     <input class="form-control" id="inputNombre">
   </div>
-  <div class="col-md-10">
+  <div class="col-md-12">
   <label class="form-label">Descripción</label>
   <textarea class="form-control" id="exampleFormControlTextarea1" rows="3">Descripción del producto</textarea>
 </div>
 
-<div class="col-md-10">
+<div class="col-md-12">
   <label for="formFile" class="form-label">Agregar imagen</label>
   <input class="form-control" type="file" id="formFile">
 </div>
 <label class="form-label">Precio</label>
-<div class="col-md-5">
+<div class="col-12 col-md-6">
     <label class="form-label">Precio de venta</label>
     <input  placeholder="$0000" class="form-control" id="input-precio-venta">
   </div>
-  <div class="col-md-5">
+  <div class="col-12 col-md-6">
     <label  class="form-label">Precio promocional</label>
     <input  placeholder="$0000" class="form-control" id="input-precio-promocional">
   </div>
-  <div class="col-md-5">
+  <div class="col-12 col-md-6">
     <label class="form-label">Costo</label>
     <input placeholder="$0000"  class="form-control" id="input-costo">
   </div>
 
-  <div class="col-md-5">
+  <div class="col-12 col-md-6">
     <label  class="form-label">Margen</label>
     <input  class="form-control" id="input-margen">
   </div>
 
-  <label class="form-label">Inventario</label>
-  <div class="col-md-6">
-    <label class="form-label">Cantidad</label>
-    <input  placeholder="1234" class="form-control" id="input-cantidad">
-  </div>
-  <div class="col-md-4">
-    <label for="inputState" class="form-label">Talle</label>
-    <select id="inputState" class="form-select">
-      <option selected>S</option>
-      <option selected>M</option>
-      <option selected>L</option>
-      <option selected>XL</option>
-      <option selected>XXL</option>
-      <option selected>XXL</option>
-      <option>...</option>
-    </select>
-  </div>
-  <label for="inputState" class="form-label">Variante</label>
-  <div class="col-md-2">
-    <input type="text" class="form-control" id="input-variante" placeholder="Talle">
-  </div>
-  <div class="col-md-2">
-    <input type="text" class="form-control" id="input-variante" placeholder="Stock">
-  </div>
-  <div class="col-md-2">
-    <input type="decimal" class="form-control" id="input-variante" placeholder="Peso">
-  </div>
-  <div class="col-md-2">
-    <input type="text" class="form-control" id="input-variante" placeholder="Color">
-  </div>
-    <div class="col-md-2">
-  <i class="bi bi-trash"></i>
-    </div>
-    <label for="inputState" class="form-label">Categorías</label>
-    <div class="col-md-5">
+  <label class="form-label">Inventario</label> 
+  <div class="mb-3">
+  <label class="form-label">Tipo de talle   (Remeras S-XXXL / Pantalones 38-58)</label>
+  <select id="tipoVariante" class="form-select">
+    <option value="remera">Remera</option>
+    <option value="pantalon">Pantalón</option>
+  </select>
+</div>
+
+   <label class="form-label1">Agregar Producto <i id="agregar1" class="bi bi-plus-circle fs-5"></i></label> 
+ 
+ 
+<div id="contenedor-variantes">
+<div class="grupo-variante row g-2">
+  
+</div>
+</div> 
+ <div class="col-md-6">
     <label for="inputState" class="form-label">Categoría</label>
-    <select id="inputState" class="form-select">
+    <select id="inputState" class="form-select"></select>
+</div>
+<div class="col-md-6">
+    <label for="inputState" class="form-label">Subcategoría</label>
+    <select id="subcategoriaSelect" class="form-select"></select>
+</div>
+    <!--<div class="col-md-6">
+    <label for="inputState" class="form-label">Categoría</label>
+    <select id="categoria" class="form-select">
       <option selected>1</option>
       <option selected>2</option>
       <option selected>3</option>
@@ -124,9 +116,9 @@
       <option>...</option>
     </select>
   </div>
-  <div class="col-md-5">
+  <div class="col-md-6">
     <label for="inputState" class="form-label">Subcategoría</label>
-    <select id="inputState" class="form-select">
+    <select id="subcategoria" class="form-select">
       <option selected>S</option>
       <option selected>M</option>
       <option selected>L</option>
@@ -135,14 +127,15 @@
       <option selected>XXL</option>
       <option>...</option>
     </select>
-  </div>
+  </div>-->
   
-  <div class="col-10">
-       
-<button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+   <div class="col-12 d-flex justify-content-end gap-3">
+       <button id="volverBtn" class="guardar-btn23">Volver</button>
+       <button id="guardarBtn" class="guardar-btn2">GUARDAR PRODUCTO</button>
     
 
   </div>
+
 </form>
         </article>
 
