@@ -1,0 +1,98 @@
+
+button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #6b6b6b;
+ 
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'NATS', sans-serif;
+}
+
+button:hover{
+   background-color: #d4d4d4;
+  color: rgb(35, 35, 35);
+}
+
+
+.btn-guardar{
+    border-radius: 15px;
+margin-left: 160px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.grid {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center;     /* Centra verticalmente (si hay altura) */
+  min-height: 600px;
+  max-width: 900px;      /* Ocupa toda la altura de la pantalla */
+  padding: 20px;
+  
+}
+.main {
+  display: grid;
+  place-items: center; /* Centra horizontal y vertical */
+  padding: 2rem;
+}
+
+#formulario {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;   /* Centrado horizontal */
+  padding: 2rem;    /* Ajustá si es demasiado */
+  box-sizing: border-box;
+}
+
+ 
+
+
+.titulo-nuevo {
+  display: flex;
+  justify-content: center ; /* o 'center' si querés todo centrado */
+  align-items: center;
+  padding: 50px ;
+  font-family: 'NATS', sans-serif;
+}
+
+
+.guardar-btn{
+   border-radius: 18px;
+   margin-left: 410px;
+  
+  font-family: 'NATS', sans-serif;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.guardar-btn2{
+   padding-left: 20px;
+  padding-right: 20px;
+   border-radius: 18px;
+   margin-left:10px;
+   margin-top: 30px;
+     font-family: 'NATS', sans-serif;
+}
+ .guardar-btn23{
+   padding-left: 20px;
+  padding-right: 20px;
+   border-radius: 18px;
+   margin-left:10px;
+   margin-top: 30px;
+     font-family: 'NATS', sans-serif;
+     background-color: #e1e1e1;
+     color: #6b6b6b;
+}
+
+
+.form-label{
+  font-size: 18px;
+}
+.search{
+  margin-left: 550px;
+}
+#agregar1{
+  cursor:pointer;
+}
