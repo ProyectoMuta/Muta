@@ -169,19 +169,4 @@ margin-left: 160px;
     border-radius: 5px;
     padding: 10px;
 }
-.grid {
-  display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center;     /* Centra verticalmente (si hay altura) */
-  min-height: 600px;
-  max-width: 900px;      /* Ocupa toda la altura de la pantalla */
-  padding: 20px;
-  
-}
-#formulario{
-   justify-content: center; /* Centra horizontalmente */
-  align-items: center;     /* Centra verticalmente (si hay altura) */
- padding-left:60px;
- padding-top: 30px;
 
-}
