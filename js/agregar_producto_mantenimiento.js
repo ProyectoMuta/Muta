@@ -1,6 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+// SUBIR LA CANTIDAD DE IMAGENES DESEADAS
+document.getElementById('formFileMultiple').addEventListener('change', function () {
+  const previewContainer = document.getElementById('preview');
+  previewContainer.innerHTML = ''; // Limpiar anteriores
 
+  Array.from(this.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.width = '100px';
+      img.style.margin = '5px';
+      previewContainer.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+});
 //Crea cantidad de variedad como se necesiten
     const contenedor = document.getElementById('contenedor-variantes');
   const agregarBtn = document.getElementById('agregar1');
