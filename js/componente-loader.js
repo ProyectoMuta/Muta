@@ -27,33 +27,16 @@ function cargarComponente(id, ruta) {
     });
 }
 
-
-fetch("componentesHTML/chatbot.html")
-        .then(r => r.text())
-        .then(d => { document.getElementById("chatbot").innerHTML = d });
-        // Asegurar CSS y JS cargados una sola vez
-      if (!document.getElementById("chatbotCSS")) {
-        const link = document.createElement("link");
-        link.id = "chatbotCSS";
-        link.rel = "stylesheet";
-        link.href = "css/chatbot.css";
-        document.head.appendChild(link);
-     }
-    if (!document.getElementById("chatbotJS")) {
-        const s = document.createElement("script");
-        s.id = "chatbotJS";
-        s.src = "js/chatbot.js";
-        document.body.appendChild(s);
-    }
-
 /* === INTERACCIONES === */
+
+// --- Navbar con dropdowns ---
 function setupNavbarDropdowns() {
   const buttons = document.querySelectorAll(".nav-btn");
 
   buttons.forEach(btn => {
     btn.addEventListener("click", e => {
       e.preventDefault();
-      e.stopPropagation(); // evita que el click cierre el menú
+      e.stopPropagation();
 
       const menuId = btn.getAttribute("data-menu");
       const dropdown = document.getElementById(menuId);
@@ -81,8 +64,7 @@ function setupNavbarDropdowns() {
   });
 }
 
-
-// Modal de acceso de usuario
+// --- Modal de acceso de usuario ---
 function setupAccesoUsuario() {
   const openAuth = document.getElementById("open-auth");
   const container = document.getElementById("acceso-usuario-container");
@@ -117,7 +99,7 @@ function setupAccesoUsuario() {
   }
 }
 
-// Tabs de producto
+// --- Tabs de producto ---
 function setupTabsProducto() {
   const tabTitles = document.querySelectorAll(".tab-title");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -137,7 +119,97 @@ function setupTabsProducto() {
   });
 }
 
-// Carrusel genérico (mejorado: mueve por card visible)
+// --- Calcular envío ---
+function setupCalculoEnvio() {
+  const btnEnvio = document.getElementById("btn-calcular-envio");
+  const inputCP = document.getElementById("codigo-postal-input");
+  const resultadoEnvio = document.getElementById("resultado-envio");
+
+  if (btnEnvio && inputCP && resultadoEnvio) {
+    btnEnvio.addEventListener("click", (e) => {
+      e.preventDefault();
+      const codigo = inputCP.value.trim();
+      if (!codigo) {
+        resultadoEnvio.textContent = "Por favor ingresa un código postal.";
+        return;
+      }
+
+      // Distancias simuladas por CP
+      const distancias = {
+        "5500": 1,
+        "5501": 7,
+        "5507": 12,
+        "5519": 20,
+      };
+      const km = distancias[codigo] || 25;
+
+      let costo;
+      if (km <= 5) costo = "3.000 pesos";
+      else if (km <= 10) costo = "8.000 pesos";
+      else costo = "16.000 pesos";
+
+      resultadoEnvio.textContent = `El costo aproximado de envío es ${costo}.`;
+    });
+  }
+}
+
+// --- Selección de talles ---
+function setupTalles() {
+  const talles = document.querySelectorAll(".talle");
+  talles.forEach(t => {
+    t.addEventListener("click", () => {
+      talles.forEach(b => b.classList.remove("active"));
+      t.classList.add("active");
+    });
+  });
+}
+
+// --- Selección de colores ---
+function setupColores() {
+  const colores = document.querySelectorAll(".color-option");
+  colores.forEach(c => {
+    c.addEventListener("click", () => {
+      colores.forEach(x => x.classList.remove("active"));
+      c.classList.add("active");
+    });
+  });
+}
+
+// --- Cantidad (+/-) ---
+function setupCantidad() {
+  const inputCantidad = document.getElementById("cantidad");
+  const btnMas = document.getElementById("mas");
+  const btnMenos = document.getElementById("menos");
+
+  if (inputCantidad && btnMas && btnMenos) {
+    const clonedMas = btnMas.cloneNode(true);
+    const clonedMenos = btnMenos.cloneNode(true);
+    btnMas.parentNode.replaceChild(clonedMas, btnMas);
+    btnMenos.parentNode.replaceChild(clonedMenos, btnMenos);
+
+    clonedMas.addEventListener("click", (e) => {
+      e.preventDefault();
+      inputCantidad.value = parseInt(inputCantidad.value) + 1;
+    });
+
+    clonedMenos.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (parseInt(inputCantidad.value) > 1) {
+        inputCantidad.value = parseInt(inputCantidad.value) - 1;
+      }
+    });
+  }
+}
+
+// --- Interacciones de producto ---
+function setupProductoInteractions() {
+  setupCalculoEnvio();
+  setupTalles();
+  setupColores();
+  setupCantidad();
+}
+
+// --- Carrusel genérico ---
 function setupCarousel(carouselId) {
   const carousel = document.getElementById(carouselId);
   if (!carousel) return;
@@ -148,19 +220,15 @@ function setupCarousel(carouselId) {
   if (!track || !prevBtn || !nextBtn) return;
 
   const getGap = () => parseInt(getComputedStyle(track).gap) || 0;
-
   const getCardWidth = () => {
     const card = track.querySelector(".card");
     return card ? card.getBoundingClientRect().width : 0;
   };
-
   const getStep = () => getCardWidth() + getGap();
-
   const getCurrentIndex = () => {
     const step = getStep();
     return step ? Math.round(track.scrollLeft / step) : 0;
   };
-
   const scrollToIndex = (idx) => {
     const step = getStep();
     track.scrollTo({ left: idx * step, behavior: "smooth" });
@@ -172,13 +240,11 @@ function setupCarousel(carouselId) {
 
   nextBtn.addEventListener("click", () => {
     const totalCards = track.querySelectorAll(".card").length;
-    // límite para no pasar el último “bloque” visible
     const visibles = Math.max(1, Math.round(track.clientWidth / getStep()));
     const maxIndex = Math.max(0, totalCards - visibles);
     scrollToIndex(Math.min(maxIndex, getCurrentIndex() + 1));
   });
 
-  // Si hay redimensionamiento, realineamos al índice más cercano
   window.addEventListener("resize", () => {
     scrollToIndex(getCurrentIndex());
   });
@@ -186,16 +252,13 @@ function setupCarousel(carouselId) {
 
 /* === CARGA DE COMPONENTES SEGÚN LA PÁGINA === */
 document.addEventListener("DOMContentLoaded", () => {
-  // Comunes
-  if (document.getElementById("navbar")) {
-  cargarComponente("navbar", "componentesHTML/navbar.html")
-    .then(() => {
-      setupNavbarDropdowns();
-
-      // Evento específico: navbar cargado e interactivo
-      document.dispatchEvent(new CustomEvent("navbar:ready"));
-    });
-}
+  // --- Comunes ---
+  if (document.getElementById("navbar"))
+    cargarComponente("navbar", "componentesHTML/navbar.html")
+      .then(() => {
+        setupNavbarDropdowns();
+        document.dispatchEvent(new CustomEvent("navbar:ready"));
+      });
 
   if (document.getElementById("footer"))
     cargarComponente("footer", "componentesHTML/footer.html");
@@ -204,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
       .then(setupAccesoUsuario);
 
-  // Home
+  // --- Home ---
   if (document.getElementById("hero"))
     cargarComponente("hero", "componentesHTML/hero.html");
 
@@ -219,17 +282,15 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
       .then(() => setupCarousel("carousel-novedades"));
 
-  // Producto
+  // --- Producto ---
   if (document.getElementById("galeria-producto"))
     cargarComponente("galeria-producto", "componentesHTML/galeria-producto.html");
 
   if (document.getElementById("producto-tabs"))
     cargarComponente("producto-tabs", "componentesHTML/producto-tabs.html")
-      .then(setupTabsProducto);
+      .then(() => {
+        setupTabsProducto();
+        setupProductoInteractions();
+        document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
+      });
 });
-if (document.getElementById("producto-tabs"))
-  cargarComponente("producto-tabs", "componentesHTML/producto-tabs.html")
-    .then(() => {
-      setupTabsProducto();
-      document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
-    });
