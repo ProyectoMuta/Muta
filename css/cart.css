@@ -408,3 +408,29 @@
 body.cart-page .cart-dropdown {
   display: none !important;
 }
+.error-msg {
+  color: #721c24;              /* texto rojo oscuro */
+  background: #f8d7da;         /* fondo rojo claro */
+  border: 1px solid #f5c6cb;   /* borde */
+  font-size: 12px;
+  padding: 2px 6px;
+  margin-left: 8px;
+  border-radius: 4px;
+  display: none;
+  vertical-align: middle;
+  width: auto;                 /* se ajusta al texto */
+  white-space: nowrap;         /* evita que se corte en varias líneas */
+}
+
+.success-msg {
+  color: #155724;              /* verde texto */
+  background: #d4edda;         /* fondo verde claro */
+  border: 1px solid #c3e6cb;
+  padding: 3px 8px;            /* más compacto */
+  margin-top: 8px;
+  border-radius: 4px;
+  display: none;
+  font-size: 13px;             /* letra más chica */
+  font-weight: 500;
+  width: fit-content;          /* se ajusta al contenido */
+}

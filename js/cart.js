@@ -270,19 +270,56 @@ function setupCart() {
     });
 
     btn.addEventListener("click", () => {
-      const cantidad = parseInt((qtyInput && qtyInput.value) || "1", 10);
-      const nombre = document.querySelector(".info-producto h1")?.textContent.trim() || "Producto";
-      const precioTexto = document.querySelector(".precio")?.textContent || "$0";
-      const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
-      const img = document.getElementById("main-image")?.src || "";
+    const cantidad = parseInt((qtyInput && qtyInput.value) || "1", 10);
+    const nombre = document.querySelector(".info-producto h1")?.textContent.trim() || "Producto";
+    const precioTexto = document.querySelector(".precio")?.textContent || "$0";
+    const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
+    const img = document.getElementById("main-image")?.src || "";
 
-      if (!selectedColor) return alert("Por favor selecciona un color.");
-      if (!selectedTalle) return alert("Por favor selecciona un talle.");
-      if (!cantidad || cantidad < 1) return alert("Por favor selecciona una cantidad válida.");
+    // Referencias a mensajes
+    const errorColor = document.getElementById("error-color");
+    const errorTalle = document.getElementById("error-talle");
+    const successMsg = document.getElementById("success-msg");
 
-      addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
-      alert("Producto agregado al carrito.");
-    });
+    // Resetear mensajes
+    errorColor.style.display = "none";
+    errorTalle.style.display = "none";
+    successMsg.style.display = "none";
+
+    let valido = true;
+
+    if (!selectedColor) {
+      errorColor.textContent = "Seleccionar color";
+      errorColor.style.display = "block";
+      valido = false;
+    }
+
+    if (!selectedTalle) {
+      errorTalle.textContent = "Seleccionar talle";
+      errorTalle.style.display = "block";
+      valido = false;
+    }
+
+    if (!cantidad || cantidad < 1) {
+      alert("Por favor selecciona una cantidad válida."); // lo dejamos simple
+      valido = false;
+    }
+
+    if (!valido) return;
+
+    // Agregar al carrito
+    addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
+
+    // Mostrar cartel de éxito
+    successMsg.textContent = "Agregado con éxito";
+    successMsg.style.display = "block";
+
+    // Ocultarlo automáticamente después de 3s
+    setTimeout(() => {
+      successMsg.style.display = "none";
+    }, 3000);
+  });
+
   }
 
   // ================================
