@@ -83,13 +83,20 @@
           <span class="cart-count">0</span>
         </button>
 
-        <!-- Aquí cart.js insertará los productos -->
+        <!-- Dropdown del carrito -->
         <div class="cart-dropdown">
-          <p>Tu carrito está vacío</p>
-          <a href="cart.html" class="view-cart-btn">Ver mi carrito</a>
-          <!-- El contenido se genera dinámicamente -->
+          <!-- Estado vacío inicial -->
+          <div class="empty-cart">
+            <p>Tu carrito está vacío</p>
+            <a href="index.html" class="btn-ir-comprar">Ir a comprar</a>
+          </div>
+
+          <!-- Footer fijo -->
+          <div class="cart-footer">
+            <p class="cart-total">Subtotal: $0</p>
+            <a href="cart.html" class="view-cart-btn">Ver mi carrito</a>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   </nav>

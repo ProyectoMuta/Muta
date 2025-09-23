@@ -265,24 +265,7 @@ body {
   padding-top: 10px;
 }
 
-.view-cart-btn {
-  display: block;
-  background: black;
-  color: white;
-  text-align: center;
-  padding: 8px;
-  text-decoration: none;
-  width: 87%;               /* O un valor fijo como 300px */
-  max-width: 450px;         /* Opcional: límite máximo de ancho */
-  margin-left: auto;       /* Centra el botón horizontalmente */
-  margin-right: auto;      /* Centra el botón horizontalmente */
-  margin-top: 20px;
-  border-radius: 10px;         /* (ya lo tenés) */
-}
 
-.view-cart-btn:hover {
-  background: #333;
-}
 
 /* Mostrar carrito al pasar el mouse */
 .icono_carrito:hover .cart-dropdown {
@@ -359,6 +342,7 @@ body {
   gap: 10px;
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
+  align-items: flex-start; /* 🔹 Alinear nombre con la foto */
 }
 
 .cart-item:last-of-type {
@@ -377,40 +361,45 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .item-name {
   font-weight: 600;
   font-size: 14px;
-  margin: 0;
+  margin: 0 0 4px 0; /* 🔹 margen uniforme */
   color: #222;
 }
 
 .item-details {
   font-size: 12px;
   color: #666;
-  margin: 2px 0;
+  margin: 0 0 4px 0; /* 🔹 margen uniforme */
 }
 
 .item-price {
   font-size: 13px;
   font-weight: 500;
   color: #000;
+  margin: 0; /* 🔹 evitar desproporción */
 }
 
 .remove-item {
   background: none;
   border: none;
   color: #c00;
-  font-size: 12px;
+  font-size: 14px; /* 🔹 ícono más chico */
   padding: 0;
   cursor: pointer;
   align-self: flex-start;
 }
 
 .remove-item:hover {
-  text-decoration: underline;
+  color: #a00;
+}
+
+.remove-item i {
+  font-size: 14px; /* 🔹 ícono más chico */
+  vertical-align: middle;
 }
 
 /* Footer del carrito */
@@ -426,21 +415,7 @@ body {
   margin-bottom: 10px;
 }
 
-.view-cart-btn {
-  display: block;
-  background: black;
-  color: white;
-  text-align: center;
-  padding: 8px;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.view-cart-btn:hover {
-  background: #333;
-}
+/*borre */
 
 /* Estado vacío */
 .empty-cart {
@@ -463,4 +438,27 @@ body {
 
 .btn-ir-comprar:hover {
   background: #333;
+}
+
+/* === Ajustes del botón eliminar con ícono === */
+.remove-item {
+  background: none;
+  border: none;
+  color: #c00;
+  font-size: 14px; /* 🔹 ajustado */
+  cursor: pointer;
+}
+
+.remove-item:hover {
+  color: #a00;
+}
+
+.remove-item i {
+  vertical-align: middle;
+  font-size: 14px; /* 🔹 ajustado */
+}
+
+/* === Ocultar mini-carrito en cart.html === */
+body.cart-page .cart-dropdown {
+  display: none !important;
 }
