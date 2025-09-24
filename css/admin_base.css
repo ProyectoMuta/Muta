@@ -1,9 +1,9 @@
 /* ====== Base Admin (sin navbar ni footer) ====== */
 :root{
-  --lav:#9b7ac7; --lav-2:#7d60ab;
+  --lav:#8d8c8c; --lav-2:#7d60ab;
   --bg:#fff; --txt:#1f1f1f; --muted:#666;
   --line:#e8e8e8; --soft:#f9f2fb;
-  --shadow:0 12px 30px rgba(0,0,0,.10);
+  --shadow:2px 1px 30px 1px  rgba(0,0,0,.10);
 
   /* badges pago/envío usados en ventas */
   --pay-ok:#baf7c6; --pay-pend:#ffe8a6; --pay-refund:#ffd4d4;
@@ -11,13 +11,25 @@
 }
 
 *{ box-sizing:border-box }
-body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--txt); background:#fdf6f9 }
+body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--txt); background:#fff }
 
 /* Layout */
-.wrap{ display:grid; grid-template-columns:240px 1fr; min-height:100vh }
+.wrap{ 
+display: flex; /* Asegura que la barra lateral y el contenido principal estén uno al lado del otro */
+    width: 100%;
+    min-height: 100vh; /* Para que el wrap ocupe toda la altura */}
 
 /* Sidebar */
-.side{ background:#efefef; border-right:1px solid var(--line); padding:16px 12px }
+.side{ background:#efefef; 
+   position: fixed;
+    top: 0; /* Lo pega a la parte superior de la ventana */
+    left: 0; /* Lo pega a la parte izquierda de la ventana */
+    width: 230px; /* Define el ancho de tu sidebar (ajusta según tu diseño) */
+    height: 100vh; /* Ocupa el 100% de la altura de la ventana */
+
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    overflow-y: auto;  
+  border-right:1px solid var(--line); padding:16px 12px }
 .brand{ font-size:28px; font-weight:800; margin:6px 6px 18px }
 .side-nav{ display:flex; flex-direction:column; gap:8px }
 .side-nav .item{
@@ -28,24 +40,40 @@ body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Aria
 .side-nav .item.active{ background:#fff; border:1px solid var(--line) }
 
 /* Main + header */
-.main{ padding:24px }
-.topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px }
+.main{margin-left: 200px; /* Debe ser igual al ancho de tu sidebar */
+    width: calc(100% - 200px); /* Ocupa el resto del ancho */ padding:24px }
+.topbar{ display:flex; align-items:center; 
+  justify-content:space-between; 
+  gap:16px;
+    position: fixed;  top: 0;  width: 1130px;; /* Ocupa el ancho restante después del sidebar */
+   padding: 15px 20px; /* Ajusta el padding según tus necesidades */
+   
+  background-color: #fff;  margin-bottom:12px }
 .topbar h1{ margin:0; font-size:26px; letter-spacing:.2px }
+.topbarsubnav {
+  background-color: #fff; 
+  position: fixed;
+  top: 65px; /* Altura del topbar */
+  left: 230px; /* Ancho del sidebar */
+  right: 0;
+  z-index: 999; /* Menor que topbar pero mayor que contenido */
+}
 .search{
   display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line);
-  border-radius:999px; padding:8px 12px; min-width:320px; box-shadow:var(--shadow)
+  border-radius:999px; padding:8px 12px; min-width:320px;
 }
 .search input{ border:none; outline:none; background:transparent; width:240px; font-size:14px }
 
 /* Chips */
-.filters{ display:flex; gap:10px; margin:6px 0 14px; flex-wrap:wrap }
+.filters{ display:flex; gap:10px;  margin-left: 40px;  flex-wrap:wrap }
 .chip{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:600; font-size:13px }
 .chip.active{ background:var(--lav); color:#fff; border-color:transparent }
 
 /* Card/Table */
-.card{ background:var(--bg); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow) }
+.card{ background:var(--bg); border:1px solid var(--line); border-radius:14px;
+  box-shadow:var(--shadow) }
 .table-wrap{ overflow:auto }
-.table{ width:100%; min-width:1100px; border-collapse:collapse }
+.table{ width:100%; min-width:650px; border-collapse:collapse }
 .table thead th{
   position:sticky; top:0; z-index:1; background:#fafafa; font-size:13px; text-align:left;
   padding:12px; border-bottom:1px solid var(--line)
@@ -78,10 +106,34 @@ body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Aria
 .actions{ display:flex; gap:6px }
 .btn-icon{ width:34px; height:34px; border:1px solid var(--line); background:#fff; border-radius:10px; cursor:pointer; display:grid; place-items:center }
 .btn-icon:hover{ background:#f7f7f7 }
+.main .titulo-nuevo,
+.main .grid {
+    margin-top: 120px; /* Ajusta este valor. Debe ser mayor que la altura combinada de fixed-top-bars */
+    /* ... otros estilos ... */
+   margin-left: 40px;
 
+}
 /* Dashboard grid */
-.grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px }
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px }
 .span-2{ grid-column:span 2 }
+/*subnav*/
+.topbarsubnav{
+ display:flex;
+ justify-content: flex-end; /* Empuja los botones hacia la derecha */
+  gap: 1rem; /* Espacio entre botones */
+  padding: 1rem 1rem;
 
+}
 @media (max-width:1100px){ .grid{ grid-template-columns:1fr 1fr } .span-2{ grid-column:1/-1 } }
 @media (max-width:900px){ .wrap{ grid-template-columns:1fr } .search{ min-width:unset; width:100% } .grid{ grid-template-columns:1fr } }
+ @media (max-width: 768px) {
+      .main {
+        margin-left: 0;
+      }
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }

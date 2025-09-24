@@ -3,8 +3,11 @@ const DATA = [
   { sku:'SKU-001', nombre:'Jean cargo bleach', categoria:'Pantalones', talles:['46','48','50'], color:'#6EC1E4', precio:43800, stock:32, estado:'ok' },
   { sku:'SKU-002', nombre:'Camisa blanca', categoria:'Camisas', talles:['S','M'], color:'#ffffff', precio:12800, stock:8,  estado:'info' },
   { sku:'SKU-003', nombre:'Pantalón negro', categoria:'Pantalones', talles:['L'], color:'#111111', precio:24800, stock:3,  estado:'warn' },
-  { sku:'SKU-004', nombre:'Remera blanca', categoria:'Remeras', talles:['S'], color:'#ffffff', precio:17800, stock:0,  estado:'gray' },
+  { sku:'SKU-004', nombre:'Remera blancdhscargo bleach', categoria:'Pantalones', talles:['46','48','50'], color:'#6EC1E4', precio:43800, stock:32, estado:'ok' },
   { sku:'SKU-005', nombre:'Remera negra (XL)', categoria:'Remeras', talles:['XL'], color:'#000000', precio:17800, stock:0,  estado:'danger' }, // pausado
+  { sku:'SKU-006', nombre:'Remera negra (XL)', categoria:'Remeras', talles:['XL'], color:'#000000', precio:17800, stock:0,  estado:'danger' }, // pausado
+  { sku:'SKU-007', nombre:'Remera negra (XL)', categoria:'Remeras', talles:['XL'], color:'#000000', precio:17800, stock:0,  estado:'danger' }, // pausado
+  { sku:'SKU-008', nombre:'Remera negra (XL)', categoria:'Remeras', talles:['XL'], color:'#000000', precio:17800, stock:0,  estado:'danger' }, // pausado
 ];
 
 const tbody = document.querySelector('#tbl tbody');

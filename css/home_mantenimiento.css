@@ -169,4 +169,23 @@ margin-left: 160px;
     border-radius: 5px;
     padding: 10px;
 }
+/* Hacer que el navbar flote sobre el contenido */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 230px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95); /* Fondo semi-transparente */
+    backdrop-filter: blur(10px); /* Efecto glassmorphism */
+    z-index: 999;
+}
 
+.topbarsubnav {
+    position: fixed;
+    top: 70px;
+    left: 230px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 998;
+}
