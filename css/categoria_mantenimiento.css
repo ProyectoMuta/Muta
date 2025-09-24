@@ -1,0 +1,136 @@
+
+
+
+main {
+   
+    width: 100%;
+    max-width: 1200px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.card{
+    padding: 30px;
+    margin-left: 40px;
+    margin-top: 130px; 
+}
+.category-manager h1 {
+    color: #202020;
+    margin-top: 0;
+    font-size: 1.8em;
+    font-family: 'NATS',sans-serif;
+}
+
+.category-manager p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.input-group select,
+.input-group input[type="text"] {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.input-group select {
+    flex-basis: 30%; /* Da un tamaño inicial al select */
+    max-width: 250px;
+}
+
+.input-group input[type="text"]::placeholder {
+    color: #bbb;
+}
+
+.icon-btn {
+    background-color: #535354; /* Morado para los botones de acción */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Redondo */
+    width: 40px;
+    height: 40px;
+    font-size: 1.5em;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.icon-btn:hover {
+    background-color: #a0a0a0;
+}
+
+.icon-btn.delete-btn {
+    background-color: #ff4d4d; /* Rojo para eliminar */
+    font-size: 1.2em;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px; /* Cuadrado con bordes redondeados */
+}
+
+.icon-btn.delete-btn:hover {
+    background-color: #e03f3f;
+}
+
+#categories-list {
+    border: 1px solid #eee;
+    padding: 15px;
+    min-height: 100px;
+    border-radius: 5px;
+    background-color: #fdfdfd;
+    margin-bottom: 20px;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-item .name {
+    font-weight: bold;
+    color: #555;
+}
+
+.category-item.subcategory {
+    margin-left: 20px; /* Indentar subcategorías */
+    font-weight: normal;
+    color: #777;
+    
+    font-size: 0.95em;
+}
+
+.save-btn {
+    background-color: #717171; /* Morado más oscuro para el botón principal */
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block; /* Para que ocupe todo el ancho si es necesario */
+    margin: 0 auto; /* Centrar el botón */
+}
+
+.save-btn:hover {
+    background-color: #a9a9a9;
+}

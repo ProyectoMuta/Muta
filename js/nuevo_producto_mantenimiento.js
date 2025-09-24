@@ -1,4 +1,40 @@
 document.addEventListener("DOMContentLoaded", function () {
+//SCROLL
+
+let lastScrollTop = 0;
+const topbar = document.getElementById('topbar');
+const subnav = document.getElementById('subnav');
+
+window.addEventListener('scroll', function() {
+  let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  
+  if (scrollTop > lastScrollTop && scrollTop > 100) {
+    // Scrolling down - hide navbar
+    topbar.classList.add('scroll-hide');
+    subnav.classList.add('scroll-hide');
+  } else {
+    // Scrolling up - show navbar
+    topbar.classList.remove('scroll-hide');
+    subnav.classList.remove('scroll-hide');
+  }
+  
+  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+});
+
+
+  //subnav
+ document.getElementById("nuevoProductoBtn").addEventListener("click", function () {
+    window.location.href = "nuevo_producto_mantenimiento.html"; // Cambiá por tu ruta real
+  });
+
+  document.getElementById("categoriaProductoBtn").addEventListener("click", function () {
+    window.location.href = "categoria_mantenimiento.html"; // Vista de categorías
+  });
+
+  document.getElementById("inventarioProductoBtn").addEventListener("click", function () {
+    window.location.href = "gestion_producto_mantenimiento.html"; // Vista de inventario
+  });
+
 
 // SUBIR LA CANTIDAD DE IMAGENES DESEADAS
 document.getElementById('formFileMultiple').addEventListener('change', function () {
@@ -57,17 +93,25 @@ document.getElementById('formFileMultiple').addEventListener('change', function 
           `}
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <input type="text" class="form-control" name="stock" placeholder="Stock">
       </div>
       <div class="col-md-2">
         <input type="number" class="form-control" name="peso" placeholder="Peso">
       </div>
-      <div class="col-md-3">
-        <input type="text" class="form-control" name="color" placeholder="Color">
-      </div>
+      <!-- CORRECTO -->
+<div class="col-md-2">
+    <div class="color-input-group">
+        <label for="productColor" class="form-label">Color</label>
+        <input type="color" 
+               class="form-control" 
+               name="color" 
+               id="productColor" 
+               value="#000000">
+    </div>
+</div>
       <div class="col-md-1 d-flex align-items-center">
-        <i class="bi bi-trash text-danger eliminar-variante" style="cursor:pointer;"></i>
+        <i class="bi bi-trash text-danger eliminar-variante" ></i>
       </div>
     `;
 
@@ -78,6 +122,11 @@ document.getElementById('formFileMultiple').addEventListener('change', function 
 
     contenedor.appendChild(nuevaVariante);
   });
+
+  //COLOR
+  document.getElementById('productColor').addEventListener('input', function() {
+    document.getElementById('colorValue').textContent = this.value;
+});
 
   //TRAE TODAS LAS CATEGORIAS Y SUBCATEGORIAS QUE EN TEORIA CREA EL USUARIO
   fetch("/api/categorias")
