@@ -1,0 +1,80 @@
+<div class="overlay" style="display:none;">
+  <div class="envio-modal">
+
+    <!-- Header con flecha de retroceso -->
+    <div class="envio-header">
+      <button class="btn-back cerrar-modal" type="button" aria-label="Volver al carrito">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+
+    <!-- Indicador de pasos -->
+    <div class="checkout-pasos">
+      <div class="checkout-paso completado">
+        <div class="circulo"><i class="fas fa-check"></i></div>
+        <span>Carrito</span>
+      </div>
+      <div class="linea"></div>
+      <div class="checkout-paso activo">
+        <div class="circulo"><i class="fas fa-truck"></i></div>
+        <span>Envío</span>
+      </div>
+      <div class="linea"></div>
+      <div class="checkout-paso pendiente">
+        <div class="circulo"><i class="fas fa-credit-card"></i></div>
+        <span>Pago</span>
+      </div>
+    </div>
+
+    <h2 class="envio-titulo">Elige tu forma de entrega</h2>
+
+    <!-- Opciones de envío -->
+    <div class="envio-opciones">
+      <!-- Opción 1 -->
+      <div class="envio-group">
+        <a class="envio-card opcion-envio" href="#" aria-label="Elegir enviar a domicilio">
+          <div class="envio-costos">
+            <span>Envío: $5000</span>
+            <span>Total: $50000</span>
+          </div>
+          <div class="envio-info">
+            <h3>Enviar a domicilio</h3>
+            <p class="direccion">MiCasa - Cnel Rodriguez 252, Mendoza</p>
+          </div>
+        </a>
+        <button class="envio-accion btn-direcciones" type="button">+ Agregar o modificar domicilio</button>
+      </div>
+
+      <!-- Opción 2 -->
+      <div class="envio-group">
+        <a class="envio-card opcion-envio" href="#" aria-label="Elegir retiro en punto de entrega">
+          <div class="envio-costos">
+            <span>Envío: $3000</span>
+            <span>Total: $50000</span>
+          </div>
+          <div class="envio-info">
+            <h3>Retiro en punto de entrega</h3>
+            <p class="direccion">Pickit Ecoworks - Coronel Rodriguez 288</p>
+            <p class="horarios">Lun-Vie: 9 a 13 y 16 a 20 / Sáb: 9 a 13</p>
+          </div>
+        </a>
+        <button class="envio-accion" type="button">Ver o cambiar en el mapa</button>
+      </div>
+
+      <!-- Opción 3 -->
+      <div class="envio-group">
+        <a class="envio-card opcion-envio" href="#" aria-label="Elegir retiro en tienda MUTA">
+          <div class="envio-costos">
+            <span>Envío: <span class="envio-gratis">GRATIS</span></span>
+            <span>Total: $50000</span>
+          </div>
+          <div class="envio-info">
+            <h3>Retiro en tienda MUTA</h3>
+            <p class="direccion">Av. Colón 740, Mendoza</p>
+          </div>
+        </a>
+        <button class="envio-accion" type="button">Ver ubicación</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -233,9 +233,9 @@ function setupCart() {
     renderFixedCart();
   };
 
-  // ================================
-  // Página de producto
-  // ================================
+// ================================
+// Página de producto
+// ================================
   function wireProductPage() {
     const btn = document.querySelector(".btn-carrito");
     if (!btn) return;
@@ -243,84 +243,130 @@ function setupCart() {
     let selectedColor = null;
     let selectedTalle = null;
 
+    // Selección de colores
     document.querySelectorAll(".color-option").forEach(option => {
       option.addEventListener("click", () => {
-        document.querySelectorAll(".color-option").forEach(o => o.classList.remove("selected"));
-        option.classList.add("selected");
+        document.querySelectorAll(".color-option").forEach(o => o.classList.remove("active"));
+        option.classList.add("active");
         selectedColor = option.dataset.color;
       });
     });
 
+    // Selección de talles
     document.querySelectorAll(".talle").forEach(b => {
       b.addEventListener("click", () => {
-        document.querySelectorAll(".talle").forEach(x => x.classList.remove("selected"));
-        b.classList.add("selected");
+        document.querySelectorAll(".talle").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
         selectedTalle = b.textContent.trim();
       });
     });
 
+    // Cantidad
     const qtyInput = document.getElementById("cantidad");
     const btnMas = document.getElementById("mas");
     const btnMenos = document.getElementById("menos");
 
-    if (btnMas && qtyInput) btnMas.addEventListener("click", () => qtyInput.value = (parseInt(qtyInput.value || "1", 10) + 1));
-    if (btnMenos && qtyInput) btnMenos.addEventListener("click", () => {
-      const v = Math.max(1, parseInt(qtyInput.value || "1", 10) - 1);
-      qtyInput.value = v;
-    });
+    if (btnMas && qtyInput) {
+      btnMas.addEventListener("click", () => {
+        qtyInput.value = (parseInt(qtyInput.value || "1", 10) + 1);
+      });
+    }
+    if (btnMenos && qtyInput) {
+      btnMenos.addEventListener("click", () => {
+        const v = Math.max(1, parseInt(qtyInput.value || "1", 10) - 1);
+        qtyInput.value = v;
+      });
+    }
 
+    // Botón agregar al carrito
     btn.addEventListener("click", () => {
-    const cantidad = parseInt((qtyInput && qtyInput.value) || "1", 10);
-    const nombre = document.querySelector(".info-producto h1")?.textContent.trim() || "Producto";
-    const precioTexto = document.querySelector(".precio")?.textContent || "$0";
-    const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
-    const img = document.getElementById("main-image")?.src || "";
+      const cantidad = parseInt((qtyInput && qtyInput.value) || "1", 10);
+      const nombre = document.querySelector(".info-producto h1")?.textContent.trim() || "Producto";
+      const precioTexto = document.querySelector(".precio")?.textContent || "$0";
+      const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
+      const img = document.getElementById("main-image")?.src || "";
 
-    // Referencias a mensajes
-    const errorColor = document.getElementById("error-color");
-    const errorTalle = document.getElementById("error-talle");
-    const successMsg = document.getElementById("success-msg");
+      // Referencias a mensajes
+      const errorColor = document.getElementById("error-color");
+      const errorTalle = document.getElementById("error-talle");
+      const successMsg = document.getElementById("success-msg");
 
-    // Resetear mensajes
-    errorColor.style.display = "none";
-    errorTalle.style.display = "none";
-    successMsg.style.display = "none";
+      // Resetear mensajes
+      if (errorColor) errorColor.style.display = "none";
+      if (errorTalle) errorTalle.style.display = "none";
+      if (successMsg) successMsg.style.display = "none";
 
-    let valido = true;
+      let valido = true;
 
-    if (!selectedColor) {
-      errorColor.textContent = "Seleccionar color";
-      errorColor.style.display = "block";
-      valido = false;
-    }
+      if (!selectedColor && errorColor) {
+        errorColor.textContent = "Seleccionar color";
+        errorColor.style.display = "block";
+        valido = false;
+      }
 
-    if (!selectedTalle) {
-      errorTalle.textContent = "Seleccionar talle";
-      errorTalle.style.display = "block";
-      valido = false;
-    }
+      if (!selectedTalle && errorTalle) {
+        errorTalle.textContent = "Seleccionar talle";
+        errorTalle.style.display = "block";
+        valido = false;
+      }
 
-    if (!cantidad || cantidad < 1) {
-      alert("Por favor selecciona una cantidad válida."); // lo dejamos simple
-      valido = false;
-    }
+      if (!cantidad || cantidad < 1) {
+        alert("Por favor selecciona una cantidad válida.");
+        valido = false;
+      }
 
-    if (!valido) return;
+      if (!valido) return;
 
-    // Agregar al carrito
-    addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
+      // Agregar al carrito
+      addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
 
-    // Mostrar cartel de éxito
-    successMsg.textContent = "Agregado con éxito";
-    successMsg.style.display = "block";
+      // Mostrar cartel de éxito
+      if (successMsg) {
+        successMsg.textContent = "Agregado con éxito";
+        successMsg.style.display = "block";
 
-    // Ocultarlo automáticamente después de 3s
-    setTimeout(() => {
-      successMsg.style.display = "none";
-    }, 3000);
-  });
-
+        setTimeout(() => {
+          successMsg.style.display = "none";
+        }, 3000);
+      }
+    });
   }
+
+  // ================================
+  // Integración: Selección de envíos
+  // ================================
+  document.addEventListener("componente:cargado", (e) => {
+    if (e.detail.id === "seleccion-envios") {
+      const overlayEnvios = document.getElementById("overlay-envios");
+      const btnCheckout = document.querySelector(".checkout-btn");
+
+      if (btnCheckout && overlayEnvios) {
+        // Mostrar modal
+        btnCheckout.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          overlayEnvios.style.display = "flex";
+          document.body.style.overflow = "hidden"; // bloquea scroll
+        });
+
+        // Cerrar al hacer clic fuera
+        overlayEnvios.addEventListener("click", (ev) => {
+          if (ev.target === overlayEnvios) {
+            overlayEnvios.style.display = "none";
+            document.body.style.overflow = ""; // restaura scroll
+          }
+        });
+
+        // Cerrar con la X
+        const btnCerrar = overlayEnvios.querySelector(".cerrar-modal");
+        if (btnCerrar) {
+          btnCerrar.addEventListener("click", () => {
+            overlayEnvios.style.display = "none";
+            document.body.style.overflow = ""; // restaura scroll
+          });
+        }
+      }
+    }
+  });
 
   // ================================
   // Inicialización
@@ -349,4 +395,5 @@ function setupCart() {
       wireProductPage(); // fallback
     }
   });
-}
+} // ← este cierra setupCart()
+
