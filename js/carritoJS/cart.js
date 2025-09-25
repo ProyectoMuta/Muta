@@ -102,6 +102,9 @@ function setupCart() {
 
     dropdown.innerHTML = html;
 
+    // 👇 Guardar subtotal para usar en checkout
+    localStorage.setItem("subtotal", total);
+
     if (countEl) {
       // Total de unidades (no líneas)
       countEl.textContent = cart.reduce((sum, p) => sum + p.quantity, 0);
@@ -156,6 +159,9 @@ function setupCart() {
 
     // Subtotal
     totalEl.textContent = format(total);
+
+    localStorage.setItem("subtotal", total);
+
 
     // Generar mini carrusel de imágenes (máx. 3 visibles, scroll manual)
     if (carouselTrack) {
