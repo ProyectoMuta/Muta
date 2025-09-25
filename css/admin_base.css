@@ -15,21 +15,24 @@ body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Aria
 
 /* Layout */
 .wrap{ 
-display: flex; /* Asegura que la barra lateral y el contenido principal estén uno al lado del otro */
-    width: 100%;
-    min-height: 100vh; /* Para que el wrap ocupe toda la altura */}
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
 
 /* Sidebar */
-.side{ background:#efefef; 
-   position: fixed;
-    top: 0; /* Lo pega a la parte superior de la ventana */
-    left: 0; /* Lo pega a la parte izquierda de la ventana */
-    width: 230px; /* Define el ancho de tu sidebar (ajusta según tu diseño) */
-    height: 100vh; /* Ocupa el 100% de la altura de la ventana */
-
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
-    overflow-y: auto;  
-  border-right:1px solid var(--line); padding:16px 12px }
+.side{ 
+  background:#efefef; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 230px;
+  height: 100vh;
+  z-index: 1000;
+  overflow-y: auto;  
+  border-right:1px solid var(--line); 
+  padding:16px 12px;
+}
 .brand{ font-size:28px; font-weight:800; margin:6px 6px 18px }
 .side-nav{ display:flex; flex-direction:column; gap:8px }
 .side-nav .item{
@@ -39,34 +42,97 @@ display: flex; /* Asegura que la barra lateral y el contenido principal estén u
 .side-nav .item:hover{ background:#fff }
 .side-nav .item.active{ background:#fff; border:1px solid var(--line) }
 
-/* Main + header */
-.main{margin-left: 200px; /* Debe ser igual al ancho de tu sidebar */
-    width: calc(100% - 200px); /* Ocupa el resto del ancho */ padding:24px }
-.topbar{ display:flex; align-items:center; 
-  justify-content:space-between; 
-  gap:16px;
-    position: fixed;  top: 0;  width: 1130px;; /* Ocupa el ancho restante después del sidebar */
-   padding: 15px 20px; /* Ajusta el padding según tus necesidades */
-   
-  background-color: #fff;  margin-bottom:12px }
-.topbar h1{ margin:0; font-size:26px; letter-spacing:.2px }
+/* Main + header - MEJORADO PARA ADAPTABILIDAD */
+.main{
+  margin-left: 230px; /* Ajustado para coincidir con el ancho del sidebar */
+  width: calc(100% - 230px);
+  padding: 24px;
+  min-width: 0; /* Permite que se encoja */
+}
+
+.topbar{ 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 16px;
+  position: fixed;  
+  top: 0;  
+  left: 230px; /* Alineado con el sidebar */
+  right: 0; /* Se adapta al ancho disponible */
+  padding: 15px 20px;
+  background-color: #fff;
+  z-index: 998;
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar h1{ 
+  margin: 0; 
+  font-size: clamp(20px, 4vw, 26px); /* Título responsive */
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .topbarsubnav {
   background-color: #fff; 
   position: fixed;
-  top: 65px; /* Altura del topbar */
-  left: 230px; /* Ancho del sidebar */
+  top: 65px;
+  left: 230px;
   right: 0;
-  z-index: 999; /* Menor que topbar pero mayor que contenido */
+  z-index: 997;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--line);
 }
-.search{
-  display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line);
-  border-radius:999px; padding:8px 12px; min-width:320px;
-}
-.search input{ border:none; outline:none; background:transparent; width:240px; font-size:14px }
 
-/* Chips */
-.filters{ display:flex; gap:10px;  margin-left: 40px;  flex-wrap:wrap }
-.chip{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:600; font-size:13px }
+/* Barra de búsqueda adaptativa */
+.search{
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  background: #fff; 
+  border: 1px solid var(--line); 
+  border-radius: 999px; 
+  padding: 8px 12px; 
+  min-width: 200px; /* Reducido el mínimo */
+  max-width: 320px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.search input{ 
+  border: none; 
+  outline: none; 
+  background: transparent; 
+  width: 100%; 
+  min-width: 120px; /* Mínimo para el input */
+  font-size: 14px;
+}
+
+/* Filtros adaptativos */
+.filters{ 
+  display: flex; 
+  gap: 10px;  
+  margin-left: 40px;  
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.chip{ 
+  border: 1px solid var(--line); 
+  background: #fff; 
+  border-radius: 999px; 
+  padding: 8px 12px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .chip.active{ background:var(--lav); color:#fff; border-color:transparent }
 
 /* Card/Table */
@@ -106,34 +172,149 @@ display: flex; /* Asegura que la barra lateral y el contenido principal estén u
 .actions{ display:flex; gap:6px }
 .btn-icon{ width:34px; height:34px; border:1px solid var(--line); background:#fff; border-radius:10px; cursor:pointer; display:grid; place-items:center }
 .btn-icon:hover{ background:#f7f7f7 }
+
 .main .titulo-nuevo,
 .main .grid {
-    margin-top: 120px; /* Ajusta este valor. Debe ser mayor que la altura combinada de fixed-top-bars */
-    /* ... otros estilos ... */
-   margin-left: 40px;
-
+  margin-top: 120px;
+  margin-left: 40px;
 }
+
 /* Dashboard grid */
 .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px }
 .span-2{ grid-column:span 2 }
-/*subnav*/
-.topbarsubnav{
- display:flex;
- justify-content: flex-end; /* Empuja los botones hacia la derecha */
-  gap: 1rem; /* Espacio entre botones */
-  padding: 1rem 1rem;
 
+/* MEDIA QUERIES MEJORADAS PARA MEJOR ADAPTABILIDAD */
+
+/* Pantallas medianas */
+@media (max-width: 1200px) {
+  .topbar {
+    gap: 12px;
+  }
+  
+  .search {
+    min-width: 180px;
+    max-width: 250px;
+  }
+  
+  .filters {
+    margin-left: 20px;
+  }
 }
-@media (max-width:1100px){ .grid{ grid-template-columns:1fr 1fr } .span-2{ grid-column:1/-1 } }
-@media (max-width:900px){ .wrap{ grid-template-columns:1fr } .search{ min-width:unset; width:100% } .grid{ grid-template-columns:1fr } }
- @media (max-width: 768px) {
-      .main {
-        margin-left: 0;
-      }
-      .sidebar {
-        transform: translateX(-100%);
-      }
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-    }
+
+@media (max-width: 1100px) { 
+  .grid { 
+    grid-template-columns: 1fr 1fr; 
+  } 
+  .span-2 { 
+    grid-column: 1/-1; 
+  }
+  
+  .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .topbar h1 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 900px) { 
+  .search { 
+    min-width: 150px;
+    max-width: 200px;
+  } 
+  .grid { 
+    grid-template-columns: 1fr; 
+  }
+  
+  .filters {
+    margin-left: 10px;
+  }
+  
+  .chip {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+/* Tablets y pantallas pequeñas */
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px;
+  }
+  
+  .side {
+    transform: translateX(-100%);
+  }
+  
+  .topbar {
+    left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  
+  .topbar h1 {
+    text-align: center;
+    font-size: 20px;
+  }
+  
+  .topbarsubnav {
+    left: 0;
+    top: auto; /* Se posiciona después del topbar */
+    position: relative;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+  
+  .search {
+    width: 100%;
+    max-width: none;
+    min-width: 200px;
+  }
+  
+  .filters {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .main .titulo-nuevo,
+  .main .grid {
+    margin-top: 20px;
+    margin-left: 0;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 8px 12px;
+  }
+  
+  .topbar h1 {
+    font-size: 18px;
+  }
+  
+  .search {
+    min-width: 150px;
+  }
+  
+  .search input {
+    min-width: 100px;
+    font-size: 13px;
+  }
+  
+  .chip {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+  
+  .main {
+    padding: 12px;
+  }
+}

@@ -1,0 +1,96 @@
+/* ====== Analisis (page-only) ====== */
+/* Esta hoja se apoya en admin-base.css que ya define layout, cards, etc. */
+
+/*.analisis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}*/
+.analisis-header {
+  background-color: #fff;
+  position: fixed;
+  top: 0; /* Lo pega a la parte superior de la ventana */
+  left: 0; /* Lo pega a la parte izquierda de la ventana */
+  width: 230px; /* Define el ancho de tu sidebar (ajusta según tu diseño) */
+  height: 100vh; /* Ocupa el 100% de la altura de la ventana */
+
+z-index: 1000; /* Asegura que esté por encima de otros elementos */
+overflow-y: auto;  
+border-right:1px solid var(--line); padding:16px 12px 
+}
+
+.analisis-title {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: .2px;
+}
+
+/* Filtros de rango (7 / 14 / 30 días) */
+.analisis-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.analisis-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+.analisis-chip.active {
+  background: var(--lav);
+  color: #fff;
+  border-color: transparent;
+}
+
+.card-analisis {
+  padding: 18px 16px;
+  height: 480px;              /* alto cómodo para el gráfico */
+  display: flex;
+  flex-direction: column;
+  margin-top: 140px;
+  margin-left: 30px;
+}
+
+.card-analisis canvas {
+  /* el canvas se estira; Chart mantiene proporción con options */
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* KPI bar opcional (si la agregás) */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 40px;
+  margin-left: 30px;
+}
+.kpi {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+.kpi h3 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.kpi strong {
+  font-size: 22px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .kpis { grid-template-columns: 1fr; }
+}

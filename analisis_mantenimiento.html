@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUTA · Análisis</title>
+
+  <!-- CSS base admin -->
+  <link rel="stylesheet" href="css/admin_base.css">
+  <!-- CSS específico de análisis -->
+  <link rel="stylesheet" href="css/analisis_mantenimiento.css">
+
+  <!-- Bootstrap icons (para íconos si los usás en sidebar) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+  <div class="wrap">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="brand">MUTA</div>
+      <nav class="side-nav">
+        <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
+        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
+        <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
+        <a href="analisis_mantenimiento.html" class="item active"><i class="bi bi-graph-up"></i> Análisis</a>
+        <a href="envios_mantenimiento.html" class="item"><i class="bi bi-truck"></i> Envíos</a>
+        <a href="soporte_mantenimiento.html" class="item"><i class="bi bi-life-preserver"></i> Soporte</a>
+      </nav>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main">
+      <!-- Topbar -->
+      <header class="topbar">
+        <h1 class="analisis-title">Análisis de Ventas</h1>
+        <div class="topbarsubnav">
+          <button class="analisis-chip" data-range="7">Últ. 7 días</button>
+          <button class="analisis-chip" data-range="14">Últ. 14 días</button>
+          <button class="analisis-chip active" data-range="30">Últ. 30 días</button>
+        </div>
+      </header>
+
+      <!-- Card del gráfico -->
+      <section class="card card-analisis">
+        <canvas id="chartMes"></canvas>
+      </section>
+
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="kpi">
+          <h3>Ventas totales</h3>
+          <strong data-kpi="total">—</strong>
+        </div>
+        <div class="kpi">
+          <h3>Promedio diario</h3>
+          <strong data-kpi="promedio">—</strong>
+        </div>
+        <div class="kpi">
+          <h3>Mejor día</h3>
+          <strong data-kpi="max">—</strong>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <!-- JS específico de análisis -->
+  <script src="js/analisis_mantenimiento.js"></script>
+</body>
+</html>

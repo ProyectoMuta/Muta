@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MUTA · Envíos</title>
+
+  <!-- CSS base admin (tu hoja general) -->
+  <link rel="stylesheet" href="css/admin_base.css">
+  <!-- CSS específico de envíos -->
+  <link rel="stylesheet" href="css/envios_mantenimiento.css">
+
+  <!-- Íconos opcionales -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+  <div class="wrap">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="brand">MUTA</div>
+      <nav class="side-nav">
+        <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
+        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
+        <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
+        <a href="analisis_mantenimiento.html" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
+        <a href="envios_mantenimiento.html" class="item active"><i class="bi bi-truck"></i> Envíos</a>
+        <a href="soporte_mantenimiento.html" class="item"><i class="bi bi-life-preserver"></i> Soporte</a>
+      </nav>
+    </aside>
+
+    <!-- Contenido -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 style="margin:0">Puntos de Retiro</h1>
+          <small class="muted">Administra los lugares donde tus clientes pueden retirar pedidos.</small>
+        </div>
+      </header>
+
+      <!-- Estado vacío -->
+      <section id="emptyState" class="card empty-state" hidden>
+        <div class="empty-body">
+          <div class="empty-icon"><i class="bi bi-geo-alt"></i></div>
+          <h2>Agrega puntos de retiro</h2>
+          <p>Puedes agregar locales o sucursales donde tus clientes retirarán sus productos.</p>
+          <button class="btn btn-primary" id="btnAddEmpty">
+            <i class="bi bi-plus-lg"></i> Agregar punto de retiro
+          </button>
+        </div>
+      </section>
+
+      <!-- Lista de puntos -->
+      <section id="listWrap" class="list-wrap" hidden>
+        <!-- cards se inyectan por JS -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de alta/edición -->
+  <dialog id="pickupModal" class="modal">
+    <form method="dialog" class="modal-card" id="pickupForm">
+      <h3 id="modalTitle">Nuevo punto de retiro</h3>
+      <div class="form-grid">
+        <label>
+          <span>Nombre del punto</span>
+          <input type="text" id="f_nombre" required placeholder="Ej: Local Centro">
+        </label>
+        <label class="col-2">
+          <span>Dirección</span>
+          <input type="text" id="f_direccion" required placeholder="Calle y número">
+        </label>
+        <label>
+          <span>Ciudad</span>
+          <input type="text" id="f_ciudad" placeholder="Ej: Mendoza">
+        </label>
+        <label>
+          <span>Horario</span>
+          <input type="text" id="f_horario" placeholder="Lun a Vie 10-18hs">
+        </label>
+        <label class="col-2">
+          <span>Notas</span>
+          <textarea id="f_notas" rows="3" placeholder="Indicaciones, referencias, etc."></textarea>
+        </label>
+      </div>
+
+      <menu class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnCancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSave">Guardar</button>
+      </menu>
+      <input type="hidden" id="f_id">
+    </form>
+  </dialog>
+
+  <!-- JS de la vista -->
+  <script src="js/envios_mantenimiento.js"></script>
+</body>
+</html>

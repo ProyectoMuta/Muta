@@ -1,0 +1,200 @@
+/* ===== Soporte Mantenimiento ===== */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px 20px 20px 20px; /* Ajusta el padding para que coincida con la imagen */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px; /* Espacio debajo de la tarjeta */
+    margin-top: -100px; 
+
+}
+.soporte-info {
+  padding: 20px;
+  margin-top: 70px;
+}
+
+.soporte-info h2 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+
+.soporte-info p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: var(--txt);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soporte-info a {
+  color: #3b6fd8;
+  text-decoration: none;
+}
+
+.soporte-info a:hover {
+  text-decoration: underline;
+}
+
+.soporte-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Botones */
+.btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+}
+
+.btn:hover {
+  background: #f5f5f5;
+}
+
+.btn-primary {
+  background: var(--lav);
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  background: var(--lav-2);
+}
+
+
+/* Títulos de sección dentro del formulario */
+.form-label {
+    display: block; /* Asegura que la etiqueta esté en su propia línea */
+    font-weight: 900; /* Un poco más de grosor para las etiquetas */
+    color: #333; /* Color de texto más oscuro */
+    margin-bottom: 8px; /* Espacio entre la etiqueta y el input */
+    font-size: 0.95em; /* Tamaño de fuente ligeramente más pequeño */
+}
+
+/* Estilo para los inputs de texto, textarea y select */
+.form-control,
+.form-select {
+    width: 100%; /* Ocupa el 100% del ancho de su contenedor */
+    padding: 10px 12px;
+    border: 1px solid #ccc; /* Borde gris claro */
+    border-radius: 5px; /* Bordes redondeados suaves */
+    font-size: 1em; /* Tamaño de fuente estándar */
+    color: #555; /* Color del texto dentro del input */
+    background-color: #fff; /* Fondo blanco */
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Transición suave al enfocar */
+    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+}
+
+/* Estilo para el placeholder */
+.form-control::placeholder,
+textarea::placeholder {
+    color: #a0a0a0; /* Color gris suave para el placeholder */
+}
+
+/* Estado de enfoque para inputs y textareas */
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+    border-color: #88aaff; /* Borde azul claro al enfocar */
+    outline: none; /* Quita el contorno predeterminado del navegador */
+    box-shadow: 0 0 0 3px rgba(136, 170, 255, 0.25); /* Sombra suave para el enfoque */
+}
+
+/* Textarea */
+textarea.form-control {
+    resize: vertical; /* Permite redimensionar solo verticalmente */
+    min-height: 90px; /* Altura mínima para la descripción */
+}
+
+/* Estilos específicos para los grupos de input (como precios) */
+.row.g-2 {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan a la siguiente línea */
+    margin-left:10px; /* Elimina el padding izquierdo para compensar el gap */
+    margin-right: -10px;
+    margin-bottom: 10px;/* Elimina el padding derecho para compensar el gap */
+}
+
+.row.g-2 > .col-12,
+.row.g-2 > .col-md-6,
+.row.g-2 > .col-md-12 {
+    padding-left: 10px; /* Espacio entre columnas */
+    padding-right: 10px; /* Espacio entre columnas */
+    margin-bottom: 15px; /* Espacio debajo de cada grupo de input */
+}
+
+.col-md-12 {
+    flex-basis: 100%; /* Ocupa todo el ancho en pantallas grandes */
+    max-width: 100%;
+}
+
+.col-12 {
+    flex-basis: 100%; /* Ocupa todo el ancho en pantallas pequeñas */
+    max-width: 100%;
+}
+/* Estilo para el input de tipo file */
+input[type="file"] {
+    display: flex; /* Para controlar mejor el botón y el texto */
+    align-items: center;
+}
+/* Estilizar el botón "Elegir archivos" del input file */
+input[type="file"]::-webkit-file-upload-button {
+    background-color: #f0f0f0; /* Color de fondo del botón */
+    color: #555; /* Color del texto */
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Texto "No se eligió ningún archivo" */
+input[type="file"] {
+    color: #888; /* Color del texto que indica que no hay archivo */
+}
+
+
+/* Estilos para el contenedor de previsualización de imágenes */
+#preview {
+    margin-top: 10px;
+    gap: 10px; /* Espacio entre las imágenes */
+}
+/* Asegúrate de que .d-flex y .flex-wrap estén definidos si los necesitas,
+   o reemplázalos con display: flex; flex-wrap: wrap; */
+.d-flex {
+    display: flex;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+
+/* Títulos de las secciones de "Precio" e "Inventario" */
+/* Puedes usar el mismo .form-label o si quieres un estilo ligeramente diferente */
+.main .grid .card > .form-label { /* Para seleccionar solo los labels que no están en un .col-* directamente */
+    margin-top: 25px; /* Espacio extra encima de "Precio" y "Inventario" */
+    margin-bottom: 15px;
+   
+    font-size: 1.1em; /* Un poco más grande para el título de sección */
+    color: #222;
+}
+/* Ajusta el margen superior del contenedor .mb-3 después del label "Inventario" */
+.main .grid .card > .mb-3 {
+    margin-top: 10px; /* Un poco de espacio entre "Inventario" y "Tipo de talle" */
+    margin-bottom: 20px; /* Más espacio debajo del select de tipo de talle */
+}
