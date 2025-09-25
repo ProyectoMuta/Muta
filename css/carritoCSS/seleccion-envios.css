@@ -1,0 +1,132 @@
+/* Bloquea scroll cuando hay modal */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Modal */
+.envio-modal {
+  position: relative;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 10px 10px 10px #575757fd;
+  font-family: 'REM', sans-serif;
+}
+
+/* === Flecha de retroceso === */
+.btn-back {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+.btn-back:hover { color: #000; }
+
+/* Header */
+.envio-header {
+  height: 40px; /* espacio reservado para la flecha */
+  margin-bottom: 10px;
+}
+
+/* Título */
+.envio-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #111;
+  letter-spacing: 0.5px;
+}
+
+/* Pasos del checkout */
+.checkout-pasos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.checkout-paso { display: flex; flex-direction: column; align-items: center; }
+.checkout-paso .circulo {
+  width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+}
+.checkout-paso.completado .circulo { background: #4CAF50; color: #fff; }
+.checkout-paso.activo .circulo { background: #333; color: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
+.checkout-paso.pendiente .circulo { background: #ccc; color: #666; }
+.checkout-paso.activo span { font-weight: bold; color: #333; }
+.linea { width: 40px; height: 2px; background: #ddd; align-self: center; transform: translateY(-12px); }
+
+/* Opciones de envío */
+.envio-opciones { display: flex; flex-direction: column; gap: 20px; }
+.envio-group { border-radius: 16px; overflow: hidden; }
+.envio-card {
+  display: block;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  background: #f9f9f9;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.05s;
+}
+.envio-card:hover { background: #f1f1f1; border-color: #cfcfcf; }
+.envio-card:focus { outline: none; box-shadow: 0 0 0 3px rgba(51,51,51,0.15); }
+.envio-card:active { transform: translateY(1px); }
+
+.envio-costos {
+  position: absolute;
+  top: 20px; right: 20px;
+  text-align: right;
+  font-size: 14px;
+  color: #333;
+}
+.envio-gratis { color: #2e7d32; font-weight: 700; }
+.envio-info h3 { margin: 0; font-size: 18px; color: #333; }
+.direccion, .horarios { font-size: 14px; color: #666; margin-top: 6px; }
+
+.envio-accion {
+  display: block;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  background: #444;
+  color: #fff;
+  font-weight: bold;
+  text-align: left;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.envio-accion:hover { background: #666; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .envio-modal { padding: 20px; }
+  .envio-card { font-size: 14px; }
+  .envio-costos { position: static; margin-top: 10px; }
+  .linea { transform: translateY(-10px); }
+}

@@ -6,17 +6,27 @@
   <title>Tu carrito - MUTA</title>
 
   <!-- Estilos globales y de componentes -->
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/navbar.css">
-  <link rel="stylesheet" href="css/footer.css">
-  <link rel="stylesheet" href="css/acceso-usuario.css">
-  <link rel="stylesheet" href="css/cart.css">
-  <link rel="stylesheet" href="css/carousel-novedades.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/navbar.css">
+  <link rel="stylesheet" href="../css/footer.css">
+  <link rel="stylesheet" href="../css/acceso-usuario.css">
+
+  <!-- Estilos específicos del carrito -->
+  <link rel="stylesheet" href="../css/carritoCSS/cart.css">
+  <link rel="stylesheet" href="../css/carritoCSS/seleccion-envios.css">
+  <link rel="stylesheet" href="../css/carritoCSS/seleccion-pago.css">
+  <link rel="stylesheet" href="../css/carritoCSS/seleccion-direcciones.css">
+  <link rel="stylesheet" href="../css/carousel-novedades.css">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../img/favicon.jpeg">
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 
 <body>
@@ -35,7 +45,7 @@
       </div>
 
       <!-- Resumen de compra -->
-      <div class="col-lg-3"> <!-- antes era col-lg-4 -->
+      <div class="col-lg-3">
         <div class="cart-summary p-3 border rounded">
           <h4 class="text-start mb-3">Resumen de compra</h4>
           <!-- Mini carrusel de productos -->
@@ -51,9 +61,11 @@
           <hr class="my-3">
 
           <p class="fw-bold">Subtotal: $<span id="cart-page-total">0</span></p>
-          <button class="checkout-btn w-100">Finalizar compra</button>
+          <button class="checkout-btn w-100" aria-label="Finalizar compra">Finalizar compra</button>
+
         </div>
       </div>
+    </div>
 
     <!-- Carrusel de sugerencias -->
     <div class="section-title mt-5">
@@ -65,16 +77,19 @@
   <!-- Modal de acceso -->
   <div id="acceso-usuario"></div>
 
+  <!-- Contenedor general para overlays del checkout -->
+  <div id="checkout-overlay"></div>
+
   <!-- Footer -->
   <div id="footer"></div>
   <div id="chatbot"></div>
 
   <!-- Scripts -->
-  <script src="js/componente-loader.js"></script>
-  <script src="js/cart.js"></script>
+  <script src="../js/componente-loader.js"></script>
+  <script src="../js/carritoJS/cart.js"></script>
+  <script src="../js/carritoJS/checkout.js"></script>
   <script>
     setupCart();
   </script>
 </body>
 </html>
-

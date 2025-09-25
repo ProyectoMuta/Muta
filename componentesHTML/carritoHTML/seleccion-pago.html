@@ -1,0 +1,90 @@
+<div class="overlay" style="display:none;">
+  <div class="pago-modal">
+
+    <!-- Header con flecha de retroceso -->
+    <div class="pago-header">
+    <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    </div>
+
+    <!-- Indicador de pasos -->
+    <div class="checkout-pasos">
+      <div class="checkout-paso completado">
+        <div class="circulo"><i class="fas fa-check"></i></div>
+        <span>Carrito</span>
+      </div>
+      <div class="linea"></div>
+      <div class="checkout-paso completado">
+        <div class="circulo"><i class="fas fa-truck"></i></div>
+        <span>Envío</span>
+      </div>
+      <div class="linea"></div>
+      <div class="checkout-paso activo">
+        <div class="circulo"><i class="fas fa-credit-card"></i></div>
+        <span>Pago</span>
+      </div>
+    </div>
+
+    <h2 class="pago-titulo">Métodos de Pago</h2>
+
+    <!-- Opciones de pago -->
+    <div class="pago-opciones">
+      <div class="pago-card opcion-pago activo" data-metodo="tarjeta">
+        <i class="fas fa-credit-card"></i>
+        <span>Tarjeta Crédito/Débito</span>
+      </div>
+      <div class="pago-card opcion-pago" data-metodo="mercadopago">
+        <i class="fas fa-wallet"></i>
+        <span>Mercado Pago</span>
+      </div>
+    </div>
+
+    <!-- Contenido dinámico -->
+    <div class="pago-contenido">
+      <!-- Por defecto: formulario de tarjeta -->
+      <div class="contenido-tarjeta">
+        <form>
+          <label>Nombre del titular</label>
+          <input type="text" placeholder="Tal como aparece en la tarjeta">
+
+          <label>Número de tarjeta</label>
+          <input type="text" placeholder="•••• •••• •••• ••••">
+
+          <label>Fecha de caducidad</label>
+          <input type="text" placeholder="MM/AA">
+
+          <label>Código de seguridad</label>
+          <input type="text" placeholder="CVV">
+
+        <label>Cuotas</label>
+        <select id="cuotas">
+            <option value="1">1 pago</option>
+            <option value="3">3 cuotas</option>
+            <option value="6">6 cuotas</option>
+        </select>
+
+        <div id="detalle-cuotas" class="detalle-cuotas"></div>
+
+          <div class="pago-total">Total a pagar: $<span id="total-pago"></span></div>
+          <button type="submit" class="btn-pagar">Aceptar y pagar</button>
+        </form>
+      </div>
+
+      <!-- Alternativa: info de Mercado Pago -->
+      <div class="contenido-mercadopago" style="display:none;">
+        <p>Pagá con tu cuenta de Mercado Pago:</p>
+        <ul>
+          <li>Usá tus tarjetas guardadas, dinero disponible y mucho más.</li>
+          <li>Accedé a cuotas sin tarjeta para comprar ahora y pagar después.</li>
+        </ul>
+        <div class="pago-total">Total a pagar: $<span id="total-pago"></span></div>
+        <button type="button" class="btn-pagar">Pagar a través de Mercado Pago</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Nota: El contenido dinámico (formulario de tarjeta o info de Mercado Pago) se gestiona con JS -->
+<!-- El botón de "Aceptar y pagar" o "Pagar a través de Mercado Pago" también se gestiona con JS -->
+<!-- El total a pagar se actualizará dinámicamente según el carrito y el método de envío seleccionado -->
+<!-- El botón de retroceso vuelve a la selección de envíos -->
