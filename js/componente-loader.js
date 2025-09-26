@@ -27,8 +27,26 @@ function cargarComponente(id, ruta) {
     });
 }
 
-/* === INTERACCIONES === */
+// === Chatbot (caso especial) ===
+fetch("componentesHTML/chatbot.html")
+  .then(r => r.text())
+  .then(d => { document.getElementById("chatbot").innerHTML = d });
 
+if (!document.getElementById("chatbotCSS")) {
+  const link = document.createElement("link");
+  link.id = "chatbotCSS";
+  link.rel = "stylesheet";
+  link.href = "css/chatbot.css";
+  document.head.appendChild(link);
+}
+if (!document.getElementById("chatbotJS")) {
+  const s = document.createElement("script");
+  s.id = "chatbotJS";
+  s.src = "js/chatbot.js";
+  document.body.appendChild(s);
+}
+
+/* === INTERACCIONES === */
 // --- Navbar con dropdowns ---
 function setupNavbarDropdowns() {
   const buttons = document.querySelectorAll(".nav-btn");
