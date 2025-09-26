@@ -14,30 +14,34 @@ body.modal-open {
   z-index: 9999;
 }
 
-/* Modal */
+/* === Modal adaptable === */
 .envio-modal {
-  position: relative;
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
   width: 90%;
   max-width: 800px;
-  box-shadow: 10px 10px 10px #575757fd;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 10px 10px 10px rgba(0,0,0,0.25);
+  position: relative;
   font-family: 'REM', sans-serif;
 }
 
-/* === Flecha de retroceso === */
+/* === Flecha de retroceso segura en móviles === */
 .btn-back {
   position: absolute;
   top: 15px;
-  left: 20px;
+  left: 15px;
+  font-size: 24px;
   background: transparent;
   border: none;
-  font-size: 24px;
-  cursor: pointer;
   color: #666;
+  cursor: pointer;
 }
-.btn-back:hover { color: #000; }
+.btn-back:hover {
+  color: #000;
+}
 
 /* Header */
 .envio-header {
@@ -123,10 +127,37 @@ body.modal-open {
 }
 .envio-accion:hover { background: #666; }
 
-/* Responsive */
+/* === Responsive para pantallas pequeñas === */
 @media (max-width: 600px) {
-  .envio-modal { padding: 20px; }
-  .envio-card { font-size: 14px; }
-  .envio-costos { position: static; margin-top: 10px; }
-  .linea { transform: translateY(-10px); }
+  .envio-modal,
+  .pago-modal {
+    padding: 20px;
+  }
+
+  .pago-card,
+  .opcion-envio {
+    font-size: 14px;
+  }
+
+  .circulo {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .btn-back {
+    top: 10px;
+    left: 10px;
+    font-size: 20px;
+  }
+
+  .pago-total,
+  .detalle-cuotas {
+    font-size: 14px;
+  }
+
+  .btn-pagar {
+    font-size: 15px;
+    padding: 10px;
+  }
 }
