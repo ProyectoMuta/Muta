@@ -93,25 +93,15 @@ document.getElementById('formFileMultiple').addEventListener('change', function 
           `}
         </select>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <input type="text" class="form-control" name="stock" placeholder="Stock">
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <input type="number" class="form-control" name="peso" placeholder="Peso">
       </div>
-      <!-- CORRECTO -->
-<div class="col-md-2">
-    <div class="color-input-group">
-        <label for="productColor" class="form-label">Color</label>
-        <input type="color" 
-               class="form-control" 
-               name="color" 
-               id="productColor" 
-               value="#000000">
-    </div>
-</div>
-      <div class="col-md-1 d-flex align-items-center">
-        <i class="bi bi-trash text-danger eliminar-variante" ></i>
+
+      <div class="col-md-3 d-flex align-items-center">
+        <i id="eliminar" class="bi bi-trash text-danger eliminar-variante" ></i>
       </div>
     `;
 
