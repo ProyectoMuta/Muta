@@ -72,6 +72,53 @@
   background-color: #333;
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ccc;
+}
+
+.divider span {
+  padding: 0 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Botones de redes sociales */
+.social-btn.google {
+  width: 100%;
+  padding: 10px;
+  background: #111;
+  color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.social-btn.google:hover {
+  background-color: #333;
+}
+
+.social-btn.google img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 /* Links de cambio de formulario */
 .acceso-usuario-form p {
   font-size: 14px;
@@ -82,6 +129,18 @@
   color: #111;
   text-decoration: underline;
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.acceso-usuario-form a:hover {
+  color: #555;
+}
+
+.separador-registro {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0 10px;
+  margin-top: 30px;
 }
 
 /* Animación de entrada */
