@@ -2,7 +2,7 @@
 
 Proyecto web modular para la marca MUTA, diseñado con HTML, CSS y JavaScript desacoplados para facilitar la escalabilidad, el mantenimiento y la integración de nuevos componentes.
 
-## ⚠️ Aviso importante para colaboradores
+##  Aviso importante para colaboradores
 
 Este proyecto está diseñado bajo una **arquitectura modular estricta**.  
 Para mantener la escalabilidad, la claridad y evitar colisiones de estilos o scripts, **es obligatorio respetar la estructura de carpetas y la independencia de cada módulo**.
