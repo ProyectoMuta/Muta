@@ -1,0 +1,22 @@
+<!-- Favoritos / Mis Me Gusta -->
+<div id="favOverlay" class="fav-overlay" hidden></div>
+
+<aside id="favModal" class="fav-modal" aria-hidden="true">
+  <header class="fav-header">
+    <div class="fav-title">
+      <span class="fav-emoji">❤️</span>
+      <h3>Mis Me Gusta</h3>
+    </div>
+    <button class="fav-close" id="favCloseBtn" aria-label="Cerrar">&times;</button>
+  </header>
+
+  <section class="fav-body">
+    <div id="favGrid" class="fav-grid">
+      <!-- acá se renderizan las cards desde JS -->
+    </div>
+
+    <div id="favEmpty" class="fav-empty" hidden>
+      <p>Aún no tenés favoritos. Tocá el <span>♡</span> en un producto para guardarlo.</p>
+    </div>
+  </section>
+</aside>
