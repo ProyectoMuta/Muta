@@ -1,11 +1,11 @@
-<div class="overlay" style="display:none;">
+<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="pago-titulo" style="display:none;">
   <div class="pago-modal">
 
     <!-- Header con flecha de retroceso -->
     <div class="pago-header">
-    <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
+      <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
         <i class="fas fa-arrow-left"></i>
-    </button>
+      </button>
     </div>
 
     <!-- Indicador de pasos -->
@@ -26,16 +26,15 @@
       </div>
     </div>
 
-    <h2 class="pago-titulo">Métodos de Pago</h2>
+    <h2 id="pago-titulo" class="pago-titulo">Métodos de Pago</h2>
 
     <!-- Opciones de pago -->
     <div class="pago-opciones">
-      <div class="pago-card opcion-pago activo" data-metodo="tarjeta">
+      <div class="pago-card opcion-pago activo" data-metodo="tarjeta" tabindex="0" role="button" aria-pressed="true">
         <i class="fas fa-credit-card"></i>
         <span>Tarjeta Crédito/Débito</span>
       </div>
-      <div class="pago-card opcion-pago" data-metodo="mercadopago">
-        <!-- <img src="img/logos/logo-mp.png" alt="MP" width="160" height="60"> -->
+      <div class="pago-card opcion-pago" data-metodo="mercadopago" tabindex="0" role="button" aria-pressed="false">
         <i class="fas fa-wallet"></i>
         <span>Mercado Pago</span>
       </div>
@@ -46,28 +45,28 @@
       <!-- Por defecto: formulario de tarjeta -->
       <div class="contenido-tarjeta">
         <form>
-          <label>Nombre del titular</label>
-          <input type="text" placeholder="Tal como aparece en la tarjeta">
+          <label for="titular">Nombre del titular</label>
+          <input id="titular" type="text" placeholder="Tal como aparece en la tarjeta" required>
 
-          <label>Número de tarjeta</label>
-          <input type="text" placeholder="•••• •••• •••• ••••">
+          <label for="numero">Número de tarjeta</label>
+          <input id="numero" type="text" inputmode="numeric" maxlength="16" placeholder="•••• •••• •••• ••••" required>
 
-          <label>Fecha de caducidad</label>
-          <input type="text" placeholder="MM/AA">
+          <label for="vencimiento">Fecha de caducidad</label>
+          <input id="vencimiento" type="text" inputmode="numeric" maxlength="5" placeholder="MM/AA" required>
 
-          <label>Código de seguridad</label>
-          <input type="text" placeholder="CVV">
+          <label for="cvv">Código de seguridad</label>
+          <input id="cvv" type="text" inputmode="numeric" maxlength="4" placeholder="CVV" required>
 
-        <label>Cuotas</label>
-        <select id="cuotas">
+          <label for="cuotas">Cuotas</label>
+          <select id="cuotas">
             <option value="1">1 pago</option>
             <option value="3">3 cuotas</option>
             <option value="6">6 cuotas</option>
-        </select>
+          </select>
 
-        <div id="detalle-cuotas" class="detalle-cuotas"></div>
+          <div id="detalle-cuotas" class="detalle-cuotas"></div>
 
-          <div class="pago-total">Total a pagar: $<span id="total-pago"></span></div>
+          <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
           <button type="submit" class="btn-pagar">Aceptar y pagar</button>
         </form>
       </div>
@@ -79,13 +78,9 @@
           <li>Usá tus tarjetas guardadas, dinero disponible y mucho más.</li>
           <li>Accedé a cuotas sin tarjeta para comprar ahora y pagar después.</li>
         </ul>
-        <div class="pago-total">Total a pagar: $<span id="total-pago"></span></div>
+        <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
         <button type="button" class="btn-pagar">Pagar a través de Mercado Pago</button>
       </div>
     </div>
   </div>
 </div>
-<!-- Nota: El contenido dinámico (formulario de tarjeta o info de Mercado Pago) se gestiona con JS -->
-<!-- El botón de "Aceptar y pagar" o "Pagar a través de Mercado Pago" también se gestiona con JS -->
-<!-- El total a pagar se actualizará dinámicamente según el carrito y el método de envío seleccionado -->
-<!-- El botón de retroceso vuelve a la selección de envíos -->
