@@ -127,3 +127,23 @@ document.addEventListener("change", (e) => {
     }
   }
 });
+
+/* ============================================================
+   EVENTOS: MAPAS
+   ============================================================ */
+
+// --- Abrir mapa de tienda desde selección de envíos ---
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn-ver-tienda");
+  if (!btn) return;
+
+  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html");
+});
+
+// --- Volver de mapa de tienda a selección de envíos ---
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".cerrar-mapa")) {
+    mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html");
+    setTimeout(inicializarEnvios, 200);
+  }
+});

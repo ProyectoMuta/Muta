@@ -1,9 +1,13 @@
+/* ============================
+   1. REGLAS GENERALES
+   ============================ */
+
 /* Bloquea scroll cuando hay modal */
 body.modal-open {
   overflow: hidden;
 }
 
-/* Overlay */
+/* Overlay genérico */
 .overlay {
   position: fixed;
   inset: 0;
@@ -14,7 +18,23 @@ body.modal-open {
   z-index: 9999;
 }
 
-/* === Modal adaptable === */
+/* Botón de retroceso genérico */
+.btn-back {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+.btn-back:hover { color: #000; }
+
+/* ============================
+   2. MODAL DE SELECCIÓN DE ENVÍO
+   ============================ */
+
 .envio-modal {
   width: 90%;
   max-width: 800px;
@@ -28,28 +48,8 @@ body.modal-open {
   font-family: 'REM', sans-serif;
 }
 
-/* === Flecha de retroceso segura en móviles === */
-.btn-back {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  font-size: 24px;
-  background: transparent;
-  border: none;
-  color: #666;
-  cursor: pointer;
-}
-.btn-back:hover {
-  color: #000;
-}
-
-/* Header */
-.envio-header {
-  height: 40px; /* espacio reservado para la flecha */
-  margin-bottom: 10px;
-}
-
-/* Título */
+/* Header y título */
+.envio-header { height: 40px; margin-bottom: 10px; }
 .envio-titulo {
   font-size: 28px;
   font-weight: 700;
@@ -127,37 +127,84 @@ body.modal-open {
 }
 .envio-accion:hover { background: #666; }
 
-/* === Responsive para pantallas pequeñas === */
+/* ============================
+   4. MODAL DE MAPA
+   ============================ */
+
+.map-modal {
+  width: 95%;
+  max-width: 1000px;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  font-family: 'REM', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#overlay-mapa {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+}
+
+.cerrar-mapa {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+}
+.cerrar-mapa:hover {
+  color: #000;
+}
+
+.map-modal h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-top: 0;
+}
+
+.mapa-info {
+  font-size: 1rem;
+  color: #333;
+  text-align: center;
+  margin-top: 1rem;
+  line-height: 1.4;
+}
+.mapa-info p { margin: 4px 0; }
+
+/* ============================
+   5. RESPONSIVE
+   ============================ */
+
 @media (max-width: 600px) {
   .envio-modal,
-  .pago-modal {
-    padding: 20px;
+  .pago-modal,
+  .map-modal {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 16px;
+    max-height: none;
   }
 
-  .pago-card,
-  .opcion-envio {
-    font-size: 14px;
+  .map-modal iframe,
+  #mapa-puntos {
+    height: 300px;
   }
 
-  .circulo {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-
-  .btn-back {
-    top: 10px;
-    left: 10px;
-    font-size: 20px;
-  }
-
-  .pago-total,
-  .detalle-cuotas {
-    font-size: 14px;
-  }
-
-  .btn-pagar {
-    font-size: 15px;
-    padding: 10px;
-  }
+  .map-modal h2 { font-size: 1.4rem; }
+  .btn-back { font-size: 20px; top: 10px; left: 10px; }
 }
