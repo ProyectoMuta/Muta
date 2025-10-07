@@ -257,6 +257,21 @@
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>
+
+            <!-- Lista dinámica de remeras desde la base -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <div class="carousel-track">
+        <!-- 👇 acá JS inyecta los productos -->
+        <img src="img/remera-verde.png" alt="Remera verde">
+      </div>
+      <button class="carousel-next" aria-label="Siguiente">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+
   </main>
 
   <!-- Modal de acceso -->
@@ -286,5 +301,42 @@
 
     });
   </script>
+
+    <!-- 🚀 Nuevos ingresos dinámicos -->
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+      const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
+      if (!contenedor) return;
+
+      try {
+        let res = await fetch("backend/productController.php");
+        let productos = await res.json();
+
+        if (!Array.isArray(productos)) throw new Error("Respuesta inesperada");
+
+        // 👉 Filtrar solo categoría remeras
+        const nuevos = productos.filter(p => p.categoria?.toLowerCase() === "remeras");
+
+        if (nuevos.length > 0) {
+          contenedor.innerHTML = nuevos.map(p => `
+            <a href="producto.html?id=${p._id}" class="card">
+              <img src="${p.imagenes?.[0] ?? 'img/default.jpg'}" alt="${p.nombre}">
+              <div class="info">
+                <h4>${p.nombre}</h4>
+                <p>$${p.precio?.toLocaleString("es-AR")}</p>
+              </div>
+            </a>
+          `).join("");
+        } else {
+          // Si no hay productos, oculto la sección
+          document.getElementById("seccion-nuevos").style.display = "none";
+        }
+      } catch (err) {
+        console.error("❌ Error cargando productos:", err);
+        contenedor.innerHTML = `<p>Error al cargar productos.</p>`;
+      }
+  });
+</script>
+
 </body>
 </html>

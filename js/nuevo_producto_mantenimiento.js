@@ -37,22 +37,22 @@ window.addEventListener('scroll', function() {
 
 
 // SUBIR LA CANTIDAD DE IMAGENES DESEADAS
-document.getElementById('formFileMultiple').addEventListener('change', function () {
-  const previewContainer = document.getElementById('preview');
-  previewContainer.innerHTML = ''; // Limpiar anteriores
-
-  Array.from(this.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.style.width = '100px';
-      img.style.margin = '5px';
-      previewContainer.appendChild(img);
-    };
-    reader.readAsDataURL(file);
+  // Previsualizar imágenes
+  document.getElementById('formFileMultiple').addEventListener('change', function () {
+    const previewContainer = document.getElementById('preview');
+    previewContainer.innerHTML = '';
+    Array.from(this.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '100px';
+        img.style.margin = '5px';
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
   });
-});
 //Crea cantidad de variedad como se necesiten
     const contenedor = document.getElementById('contenedor-variantes');
   const agregarBtn = document.getElementById('agregar1');
@@ -199,15 +199,7 @@ document.getElementById('formFileMultiple').addEventListener('change', function 
  // Simular guardado en base de datos 
     console.log("📦 Producto listo para guardar:", producto);
 
-    // Simular guardado en base de datos (futuro backend)
-    // fetch('/api/productos', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(producto)
-    // }).then(res => res.json()).then(data => {
-    //   console.log("✅ Producto guardado:", data);
-    //   window.location.href = "/productos"; // Redirigir a lista
-    // });
+  
 
     // Simulación de redirección
     alert("Producto guardado exitosamente");
@@ -220,3 +212,29 @@ document.getElementById("volverBtn").addEventListener("click", function () {
 });
   
 });
+
+// 🚀 GUARDAR PRODUCTO en MongoDB vía PHP
+document.addEventListener("DOMContentLoaded", function () {
+  // Guardar producto en backend
+  document.getElementById("formProducto").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    let formData = new FormData(e.target);
+
+    try {
+      let res = await fetch("backend/productController.php", {
+        method: "POST",
+        body: formData
+      });
+
+      let data = await res.json();
+      alert(data.message || "✅ Producto agregado");
+
+      // Redirige a inventario
+      window.location.href = "gestion_producto_mantenimiento.html";
+    } catch (err) {
+      console.error("❌ Error al guardar producto:", err);
+      alert("Hubo un error al guardar el producto");
+    }
+  });
+});
+
