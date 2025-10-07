@@ -1,3 +1,60 @@
-<div class="direccion-modal">
-  <p>Próximamente podrás guardar tus domicilios aquí.</p>
+<div class="overlay" style="display:none;">
+  <div class="envio-modal">
+
+    <!-- Header con flecha de retroceso -->
+    <div class="envio-header">
+      <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+
+    <h2 class="envio-titulo">Gestión de Direcciones</h2>
+
+    <!-- Lista de direcciones guardadas -->
+    <div class="direcciones-guardadas mb-4">
+      <h4>Direcciones guardadas</h4>
+      <div class="direccion-item active">
+        <input type="radio" name="direccion" id="dir1" checked>
+        <label for="dir1">
+          <strong>MiCasa</strong><br>
+          Cnel Rodriguez 252, Mendoza<br>
+          <small>Predeterminada</small>
+        </label>
+      </div>
+    </div>
+
+    <!-- Formulario para nueva dirección -->
+    <form id="form-nueva-direccion">
+      <h4>Agregar nueva dirección</h4>
+      
+      <div class="mb-3">
+        <label for="nombre-direccion">Nombre de la dirección</label>
+        <input type="text" id="nombre-direccion" placeholder="Ej: Casa, Trabajo" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="calle">Calle</label>
+        <input type="text" id="calle" placeholder="Calle y número" required>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-6">
+          <label for="ciudad">Ciudad</label>
+          <input type="text" id="ciudad" placeholder="Ciudad" required>
+        </div>
+        <div class="col-6">
+          <label for="provincia">Provincia</label>
+          <input type="text" id="provincia" placeholder="Provincia" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="codigo-postal">Código Postal</label>
+        <input type="text" id="codigo-postal" placeholder="CP" required>
+      </div>
+
+      <button type="submit" class="btn-pagar">Guardar dirección</button>
+    </form>
+
+  </div>
 </div>

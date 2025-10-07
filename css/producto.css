@@ -164,24 +164,67 @@
   background: #333;
 }
 
-/* Responsive */
+/* AJUSTES PARA TABLET Y CELULAR (768px) */
 @media (max-width: 768px) {
   .producto-detalle {
-    flex-direction: column;
-    align-items: center;
+    padding: 20px; /* Reducir padding */
+    gap: 20px; /* Reducir espacio */
   }
 
+  /* Galería: Apilar horizontalmente imagen principal y miniaturas */
   .galeria {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: column-reverse; /* Poner la principal arriba y miniaturas abajo */
+    width: 100%;
   }
 
   .miniaturas {
-    flex-direction: row;
+    flex-direction: row; /* Miniaturas se vuelven horizontales */
     justify-content: center;
+    overflow-x: auto; /* Scroll horizontal si hay muchas */
+    gap: 8px;
+    padding-bottom: 5px; /* Espacio para el scrollbar */
+  }
+  
+  .miniaturas img {
+    width: 60px; /* Miniaturas más pequeñas */
+    height: 60px;
+    flex-shrink: 0;
   }
 
+  /* Imagen principal */
   .imagen-principal img {
-    width: 100%;
+    width: 100%; /* Ocupa todo el ancho */
+    max-width: none;
+  }
+  
+  /* Información del producto */
+  .info-producto {
+    min-width: 100%; /* Ocupa todo el ancho */
+  }
+
+  .info-producto h1 {
+    font-size: 28px;
+  }
+
+  .talle {
+    padding: 6px 10px; /* Talles más pequeños */
+    font-size: 14px;
+  }
+}
+
+/* AJUSTES PARA CELULAR (480px) */
+@media (max-width: 480px) {
+  .producto-detalle {
+    padding: 10px;
+  }
+
+  .info-producto h1 {
+    font-size: 24px;
+  }
+
+  .talles,
+  .colores,
+  .cantidad {
+    margin-bottom: 15px; /* Menos espacio */
   }
 }
