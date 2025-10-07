@@ -171,21 +171,109 @@ body {
   background: #f5f5f5;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 1024px) {
+/* AJUSTES PARA TABLET  (768px) */
+
+@media (max-width: 768px) {
+  /* 1. BARRA PRINCIPAL Y ALTURA */
+  .promo-bar {
+    display: none; /* Seguimos ocultando la barra promocional */
+  }
+  
+  .main-navbar {
+    top: 0;
+    height: 60px;
+    padding: 0 15px; 
+  }
+
+  /* 2. OCULTAR ENLACES NORMALES Y MOSTRAR HAMBURGUESA */
   .nav-links {
-    gap: 10px;
+    /* Estado inicial: Ocultar los links, pero prepáralos para el menú hamburguesa */
+    position: fixed;
+    top: 60px; /* Inicia debajo de la navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 60px); /* Ocupa el resto de la altura */
+    background-color: #fff;
+    flex-direction: column; /* Apila los elementos verticalmente */
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 20px;
+    display: none; /* Oculto por defecto, se mostrará con JavaScript/clase .active */
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%); /* Para animación de entrada */
+    z-index: 999;
+  }
+  
+  /* Estado Activo del menú (Clase que se añade con JS al hacer clic en el botón) */
+  .nav-links.active {
+    display: flex;
+    transform: translateX(0);
+  }
+
+  /* 3. ADAPTAR DESPLEGABLES (Categorías, Sale) */
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .nav-links li a {
+    padding: 15px 0; /* Aumentar el área de clic */
+    display: block;
+    width: 100%;
+  }
+
+  /* Los desplegables ahora se muestran debajo del ítem principal (no al lado) */
+  .categoria-desplegable, 
+  .categoria-desplegable2 {
+    position: static; /* Ya no es absoluto, fluye con el contenido */
+    width: 100%;
+    padding: 0;
+    box-shadow: none; /* Eliminar sombra */
+    background-color: #f8f8f8;
+    padding-left: 0 !important; /* Quitar el padding lateral que tenías */
+  }
+
+  .categoria-desplegable li,
+  .categoria-desplegable2 li {
+    border-bottom: 1px dotted #ddd; /* Separador sutil */
+    text-align: left;
+    padding-left: 30px; /* Indentación para subcategorías */
+  }
+  
+  /* 4. BUSCADOR Y ÍCONOS */
+  .search-bar {
+    /* Ocultar la barra de texto, pero se puede mostrar en el menú. */
+    display: none;
+  }
+  
+  /* Implementar un ícono para el menú hamburguesa (asumiendo que lo llamas .menu-toggle) */
+  .menu-toggle {
+    display: block; /* Mostrar el botón de hamburguesa en móvil */
+    font-size: 24px;
+    cursor: pointer;
+    order: 0; /* Ponerlo al inicio si lo necesitas */
   }
 }
-@media (max-width: 768px) {
+
+/* AJUSTES PARA MÓVIL (max-width: 480px) */
+@media (max-width: 480px) {
   .main-navbar {
-    flex-wrap: wrap;
-    height: auto;
-    padding: 10px;
+    padding: 0 10px;
   }
-  .nav-links {
-    flex-direction: column;
-    gap: 10px;
+  
+  .logo {
+    font-size: 20px;
+  }
+  
+  .icons a, .icons button, .menu-toggle {
+    font-size: 20px; /* Reducir todos los íconos */
+  }
+}
+/* AJUSTES PARA CELULAR(480px) */
+@media (max-width: 480px) {
+  .main-navbar {
+    padding: 0 10px;
   }
 }
 
