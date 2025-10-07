@@ -27,35 +27,30 @@ function getSubtotal() {
 // === Overlay helpers ===
 function mostrarOverlay(ruta, openerEl = null) {
   const overlayContainer = document.getElementById("checkout-overlay");
-  overlayContainer.innerHTML = `<div class="overlay loading" role="status" aria-live="polite">Cargando...</div>`;
-  document.body.classList.add("modal-open");
+
+  // Si no existe overlay, crearlo
+  let overlay = overlayContainer.querySelector(".overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "overlay";
+    overlayContainer.appendChild(overlay);
+    document.body.classList.add("modal-open");
+  }
+
+  overlay.innerHTML = `<div class="loading">Cargando...</div>`;
 
   return fetch(ruta)
-    .then(r => {
-      if (!r.ok) throw new Error("Error cargando overlay");
-      return r.text();
-    })
+    .then(r => r.text())
     .then(html => {
-      overlayContainer.innerHTML = html;
-
-      // 🔹 Captura tanto .overlay como #overlay-mapa
-      const overlay = overlayContainer.querySelector(".overlay, #overlay-mapa");
-      if (overlay) {
-        overlay.style.display = "flex"; // fuerza visibilidad
-        overlay.setAttribute("role", "dialog");
-        overlay.setAttribute("aria-modal", "true");
-        if (openerEl && openerEl.id) overlay.dataset.openerId = openerEl.id;
-        trapFocus(overlay);
-      }
-      return overlayContainer;
-    })
-    .catch(err => {
-      overlayContainer.innerHTML = `<div class="overlay error">Error cargando contenido. Intenta nuevamente.</div>`;
-      console.error(err);
-      return overlayContainer;
+      overlay.innerHTML = html;
+      overlay.style.display = "flex";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      if (openerEl && openerEl.id) overlay.dataset.openerId = openerEl.id;
+      trapFocus(overlay);
+      return overlay;
     });
 }
-
 
 function waitForOverlayElement(selector, timeout = 5000) {
   const container = document.getElementById("checkout-overlay");
@@ -230,4 +225,123 @@ document.addEventListener("click", (e) => {
     document.body.classList.remove("modal-open");
     overlayContainer.innerHTML = "";
   }
+});
+
+// Seleccionar opción de envío → abrir pago
+document.addEventListener("click", (e) => {
+  // Si el click vino de un botón de acción dentro del grupo, ignorar
+  if (e.target.closest(".envio-accion")) return;
+
+  const opcion = e.target.closest(".opcion-envio");
+  if (!opcion) return;
+  e.preventDefault();
+
+  const envio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset?.envio);
+  localStorage.setItem("selectedEnvio", String(envio));
+  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-pago.html", e.target)
+    .then(() => waitForOverlayElement(".pago-modal", 4000))
+    .then(() => inicializarPago());
+});
+
+// Abrir mapa-puntos desde botón "ver o cambiar en el mapa"
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".ver-cambiar-mapa");
+  if (!btn) return;
+  e.preventDefault();
+  mostrarOverlay("../componentesHTML/mapaHTML/mapa-puntos.html", btn)
+    .then(() => waitForOverlayElement(".puntos-modal", 4000))
+    .then(() => inicializarMapaPuntos());
+});
+
+// Abrir mapa-tienda desde botón "Ver ubicación"
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn-ver-tienda");
+  if (!btn) return;
+  e.preventDefault();
+  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html", btn);
+});
+
+// Volver a envíos desde cualquier submodal (mapa-puntos, mapa-tienda, pago)
+document.addEventListener("click", (e) => {
+  const volver = e.target.closest(".volver-envios");
+  if (!volver) return;
+  e.preventDefault();
+  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", volver)
+    .then(() => waitForOverlayElement(".envio-modal", 4000))
+    .then(() => inicializarEnvios());
+});
+
+// Inicializador de mapa-puntos
+function inicializarMapaPuntos() {
+  const puntos = [
+    { id: "p1", nombre: "Punto Centro", direccion: "Av. Principal 100", lat: -32.890, lng: -68.845 },
+    { id: "p2", nombre: "Punto Norte", direccion: "Calle Norte 45", lat: -32.880, lng: -68.850 },
+    { id: "p3", nombre: "Punto Sur", direccion: "Calle Sur 12", lat: -32.900, lng: -68.860 }
+  ];
+
+  const lista = document.getElementById("puntos-lista");
+  const iframe = document.getElementById("iframe-puntos");
+  const info = document.getElementById("seleccion-info");
+  const btnConfirmar = document.getElementById("btn-confirmar-punto");
+  let seleccionado = localStorage.getItem("selectedPunto") || null;
+
+  // Renderizar lista
+  if (lista) {
+    lista.innerHTML = "";
+    puntos.forEach(p => {
+      const el = document.createElement("div");
+      el.className = "punto-item" + (seleccionado === p.id ? " activo" : "");
+      el.dataset.id = p.id;
+      el.dataset.lat = p.lat;
+      el.dataset.lng = p.lng;
+      el.innerHTML = `<strong>${p.nombre}</strong><div class="dir">${p.direccion}</div>`;
+      el.addEventListener("click", () => {
+        lista.querySelectorAll(".punto-item").forEach(x => x.classList.remove("activo"));
+        el.classList.add("activo");
+        seleccionado = p.id;
+        info.textContent = `${p.nombre} — ${p.direccion}`;
+        btnConfirmar.disabled = false;
+        iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
+      });
+      lista.appendChild(el);
+
+      if (seleccionado === p.id) {
+        iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
+        info.textContent = `${p.nombre} — ${p.direccion}`;
+        btnConfirmar.disabled = false;
+      }
+    });
+  }
+
+  // Confirmar punto seleccionado: guardar y volver a envíos
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener("click", () => {
+      if (!seleccionado) return;
+      const p = puntos.find(x => x.id === seleccionado);
+      if (!p) return;
+
+      localStorage.setItem("selectedPunto", p.id);
+      localStorage.setItem("selectedPuntoName", p.nombre);
+      localStorage.setItem("selectedPuntoDireccion", p.direccion);
+
+      // Volver a seleccion-envios y actualizar texto
+      mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btnConfirmar)
+        .then(() => waitForOverlayElement(".envio-modal", 4000))
+        .then(() => {
+          inicializarEnvios();
+          const label = document.querySelector(".envio-punto .punto-seleccionado");
+          if (label) {
+            label.textContent = `${p.nombre} — ${p.direccion}`;
+          }
+        });
+    });
+  }
+}
+
+// (opcional) Botón directo para abrir envíos desde fuera
+document.getElementById('abrir-envios')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", e.currentTarget)
+    .then(()=> console.log('seleccion-envios abierto'))
+    .catch(err => console.error('error abrir seleccion-envios', err));
 });

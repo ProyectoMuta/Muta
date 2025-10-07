@@ -110,6 +110,14 @@ body.modal-open {
 .envio-info h3 { margin: 0; font-size: 18px; color: #333; }
 .direccion, .horarios { font-size: 14px; color: #666; margin-top: 6px; }
 
+.envio-punto h3 {
+   margin: 0; font-size: 18px; color: #333; 
+}
+
+.punto-seleccionado {
+  font-size: 14px; color: #666; margin-top: 6px;
+}
+
 .envio-accion {
   display: block;
   width: 100%;
