@@ -84,15 +84,31 @@
 .categoria-carousel .carousel-prev { left: 10px; }
 .categoria-carousel .carousel-next { right: 10px; }
 
-/* Responsive */
-@media (max-width: 1200px) {
+
+/* AJUSTES PARA TABLET (768px) */
+@media (max-width: 768px) {
   .categoria-carousel .card {
-    flex: 0 0 calc((100% - 3 * var(--gap, 20px)) / 4);
+    /* 3 visibles: (100% - 2 * gap) / 3 */
+    flex: 0 0 calc((100% - 2 * var(--gap, 20px)) / 3); 
+  }
+  
+  /* Reducir el tamaño de los botones de navegación */
+  .categoria-carousel .carousel-prev,
+  .categoria-carousel .carousel-next {
+    font-size: 1.5rem;
   }
 }
 
-@media (max-width: 768px) {
+/* AJUSTES PARA CELULAR (480px) */
+@media (max-width: 480px) {
   .categoria-carousel .card {
-    flex: 0 0 calc((100% - 1 * var(--gap, 20px)) / 2);
+    /* 2 visibles (o 1.5 si quieres un efecto de swipe): (100% - 1 * gap) / 2 */
+    flex: 0 0 calc((100% - var(--gap, 20px)) / 2);
+  }
+
+  /* Ocultar botones de navegación si solo se usa el scroll táctil */
+  .categoria-carousel .carousel-prev,
+  .categoria-carousel .carousel-next {
+    display: none; 
   }
 }
