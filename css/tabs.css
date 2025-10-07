@@ -108,32 +108,21 @@
   background-color: #333;
 }
 
-/* AJUSTES PARA CELULAR (480px) */
-@media (max-width: 480px) {
-  .tabs-container {
-    margin: 20px auto;
-    padding: 0 10px;
+/* Responsive */
+@media (max-width: 600px) {
+  .tabs-titles {
+    flex-direction: column;
   }
 
-  /* Permitir scroll horizontal si hay muchas pestañas */
-  .tabs-titles {
-    overflow-x: auto;
-    white-space: nowrap; /* Evita que los títulos se rompan */
-    justify-content: flex-start;
-  }
-  
   .tab-title {
-    flex: 0 0 auto; /* No se comprimen */
-    padding: 10px 15px;
-    font-size: 14px;
+    border-bottom: none;
+    border-left: 4px solid transparent;
+    text-align: left;
+    padding-left: 10px;
   }
-  
-  .envio {
-    flex-direction: column; /* Apila el input y el botón de envío */
-    gap: 15px;
-  }
-  
-  .envio button {
-    width: 100%; /* El botón ocupa todo el ancho */
+
+  .tab-title.active {
+    border-left: 4px solid #111;
+    border-bottom: none;
   }
 }

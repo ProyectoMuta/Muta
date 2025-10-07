@@ -25,23 +25,3 @@ body {
   letter-spacing: 1px;
   text-transform: uppercase;
 }
-
-
-/* === AJUSTES RESPONSIVE GLOBALES === */
-
-/* Tablet y dispositivos medianos (max-width: 768px) */
-@media (max-width: 768px) {
-  .section-title h2 {
-    font-size: 24px;
-    margin: 20px 0 15px;
-  }
-}
-
-/* Móvil (max-width: 480px) */
-@media (max-width: 480px) {
-  .section-title h2 {
-    font-size: 20px;
-    margin: 15px 0 10px;
-  }
-}
-
