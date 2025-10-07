@@ -1,0 +1,88 @@
+:root{
+  --fav-bg: #fff;
+  --fav-shadow: 0 20px 40px rgba(0,0,0,.15);
+  --fav-radius: 18px;
+  --fav-border: 1px solid #e9e9e9;
+}
+
+.fav-overlay{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.14);
+  backdrop-filter: blur(1.5px);
+  z-index: 1000;
+}
+
+.fav-modal{
+  position: fixed; right: 24px; left: 24px; top: 28px; bottom: 28px;
+  max-width: 980px; margin: 0 auto;
+  background: var(--fav-bg);
+  border-radius: var(--fav-radius);
+  box-shadow: var(--fav-shadow);
+  border: var(--fav-border);
+  display: grid; grid-template-rows: auto 1fr;
+  z-index: 1001;
+  transform: translateY(10px); opacity: 0; pointer-events: none;
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+.fav-modal.is-open{
+  transform: translateY(0); opacity: 1; pointer-events: auto;
+}
+
+.fav-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 16px; border-bottom: var(--fav-border);
+}
+.fav-title{ display:flex; align-items:center; gap:10px; }
+.fav-title h3{ margin:0; font-size:20px; }
+.fav-emoji{ font-size:18px; }
+.fav-close{
+  background: transparent; border: none; font-size: 26px; cursor: pointer; line-height: 1;
+}
+.fav-body{ padding:16px; overflow:auto; }
+.fav-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:16px;
+  min-height: 220px;
+}
+@media (max-width: 900px){
+  .fav-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 560px){
+  .fav-modal{ right: 14px; left: 14px; top: 18px; bottom: 18px; }
+  .fav-grid{ grid-template-columns: 1fr; }
+}
+
+/* Card producto mini */
+.fav-card{
+  border: var(--fav-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  display:flex; flex-direction:column;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+.fav-card img{ width:100%; height:170px; object-fit:cover; background:#f3f3f3; }
+.fav-card .fav-info{ padding:10px 12px; display:grid; gap:4px; }
+.fav-card .fav-name{ font-size:14px; font-weight:600; }
+.fav-card .fav-sub{ font-size:12px; color:#666; }
+.fav-card .fav-price{ margin-top:4px; font-weight:700; }
+
+/* Acciones */
+.fav-actions{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 12px; border-top: var(--fav-border);
+}
+.fav-remove, .fav-add-cart{
+  border:none; cursor:pointer; padding:6px 10px; border-radius:10px;
+}
+.fav-remove{ background:#f0f0f0; }
+.fav-add-cart{ background:#111; color:#fff; }
+
+/* Estado vacío */
+.fav-empty{
+  display:grid; place-items:center;
+  height: 220px; color:#666; font-size:14px;
+}
+.fav-empty span{ font-size:16px; }

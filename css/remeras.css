@@ -54,3 +54,13 @@
   font-weight: 700;
   color: #000;
 }
+/* Botón corazón en cards de categoría */
+.categoria-carousel .card { position: relative; }
+.categoria-carousel .card .btn-like{
+  position:absolute; top:10px; right:10px;
+  width:32px; height:32px; border-radius:999px;
+  background:rgba(255,255,255,.95); border:none; cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.12); font-size:18px; line-height:32px;
+  display:grid; place-items:center;
+}
+.categoria-carousel .card .btn-like:hover{ transform:translateY(-1px); }

@@ -37,8 +37,16 @@ Muta/ (raíz del proyecto)
 ├── index.html                     # Página principal (home)
 ├── remeras.html                   # Página de categoría "Remeras"
 ├── productos.html                 # Página de detalle de producto
+├── cart.html			   # Página del carrito completo
 │
 ├── componentesHTML/               # Fragmentos HTML modulares
+│   ├── carritoHTML/
+│   │    ├── seleccion-direccion.html
+│   │    ├── seleccion-envios.html
+│   │    └── seleccion-pago.html
+│   ├── mapaHTML/
+│   │    ├── mapa-tienda.html
+│   │    └── ... (otros futuros componentes de mapas)
 │   ├── navbar.html
 │   ├── hero.html
 │   ├── carousel-categorias.html
