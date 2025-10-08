@@ -171,6 +171,14 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".checkout-btn");
   if (!btn) return;
   e.preventDefault();
+
+  // Validación extra
+  const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+  if (cart.length === 0) {
+    alert("Tu carrito está vacío. Agregá productos antes de continuar.");
+    return;
+  }
+
   mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btn)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
