@@ -110,6 +110,18 @@ function releaseFocus(modal) {
 
 // === Inicializadores ===
 function inicializarEnvios() {
+  const label = document.querySelector(".envio-punto .punto-seleccionado");
+  const savedName = localStorage.getItem("selectedPuntoName");
+  const savedDireccion = localStorage.getItem("selectedPuntoDireccion");
+
+  if (label) {
+    if (savedName && savedDireccion) {
+      label.textContent = `${savedName} — ${savedDireccion}`;
+    } else {
+      label.textContent = "No hay punto seleccionado";
+    }
+  }
+  
   const subtotal = getSubtotal();
   document.querySelectorAll(".envio-costos").forEach(costos => {
     const envio = safeParsePrice(costos.querySelector(".costo-envio")?.dataset?.envio);
@@ -248,9 +260,12 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".ver-cambiar-mapa");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/mapaHTML/mapa-puntos.html", btn)
-    .then(() => waitForOverlayElement(".puntos-modal", 4000))
-    .then(() => inicializarMapaPuntos());
+  mostrarOverlay("componentesHTML/mapaHTML/mapa-puntos.html", btn)
+    .then(() => {
+      if (typeof initMapaPuntos === "function") {
+        initMapaPuntos();
+      }
+    });
 });
 
 // Abrir mapa-tienda desde botón "Ver ubicación"
@@ -271,22 +286,16 @@ document.addEventListener("click", (e) => {
     .then(() => inicializarEnvios());
 });
 
-// Inicializador de mapa-puntos
+// Inicializador de mapa-puntos (solo renderiza lista/iframe si hace falta)
 function inicializarMapaPuntos() {
-  const puntos = [
-    { id: "p1", nombre: "Punto Centro", direccion: "Av. Principal 100", lat: -32.890, lng: -68.845 },
-    { id: "p2", nombre: "Punto Norte", direccion: "Calle Norte 45", lat: -32.880, lng: -68.850 },
-    { id: "p3", nombre: "Punto Sur", direccion: "Calle Sur 12", lat: -32.900, lng: -68.860 }
-  ];
-
   const lista = document.getElementById("puntos-lista");
   const iframe = document.getElementById("iframe-puntos");
   const info = document.getElementById("seleccion-info");
-  const btnConfirmar = document.getElementById("btn-confirmar-punto");
-  let seleccionado = localStorage.getItem("selectedPunto") || null;
 
-  // Renderizar lista
-  if (lista) {
+  const puntos = window.getAllPuntos && window.getAllPuntos();
+  const seleccionado = window.getSelectedPuntoId && window.getSelectedPuntoId();
+
+  if (lista && puntos) {
     lista.innerHTML = "";
     puntos.forEach(p => {
       const el = document.createElement("div");
@@ -295,45 +304,19 @@ function inicializarMapaPuntos() {
       el.dataset.lat = p.lat;
       el.dataset.lng = p.lng;
       el.innerHTML = `<strong>${p.nombre}</strong><div class="dir">${p.direccion}</div>`;
+
       el.addEventListener("click", () => {
-        lista.querySelectorAll(".punto-item").forEach(x => x.classList.remove("activo"));
-        el.classList.add("activo");
-        seleccionado = p.id;
+        window.setSelectedPuntoId && window.setSelectedPuntoId(p.id);
         info.textContent = `${p.nombre} — ${p.direccion}`;
-        btnConfirmar.disabled = false;
         iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
       });
+
       lista.appendChild(el);
 
       if (seleccionado === p.id) {
         iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
         info.textContent = `${p.nombre} — ${p.direccion}`;
-        btnConfirmar.disabled = false;
       }
-    });
-  }
-
-  // Confirmar punto seleccionado: guardar y volver a envíos
-  if (btnConfirmar) {
-    btnConfirmar.addEventListener("click", () => {
-      if (!seleccionado) return;
-      const p = puntos.find(x => x.id === seleccionado);
-      if (!p) return;
-
-      localStorage.setItem("selectedPunto", p.id);
-      localStorage.setItem("selectedPuntoName", p.nombre);
-      localStorage.setItem("selectedPuntoDireccion", p.direccion);
-
-      // Volver a seleccion-envios y actualizar texto
-      mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btnConfirmar)
-        .then(() => waitForOverlayElement(".envio-modal", 4000))
-        .then(() => {
-          inicializarEnvios();
-          const label = document.querySelector(".envio-punto .punto-seleccionado");
-          if (label) {
-            label.textContent = `${p.nombre} — ${p.direccion}`;
-          }
-        });
     });
   }
 }
