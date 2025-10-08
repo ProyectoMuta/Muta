@@ -1,5 +1,5 @@
 /* ============================
-   MODAL DE MAPA
+   MODAL DE MAPA TIENDA
    ============================ */
 
 .map-modal {
@@ -9,22 +9,12 @@
   background: #fff;
   border-radius: 20px;
   padding: 24px;
-  position: relative;
+  position: relative; /* 🔹 necesario para posicionar el botón volver */
   box-shadow: 0 0 20px rgba(0,0,0,0.3);
   font-family: 'REM', sans-serif;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-#overlay-mapa {
-  display: flex !important;   /* 🔹 asegura que no quede oculto */
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 9999;
 }
 
 .cerrar-mapa {
@@ -42,7 +32,7 @@
 .map-modal h2 {
   text-align: center;
   font-size: 1.6rem;
-  margin-top: 0;
+  margin: 0;
 }
 
 .map-modal iframe {
@@ -72,10 +62,23 @@
     max-height: none;
   }
 
+  .map-modal h2 {
+    font-size: 1.3rem;
+    padding-left: 32px; /* 🔹 deja espacio para la flecha de volver */
+  }
+
   .map-modal iframe {
     height: 300px;
   }
 
-  .map-modal h2 { font-size: 1.4rem; }
-  .cerrar-mapa { font-size: 20px; top: 10px; left: 10px; }
+  .cerrar-mapa {
+    font-size: 20px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .mapa-info {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
 }
