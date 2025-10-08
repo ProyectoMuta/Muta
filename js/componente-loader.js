@@ -312,3 +312,85 @@ document.addEventListener("DOMContentLoaded", () => {
         document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
       });
 });
+
+//para remeras
+document.addEventListener("DOMContentLoaded", async () => {
+  const contenedor = document.getElementById("listaRemeras");
+
+  try {
+    // Traer productos desde PHP (MongoDB)
+    let res = await fetch("backend/productController.php");
+    let productos = await res.json();
+
+    // Renderizar productos como cards
+    contenedor.innerHTML = productos.map(p => `
+      <article class="card producto">
+        <img src="${p.imagen ?? 'img/default.jpg'}" alt="${p.name}" />
+        <div class="info">
+          <h3>${p.name}</h3>
+          <p>${p.descripcion ?? ''}</p>
+          <p><strong>$${p.price}</strong></p>
+          <p>Stock: ${p.stock}</p>
+          <button class="btn btn-dark">Agregar al carrito</button>
+        </div>
+      </article>
+    `).join("");
+  } catch (err) {
+    console.error("Error cargando productos:", err);
+    contenedor.innerHTML = `<p>Error al cargar productos.</p>`;
+  }
+});
+//cargar los productos 
+document.addEventListener("DOMContentLoaded", async () => {
+    const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
+    //  este id lo tenés que poner en el HTML del carrusel NUEVOS INGRESOS
+
+    try {
+      let res = await fetch("backend/productController.php");
+      let productos = await res.json();
+
+      if (!Array.isArray(productos)) throw new Error("Respuesta inesperada");
+
+      // Filtrar solo remeras nuevas
+      const nuevos = productos.filter(p => p.categoria?.toLowerCase() === "remeras");
+
+      if (nuevos.length > 0) {
+        contenedor.innerHTML = nuevos.map(p => `
+          <a href="producto.html?id=${p._id}" class="card">
+            <img src="${p.imagenes?.[0] ?? 'img/default.jpg'}" alt="${p.nombre}">
+            <div class="info">
+              <h4>${p.nombre}</h4>
+              <p>$${p.precio?.toLocaleString("es-AR")}</p>
+            </div>
+          </a>
+        `).join("");
+      } else {
+        // Si no hay nuevos ingresos, ocultar toda la sección
+        document.getElementById("seccion-nuevos").style.display = "none";
+      }
+    } catch (err) {
+      console.error("❌ Error cargando productos:", err);
+    }
+  });
+
+//nuevos productos ingresados por el usuario
+document.addEventListener("DOMContentLoaded", async () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) return;
+
+  try {
+    let res = await fetch(`backend/productController.php?id=${id}`);
+    let producto = await res.json();
+
+    document.getElementById("nombreProducto").textContent = producto.nombre;
+    document.getElementById("precioProducto").textContent = `$${producto.precio.toLocaleString("es-AR")}`;
+    document.getElementById("descripcionProducto").textContent = producto.descripcion;
+
+    // Imagen principal
+    document.getElementById("main-image").src = producto.imagenes?.[0] ?? "img/default.jpg";
+  } catch (err) {
+    console.error("Error cargando producto:", err);
+  }
+});
