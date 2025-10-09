@@ -110,7 +110,6 @@ function releaseFocus(modal) {
 
 // === Inicializadores ===
 function inicializarEnvios() {
-  // Punto de retiro
   const label = document.querySelector(".envio-punto .punto-seleccionado");
   const savedName = localStorage.getItem("selectedPuntoName");
   const savedDireccion = localStorage.getItem("selectedPuntoDireccion");
@@ -122,8 +121,7 @@ function inicializarEnvios() {
       label.textContent = "No hay punto seleccionado";
     }
   }
-
-  // Totales
+  
   const subtotal = getSubtotal();
   document.querySelectorAll(".envio-costos").forEach(costos => {
     const envio = safeParsePrice(costos.querySelector(".costo-envio")?.dataset?.envio);
@@ -131,20 +129,6 @@ function inicializarEnvios() {
     const totalEl = costos.querySelector(".total-envio");
     if (totalEl) totalEl.textContent = `Total: $${formatCurrency(total)}`;
   });
-
-  // Dirección de envío seleccionada
-  const dirLabel = document.querySelector(".opcion-envio[data-metodo='domicilio'] .direccion");
-  const seleccionada = JSON.parse(localStorage.getItem("selectedDireccion"));
-
-  console.log("Dirección seleccionada:", seleccionada);
-
-  if (dirLabel) {
-    if (seleccionada && seleccionada.nombre && seleccionada.calle && seleccionada.ciudad) {
-      dirLabel.textContent = `${seleccionada.nombre} - ${seleccionada.calle}, ${seleccionada.ciudad}`;
-    } else {
-      dirLabel.textContent = "No hay dirección seleccionada";
-    }
-  }
 }
 
 function actualizarTotalesPago(envio = 0) {
@@ -181,28 +165,12 @@ function inicializarPago() {
 }
 
 // === Event listeners ===
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-direcciones");
-  if (!btn) return;
-  e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
-    .then(() => waitForOverlayElement(".envio-modal", 4000))
-    .then(() => inicializarDirecciones());
-});
 
 // Abrir selección de envíos desde botón checkout
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".checkout-btn");
   if (!btn) return;
   e.preventDefault();
-
-  // Validación extra
-  const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
-  if (cart.length === 0) {
-    alert("Tu carrito está vacío. Agregá productos antes de continuar.");
-    return;
-  }
-
   mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btn)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
@@ -317,147 +285,6 @@ document.addEventListener("click", (e) => {
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarEnvios());
 });
-
-// Abrir gestión de direcciones desde botón "+ Agregar o modificar domicilio"
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-direcciones");
-  if (!btn) return;
-  e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
-    .then(() => waitForOverlayElement(".envio-modal", 4000))
-    .then(() => inicializarDirecciones());
-});
-
-function inicializarDirecciones() {
-  const lista = document.querySelector(".direcciones-guardadas");
-  const form = document.getElementById("form-nueva-direccion");
-  const btnMostrarForm = document.getElementById("btn-mostrar-form");
-  const btnCancelar = document.getElementById("cancelar-edicion");
-  const tituloForm = document.getElementById("form-titulo");
-
-  let direcciones = JSON.parse(localStorage.getItem("mutaDirecciones")) || [];
-  let modoEdicion = false;
-  let idEditando = null;
-
-  // Renderizar lista
-  lista.innerHTML = "<h4>Direcciones guardadas</h4>";
-  if (direcciones.length === 0) {
-    const vacio = document.createElement("p");
-    vacio.textContent = "No hay direcciones guardadas";
-    vacio.style.color = "#666";
-    lista.appendChild(vacio);
-  } else {
-    direcciones.forEach((dir) => {
-      const div = document.createElement("div");
-      div.className = "direccion-item";
-      div.innerHTML = `
-        <div class="acciones-dir">
-          <button class="seleccionar-dir" data-id="${dir.id}">Seleccionar</button>
-          <button class="editar-dir" data-id="${dir.id}">Editar</button>
-        </div>
-        <label>
-          <strong>${dir.nombre}</strong><br>
-          ${dir.calle}, ${dir.ciudad}, ${dir.provincia}
-        </label>
-        <button class="eliminar-dir" data-id="${dir.id}" title="Eliminar">
-          <i class="fas fa-trash"></i>
-        </button>
-      `;
-      lista.appendChild(div);
-    });
-  }
-
-  // Mostrar formulario
-  btnMostrarForm.onclick = () => {
-    form.classList.add("visible");
-    btnMostrarForm.style.display = "none";
-    tituloForm.textContent = "Nueva dirección";
-    btnCancelar.style.display = "inline-block";
-    modoEdicion = false;
-    idEditando = null;
-  };
-
-  // Cancelar edición
-  btnCancelar.onclick = () => {
-    form.reset();
-    form.classList.remove("visible");
-    btnMostrarForm.style.display = "block";
-    btnCancelar.style.display = "none";
-    tituloForm.textContent = "Nueva dirección";
-    modoEdicion = false;
-    idEditando = null;
-  };
-
-  // Guardar dirección
-  form.onsubmit = (ev) => {
-    ev.preventDefault();
-    const nueva = {
-      id: modoEdicion ? idEditando : "dir" + Date.now(),
-      nombre: document.getElementById("nombre-direccion").value,
-      calle: document.getElementById("calle").value,
-      ciudad: document.getElementById("ciudad").value,
-      provincia: document.getElementById("provincia").value,
-      cp: document.getElementById("codigo-postal").value
-    };
-
-    if (modoEdicion) {
-      direcciones = direcciones.map(d => d.id === idEditando ? nueva : d);
-    } else {
-      direcciones.push(nueva);
-    }
-
-    localStorage.setItem("mutaDirecciones", JSON.stringify(direcciones));
-    form.reset();
-    form.classList.remove("visible");
-    btnMostrarForm.style.display = "block";
-    btnCancelar.style.display = "none";
-    tituloForm.textContent = "Nueva dirección";
-    modoEdicion = false;
-    idEditando = null;
-    inicializarDirecciones();
-  };
-
-  // Acciones en lista
-  lista.addEventListener("click", (e) => {
-    const id = e.target.dataset.id;
-
-    if (e.target.classList.contains("seleccionar-dir")) {
-      const seleccionada = direcciones.find(d => d.id === id);
-      if (seleccionada) {
-        localStorage.setItem("selectedDireccion", JSON.stringify(seleccionada));
-        mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html")
-          .then(() => waitForOverlayElement(".envio-modal", 4000))
-          .then(() => inicializarEnvios());
-      }
-    }
-
-    if (e.target.classList.contains("editar-dir")) {
-      const dir = direcciones.find(d => d.id === id);
-      if (!dir) return;
-      document.getElementById("nombre-direccion").value = dir.nombre;
-      document.getElementById("calle").value = dir.calle;
-      document.getElementById("ciudad").value = dir.ciudad;
-      document.getElementById("provincia").value = dir.provincia;
-      document.getElementById("codigo-postal").value = dir.cp;
-
-      form.classList.add("visible");
-      btnMostrarForm.style.display = "none";
-      btnCancelar.style.display = "inline-block";
-      tituloForm.textContent = "Editar dirección";
-      modoEdicion = true;
-      idEditando = id;
-    }
-
-    if (e.target.classList.contains("eliminar-dir") || e.target.closest(".eliminar-dir")) {
-      const confirmar = confirm("¿Está seguro de eliminar esta dirección?");
-      if (confirmar) {
-        direcciones = direcciones.filter(d => d.id !== id);
-        localStorage.setItem("mutaDirecciones", JSON.stringify(direcciones));
-        inicializarDirecciones();
-      }
-    }
-  });
-}
 
 // Inicializador de mapa-puntos (solo renderiza lista/iframe si hace falta)
 function inicializarMapaPuntos() {
