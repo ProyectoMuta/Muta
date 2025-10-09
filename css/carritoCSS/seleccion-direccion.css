@@ -1,6 +1,4 @@
-/* ============================
-   1. LISTA DE DIRECCIONES
-   ============================ */
+/* Estilos específicos para gestión de direcciones */
 
 .direcciones-guardadas {
   margin-bottom: 30px;
@@ -14,15 +12,15 @@
 }
 
 .direccion-item {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  transition: background 0.2s, border-color 0.2s;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .direccion-item:hover {
@@ -30,116 +28,45 @@
   background: #f9f9f9;
 }
 
+.direccion-item.active {
+  border-color: #333;
+  background: #f5f5f5;
+}
+
+.direccion-item input[type="radio"] {
+  margin-top: 3px;
+  cursor: pointer;
+}
+
 .direccion-item label {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.4;
   flex: 1;
-  cursor: default;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .direccion-item label strong {
-  font-size: 15px;
+  font-size: 16px;
   color: #111;
 }
 
-/* ============================
-   2. BOTONES DE ACCIÓN
-   ============================ */
-
-.acciones-dir {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.seleccionar-dir {
-  background: #000;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
+.direccion-item label small {
+  color: #2e7d32;
   font-weight: 600;
-  transition: background 0.2s;
-}
-.seleccionar-dir:hover {
-  background: #333;
 }
 
-.editar-dir {
-  background: #eee;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  font-weight: 500;
-}
-.editar-dir:hover {
-  background: #ddd;
-}
-
-.eliminar-dir {
-  background: transparent;
-  border: none;
-  color: #c00;
-  cursor: pointer;
-  font-size: 16px;
-  transition: color 0.2s;
-}
-.eliminar-dir:hover {
-  color: #900;
-}
-.eliminar-dir i {
-  pointer-events: none;
-}
-
-/* ============================
-   3. FORMULARIO DE DIRECCIÓN
-   ============================ */
-
+/* Formulario de nueva dirección */
 #form-nueva-direccion {
   border-top: 2px solid #eee;
   padding-top: 20px;
 }
 
-/* Animación suave */
-.form-direccion {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-}
-.form-direccion.visible {
-  max-height: 1000px;
-  opacity: 1;
-}
-
-.form-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-#form-titulo {
+#form-nueva-direccion h4 {
   font-size: 18px;
   font-weight: 600;
+  margin-bottom: 20px;
   color: #333;
-}
-
-.btn-cancelar {
-  background: transparent;
-  border: none;
-  color: #c00;
-  font-size: 14px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.btn-cancelar:hover {
-  color: #900;
 }
 
 #form-nueva-direccion label {
@@ -174,29 +101,14 @@
   flex: 1;
 }
 
-/* ============================
-   4. RESPONSIVE
-   ============================ */
-
+/* Responsive */
 @media (max-width: 600px) {
   #form-nueva-direccion .row {
     flex-direction: column;
     gap: 0;
   }
-
+  
   .direccion-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .acciones-dir {
-    flex-direction: row;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .seleccionar-dir,
-  .editar-dir {
-    flex: 1;
+    font-size: 13px;
   }
 }

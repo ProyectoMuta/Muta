@@ -124,13 +124,6 @@ function setupCart() {
       list.innerHTML = `<li class="empty">Tu carrito está vacío</li>`;
       totalEl.textContent = 0;
       if (carouselTrack) carouselTrack.innerHTML = "";
-
-      // 👇 Deshabilitar botón de checkout si no hay productos
-      const checkoutBtn = document.querySelector(".checkout-btn");
-      if (checkoutBtn) {
-        checkoutBtn.disabled = true;
-        checkoutBtn.classList.add("disabled");
-      }
       return;
     }
 
@@ -169,12 +162,6 @@ function setupCart() {
 
     localStorage.setItem("subtotal", total);
 
-    // 👇 Habilitar botón de checkout si hay productos
-    const checkoutBtn = document.querySelector(".checkout-btn");
-    if (checkoutBtn) {
-      checkoutBtn.disabled = false;
-      checkoutBtn.classList.remove("disabled");
-    }
 
     // Generar mini carrusel de imágenes (máx. 3 visibles, scroll manual)
     if (carouselTrack) {
@@ -203,6 +190,8 @@ function setupCart() {
         currentIndex = (currentIndex < cart.length - visible) ? currentIndex + 1 : 0;
         updateCarousel();
       });
+
+      // 🚫 Sin auto scroll, solo manual
     }
   }
 
