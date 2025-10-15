@@ -54,18 +54,50 @@ try {
                 } else {
                     $imagenes = [];
                 }
+                // --- Variantes (acepta array o escalar) ---
+                $asArray = function($v) {
+                    if (is_array($v)) return $v;
+                    if ($v === null || $v === '') return [];
+                    return [$v];
+                };
+
+                $talles = $asArray($_POST['talle'] ?? []);
+                $stocks = $asArray($_POST['stock'] ?? []);
+                $pesos  = $asArray($_POST['peso']  ?? []);
+                $colors = $asArray($_POST['color'] ?? []);
+
+
+                //variantes
+                $variantes = [];
+                if (isset($_POST['talle']) && is_array($_POST['talle'])) {
+                    $talles = $_POST['talle'];
+                    $stocks = $_POST['stock'] ?? [];
+                    $pesos  = $_POST['peso']  ?? [];
+                    $colors = $_POST['color'] ?? [];
+                    foreach ($talles as $i => $talle) {
+                        $variantes[] = [
+                            "talle" => $talle,
+                            "stock" => (int)($stocks[$i] ?? 0),
+                            "peso"  => (float)($pesos[$i] ?? 0),
+                            "color" => $colors[$i] ?? "#000000",
+                        ];
+                    }
+                }
+                // stock total
+                $stockTotal = array_sum(array_map(fn($v) => (int)($v['stock'] ?? 0), $variantes));
+        
                 $nuevo = [
                     "nombre"      => $_POST["nombre"] ?? "",
                     "descripcion" => $_POST["descripcion"] ?? "",
                     "precio"      => (int)($_POST["precio"] ?? 0),
                     "precioPromo" => (int)($_POST["precioPromo"] ?? 0),
                     "costo"       => (int)($_POST["costo"] ?? 0),
-                    "margen"      => $_POST["margen"] ?? "",
                     "categoria"   => $_POST["categoria"] ?? "remeras",
                     "subcategoria"=> $_POST["subcategoria"] ?? "",
-                    "stock"       => (int)($_POST["stock"] ?? 0),
                     "imagenes"    => $imagenes,
-                    "estado"      => "ok",
+                    "variantes"   => $variantes,           
+                    "stock"       => $stockTotal,          
+                    "estado"      => $_POST["estado"] ?? "Activo",
                     "fechaAlta"   => date("Y-m-d H:i:s")
                 ];
 
@@ -86,7 +118,25 @@ try {
                         exit;
                     }
 
-                    $data = json_decode(file_get_contents("php://input"), true);
+                    $data = json_decode(file_get_contents("php://input"), true) ?? [];
+
+                    // Si viene 'variantes' como array en el JSON, recalculamos stock total
+                    if (isset($data['variantes']) && is_array($data['variantes'])) {
+                        // normalizar campos numéricos
+                        $data['variantes'] = array_map(function($v){
+                            return [
+                                "talle" => $v['talle'] ?? '',
+                                "stock" => (int)($v['stock'] ?? 0),
+                                "peso"  => (float)($v['peso'] ?? 0),
+                                "color" => $v['color'] ?? '#000000',
+                            ];
+                        }, $data['variantes']);
+
+                        $data['stock'] = array_sum(array_map(fn($v) => (int)($v['stock'] ?? 0), $data['variantes']));
+                    }
+
+                    // Nunca permitir cambiar el _id
+                    unset($data['_id']);
 
                     $db->products->updateOne(
                         ["_id" => new MongoDB\BSON\ObjectId($id)],

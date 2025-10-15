@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/favoritos.css">
 
   <!-- Estilos específicos del carrito -->
   <link rel="stylesheet" href="css/carritoCSS/cart.css">
@@ -91,6 +92,8 @@
   <!-- Footer -->
   <div id="footer"></div>
   <div id="chatbot"></div>
+     <!-- Modal de Favoritos-->
+  <div id="favoritos"></div>
 
   <!-- Scripts -->
    
@@ -105,11 +108,7 @@
   <script src="js/componente-loader.js"></script>
   <script src="js/carritoJS/cart.js"></script>
   <script src="js/carritoJS/checkout.js"></script>
-  <script src="js/carritoJS/seleccion-envios.js"></script>
-  <script src="js/carritoJS/seleccion-direccion.js"></script>
-  <script src="js/carritoJS/seleccion-pago.js"></script>
-   <script>
-    // Inicializa la funcionalidad del carrito
+  <script>
     setupCart();
     
     // Activa los listeners para todo el proceso de compra
