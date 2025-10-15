@@ -1,281 +1,162 @@
-/* === HEADER FIJO === */
+/* === navbar.css (REEMPLAZAR COMPLETO) === */
+
+/* RESET */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; font-family: 'NATS', sans-serif; }
+
+/* HEADER FIJO */
 .fijar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 1200;
+  /* importante: NO usar overflow:hidden aquí */
 }
 
-/* === BARRA PROMOCIONAL === */
-.promo-bar {
-  background-color: #333;
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 1px;
-  padding: 3px;
-  font-family: 'Red Rose', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-}
+/* PROMO BAR */
+.promo-bar { display: none; }
 
-.circle {
-  width: 8px;
-  height: 8px;
-  background-color: #dfd9da;
-  border-radius: 50%;
-  margin-left: 80px;
-  margin-top: 1px;
-}
-
-/* === NAVBAR PRINCIPAL === */
+/* NAVBAR BASE (MÓVIL) */
 .main-navbar {
-  position: fixed;
-  top: 20px; /* debajo de la promo-bar */
-  left: 0;
+  height: 60px;
   width: 100%;
-  height: 70px;
-  background-color: #fff;
+  background: #fff;
   border-bottom: 1px solid #ddd;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
-  z-index: 1001;
+  padding: 0 15px;
+  z-index: 1201;
 }
 
-body {
-  margin: 0;
-  padding-top: calc(20px + 70px);
-}
+body { padding-top: 60px; }
 
-/* Logo */
-.logo {
-  font-size: 30px;
-  font-weight: bold;
-  font-family: 'REM', sans-serif;
-  -webkit-text-stroke: 2px #333;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.logo a {
-  color: #333;
-  text-decoration: none;
-  -webkit-text-stroke: 2px #333;
-}
-.logo a:hover {
-  color: #333;
-  text-decoration: none;
-}
-.logo:hover {
-  transform: scale(1.1);
-}
+/* LOGO */
+.logo { font-size: 26px; font-weight: 700; flex-shrink: 0; -webkit-text-stroke: 1px #333; }
+.logo a { color: #333; text-decoration: none; }
 
-/* Buscador */
-.search-bar {
-  flex-shrink: 0;
-}
-.search-bar input {
-  width: 380px;
-  color: #333;
-  padding: 3px 12px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-@media (max-width: 768px) {
-  .search-bar input {
-    width: 200px;
-    margin-left: 0;
-  }
-}
+/* ELEMENTOS OCULTOS EN MÓVIL */
+.search-bar, .nav-links { display: none; }
 
-/* Iconos generales */
-.icons a,
-.icons button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-left: 15px;
-  color: #333;
-  font-size: 24px;
-  cursor: pointer;
-  transition: 0.1s;
-}
-
+/* ICONS */
+.icons { display:flex; align-items:center; gap:10px; }
+.icons button, .icons a { background:none; border:none; cursor:pointer; font-size:22px; color:#333; }
 .icons a:hover,
 .icons button:hover {
   color: #a8a8a8;
   transform: scale(1.2);
 }
 
-/* === MENÚS POR CLICK === */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
+/* HAMBURGER */
+.menu-toggle { display:block; font-size:28px; }
 
-.nav-item {
-  position: relative;
-  display: inline-block;
-}
-
-.nav-btn {
-  all: unset;
-  display: inline-block;
-  font-family: 'NATS', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  -webkit-text-stroke: 1px #333;
-  color: #333;
-  cursor: pointer;
-  padding: 6px 15px;
-  transition: color 0.2s ease, -webkit-text-stroke 0.2s ease;
-}
-.nav-btn:hover {
-  color: #bcbcbc;
-  -webkit-text-stroke: 0.5px #bcbcbc;
-}
-
-.dropdown {
-  display: none;
-  position: absolute;
-  top: 50px;
+/* NAV LINKS MOBILE (overlay) */
+.nav-links.active {
+  display:flex;
+  flex-direction:column;
+  position: fixed;
+  top: 60px;
   left: 0;
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
   background: #fff;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  padding: 10px;
-  z-index: 2000;
-  min-width: 180px;
+  padding: 12px 0;
+  z-index: 1199;
 }
-.dropdown.open {
-  display: block;
-}
-.dropdown ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.dropdown li {
-  padding: 5px 10px;
-}
-.dropdown li a {
-  text-decoration: none;
-  color: #333;
-  font-size: 14px;
-}
-.dropdown li:hover {
-  background: #f5f5f5;
+.nav-links.active .nav-item { width:100%; text-align:center; border-bottom:1px solid #eee; }
+.nav-links.active .nav-btn { padding:14px 0; width:100%; }
+
+/* DROPDOWNS dentro del menú móvil */
+.nav-links .dropdown { position: static; display:none; background:#f8f8f8; padding:0; width:100%; border-top:1px solid #ddd; }
+.nav-links .dropdown.open { display:block; }
+
+/* ESTILOS PARA >=768px */
+@media (min-width: 768px) {
+  .main-navbar { padding: 0 20px; }
+  .menu-toggle { font-size: 30px; }
+  .icons { gap: 14px; }
 }
 
-/* AJUSTES PARA TABLET  (768px) */
-
-@media (max-width: 768px) {
-  /* 1. BARRA PRINCIPAL Y ALTURA */
+/* DESKTOP >=992px */
+@media (min-width: 992px) {
   .promo-bar {
-    display: none; /* Seguimos ocultando la barra promocional */
+    display:flex; justify-content:center; align-items:center;
+    background:#222; color:#fff; gap:12px; padding:4px 8px; font-size:12px;
   }
-  
-  .main-navbar {
-    top: 0;
-    height: 60px;
-    padding: 0 15px; 
-  }
+  .main-navbar { top:20px; height:70px; padding: 0 36px; justify-content:flex-start; }
+  body { padding-top: calc(20px + 70px); } /* espacio para promo + navbar */
+  .logo { font-size:32px; margin-right:36px; -webkit-text-stroke:1.2px #333; }
 
-  /* 2. OCULTAR ENLACES NORMALES Y MOSTRAR HAMBURGUESA */
-  .nav-links {
-    /* Estado inicial: Ocultar los links, pero prepáralos para el menú hamburguesa */
-    position: fixed;
-    top: 60px; /* Inicia debajo de la navbar */
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 60px); /* Ocupa el resto de la altura */
-    background-color: #fff;
-    flex-direction: column; /* Apila los elementos verticalmente */
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 20px;
-    display: none; /* Oculto por defecto, se mostrará con JavaScript/clase .active */
-    transition: transform 0.3s ease-in-out;
-    transform: translateX(100%); /* Para animación de entrada */
-    z-index: 999;
-  }
-  
-  /* Estado Activo del menú (Clase que se añade con JS al hacer clic en el botón) */
-  .nav-links.active {
-    display: flex;
-    transform: translateX(0);
-  }
+  .nav-links { display:flex; gap:18px; align-items:center; }
+  .menu-toggle { display:none; }
 
-  /* 3. ADAPTAR DESPLEGABLES (Categorías, Sale) */
-  .nav-links li {
-    width: 100%;
-    text-align: center;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .nav-links li a {
-    padding: 15px 0; /* Aumentar el área de clic */
-    display: block;
-    width: 100%;
-  }
-
-  /* Los desplegables ahora se muestran debajo del ítem principal (no al lado) */
-  .categoria-desplegable, 
-  .categoria-desplegable2 {
-    position: static; /* Ya no es absoluto, fluye con el contenido */
-    width: 100%;
-    padding: 0;
-    box-shadow: none; /* Eliminar sombra */
-    background-color: #f8f8f8;
-    padding-left: 0 !important; /* Quitar el padding lateral que tenías */
-  }
-
-  .categoria-desplegable li,
-  .categoria-desplegable2 li {
-    border-bottom: 1px dotted #ddd; /* Separador sutil */
-    text-align: left;
-    padding-left: 30px; /* Indentación para subcategorías */
-  }
-  
-  /* 4. BUSCADOR Y ÍCONOS */
-  .search-bar {
-    /* Ocultar la barra de texto, pero se puede mostrar en el menú. */
-    display: none;
-  }
-  
-  /* Implementar un ícono para el menú hamburguesa (asumiendo que lo llamas .menu-toggle) */
-  .menu-toggle {
-    display: block; /* Mostrar el botón de hamburguesa en móvil */
-    font-size: 24px;
-    cursor: pointer;
-    order: 0; /* Ponerlo al inicio si lo necesitas */
-  }
+  .search-bar { display:flex; flex-grow:1; justify-content:center; padding:0 40px; }
+  .search-bar input { max-width:380px; width:100%; padding:7px 12px; border-radius:10px; border:1px solid #ccc; }
 }
 
-/* AJUSTES PARA MÓVIL (max-width: 480px) */
-@media (max-width: 480px) {
-  .main-navbar {
-    padding: 0 10px;
-  }
-  
-  .logo {
-    font-size: 20px;
-  }
-  
-  .icons a, .icons button, .menu-toggle {
-    font-size: 20px; /* Reducir todos los íconos */
-  }
+/* NAV ITEM / DROPDOWN (desktop) */
+.nav-item { position: relative; }
+.nav-btn { all: unset; cursor:pointer; padding:6px 12px; font-size:15px; font-weight:600; -webkit-text-stroke:0.8px #333; color:#333; }
+.dropdown {
+  display:none;
+  position:absolute;
+  top:calc(100% + 10px);
+  left:0;
+  background:#fff;
+  padding:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  min-width:180px;
+  z-index:2200;
 }
-/* AJUSTES PARA CELULAR(480px) */
-@media (max-width: 480px) {
-  .main-navbar {
-    padding: 0 10px;
-  }
+.dropdown.open { display:block; }
+.dropdown ul { list-style:none; }
+.dropdown li { padding:6px 10px; }
+.dropdown li a { text-decoration:none; color:#333; font-size:14px; }
+
+/* === CARRO (FIXED dropdown con JS) === */
+.icono_carrito { position: relative; /* keep relative for layout */ }
+.cart-count {
+  position:absolute; top:-6px; right:-10px;
+  background:#000; color:#fff; font-size:12px; padding:3px 6px; border-radius:50%;
 }
+
+/* El dropdown ahora será fixed y posicionado por JS.
+   Esto evita problemas si el header o body tienen overflow oculto */
+.cart-dropdown {
+  display:none;
+  position: fixed;
+  top: 70px; /* default; JS recalcula cuando se abre */
+  right: 16px; /* default; JS recalcula */
+  width: 320px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background:#fff;
+  border:1px solid #ddd;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  border-radius:10px;
+  padding:12px;
+  z-index:99999;
+}
+
+/* visible states */
+.cart-dropdown.active { display:flex; flex-direction:column;  }
+
+/* Mostrar carrito al pasar el mouse */
+.icono_carrito:hover .cart-dropdown {
+  display: flex; flex-direction:column; 
+}
+/* small screens tweaks */
+@media (max-width: 576px) {
+  .cart-dropdown { right: 8px; width: 95vw; left:8px; top: 64px; max-width: none; border-radius:8px; }
+}
+
+/* small improvements */
+.empty-cart p { color:#444; margin-bottom:10px; }
+.btn-ir-comprar, .view-cart-btn, .btn-pagar { display:inline-block; text-decoration:none; padding:8px 12px; border-radius:8px; background:#111; color:#fff; text-align:center; }
+
 
 /* === CARRITO === */
 .icono_carrito {
@@ -283,50 +164,9 @@ body {
   display: inline-block;
 }
 
-.cart-count {
-  position: absolute;
-  top: -5px;
-  right: -10px;
-  background: black;
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 50%;
-  z-index: 2;
-}
 
-.cart-dropdown {
-  position: absolute;
-  top: 100%; /* justo debajo del icono */
-  right: 0;
-  width: 320px;
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  display: none;
-  flex-direction: column;
-  z-index: 3000; /* más alto que navbar y otros menús */
-  padding: 10px;
-}
 
-.cart-dropdown h4 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
-}
 
-.cart-item {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.cart-item img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-}
 
 .item-info {
   flex: 1;
@@ -355,10 +195,6 @@ body {
 
 
 
-/* Mostrar carrito al pasar el mouse */
-.icono_carrito:hover .cart-dropdown {
-  display: flex;
-}
 
 /* Opción para abrir con click */
 .icono_carrito.open .cart-dropdown {
@@ -402,28 +238,7 @@ body {
 }
 /**/
 /* === CARRITO DESPLEGABLE (ESTILO MEJORADO) === */
-.cart-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 340px;
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  display: none;
-  flex-direction: column;
-  z-index: 3000;
-  padding: 12px;
-  font-family: 'REM', sans-serif;
-}
 
-.cart-dropdown h4 {
-  margin: 0 0 12px;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 6px;
-}
 
 .cart-item {
   display: flex;
