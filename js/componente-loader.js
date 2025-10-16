@@ -47,7 +47,8 @@ if (!document.getElementById("chatbotJS")) {
 }
 
 /* === INTERACCIONES === */
-// --- Navbar con dropdowns ---
+
+// --- Navbar con dropdowns (funciona para escritorio y móvil) ---
 function setupNavbarDropdowns() {
   const buttons = document.querySelectorAll(".nav-btn");
 
@@ -81,6 +82,19 @@ function setupNavbarDropdowns() {
     }
   });
 }
+
+// --- Menú de Hamburguesa ---
+function setupHamburgerMenu() {
+  const menuToggle = document.querySelector(".menu-toggle");
+  const navLinks = document.querySelector(".nav-links");
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+  }
+}
+
 
 // --- Modal de acceso de usuario ---
 function setupAccesoUsuario() {
@@ -116,6 +130,7 @@ function setupAccesoUsuario() {
     });
   }
 }
+
 
 // --- Tabs de producto ---
 function setupTabsProducto() {
@@ -271,20 +286,23 @@ function setupCarousel(carouselId) {
 /* === CARGA DE COMPONENTES SEGÚN LA PÁGINA === */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Comunes ---
-  if (document.getElementById("navbar"))
+  if (document.getElementById("navbar")) {
     cargarComponente("navbar", "componentesHTML/navbar.html")
       .then(() => {
-        setupNavbarDropdowns();
+        setupNavbarDropdowns(); // Activa los dropdowns de categorías
+        setupHamburgerMenu();   // Activa el botón de hamburguesa
         document.dispatchEvent(new CustomEvent("navbar:ready"));
       });
+  }
 
-  if (document.getElementById("footer"))
+  if (document.getElementById("footer")) {
     cargarComponente("footer", "componentesHTML/footer.html");
+  }
 
-  if (document.getElementById("acceso-usuario"))
+  if (document.getElementById("acceso-usuario")) {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
       .then(setupAccesoUsuario);
-
+  }
   // --- Home ---
   if (document.getElementById("hero"))
     cargarComponente("hero", "componentesHTML/hero.html");
@@ -371,4 +389,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (err) {
       console.error("❌ Error cargando productos:", err);
     }
-  });

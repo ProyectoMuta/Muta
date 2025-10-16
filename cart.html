@@ -96,12 +96,27 @@
   <div id="favoritos"></div>
 
   <!-- Scripts -->
+   
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      
+      emailjs.init("c6rFoEWtP7zw8Eqi2"); 
+    })();
+  </script>
+
   <script src="js/componente-loader.js"></script>
   <script src="js/carritoJS/cart.js"></script>
   <script src="js/carritoJS/checkout.js"></script>
-  <script defer src="js/favoritos.js"></script>
+    <script src="js/carritoJS/seleccion-envios.js"></script>
+  <script src="js/carritoJS/seleccion-direccion.js"></script>
+  <script src="js/carritoJS/seleccion-pago.js"></script>
   <script>
     setupCart();
+    
+    // Activa los listeners para todo el proceso de compra
+    inicializarProcesoDeCompra();
+
   </script>
 </body>
 </html>

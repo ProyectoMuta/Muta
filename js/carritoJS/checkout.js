@@ -52,6 +52,148 @@ function mostrarOverlay(ruta, openerEl = null) {
     });
 }
 
+// =======================================================
+// === ORQUESTADOR PRINCIPAL DEL PROCESO DE PAGO ===
+// =======================================================
+function inicializarProcesoDeCompra() {
+    document.body.addEventListener('click', (e) => {
+        const target = e.target;
+        const btnCheckout = target.closest(".checkout-btn");
+        const opcionEnvio = target.closest(".opcion-envio");
+        const btnDirecciones = target.closest(".btn-direcciones");
+        const btnVerMapaPuntos = target.closest(".ver-cambiar-mapa");
+        const btnVerTienda = target.closest(".btn-ver-tienda");
+        const btnVolverEnvios = target.closest(".volver-envios");
+        const btnCerrarModal = target.closest(".cerrar-modal");
+
+        if (btnCheckout) {
+            e.preventDefault();
+            const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+            if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
+            mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
+              .then(() => { if (typeof inicializarLogicaEnvios === 'function') inicializarLogicaEnvios(); });
+            return;
+        }
+
+        if (opcionEnvio && !target.closest('.envio-accion')) {
+            e.preventDefault();
+            const metodo = opcionEnvio.dataset.metodo;
+            localStorage.setItem("selectedMetodoEnvio", metodo);
+            if (metodo === 'domicilio' && !localStorage.getItem('selectedDireccion')) { alert('Por favor, agrega y selecciona un domicilio.'); return; }
+            if (metodo === 'punto' && !localStorage.getItem('selectedPunto')) { alert('Por favor, selecciona un punto de retiro.'); return; }
+            localStorage.setItem("selectedEnvio", String(safeParsePrice(opcionEnvio.querySelector(".costo-envio")?.dataset.envio)));
+            mostrarOverlay("componentesHTML/carritoHTML/seleccion-pago.html", opcionEnvio)
+              .then(() => { if (typeof inicializarLogicaPago === 'function') inicializarLogicaPago(); });
+            return;
+        }
+        
+        if (btnDirecciones) { e.preventDefault(); mostrarOverlay("componentesHTML/carritoHTML/seleccion-direccion.html", btnDirecciones).then(() => { if (typeof inicializarGestionDirecciones === 'function') inicializarGestionDirecciones(); }); return; }
+        if (btnVerMapaPuntos) { e.preventDefault(); mostrarOverlay("componentesHTML/mapaHTML/mapa-puntos.html", btnVerMapaPuntos).then(() => { if (typeof initMapaPuntos === 'function') initMapaPuntos(); }); return; }
+        if (btnVerTienda) { e.preventDefault(); mostrarOverlay("componentesHTML/mapaHTML/mapa-tienda.html", btnVerTienda); return; }
+        if (btnVolverEnvios) { e.preventDefault(); mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", btnVolverEnvios).then(() => { if (typeof inicializarLogicaEnvios === 'function') inicializarLogicaEnvios(); }); return; }
+        if (btnCerrarModal) { const overlay = document.getElementById("checkout-overlay"); if (overlay) overlay.innerHTML = ""; document.body.classList.remove("modal-open"); return; }
+    });
+    
+    document.addEventListener("submit", (e) => {
+        if (e.target.id === 'payment-form') {
+            e.preventDefault();
+            finalizarCompra(e.target.querySelector('.finalizar-compra'));
+        }
+    });
+}
+
+// === LÓGICA DE ENVÍO DE EMAILJS ===
+function getOrderData() {
+    const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+    const subtotal = getSubtotal();
+    const envioCosto = safeParsePrice(localStorage.getItem("selectedEnvio") || 0);
+    const total = subtotal + envioCosto;
+    
+    const customerName = document.getElementById("nombre-cliente")?.value || "Cliente Muta";
+    const customerEmail = document.getElementById("email-cliente")?.value;
+    
+    const orderId = `MUTA-${Math.floor(Math.random() * 90000) + 10000}`;
+    
+    const itemsHtml = cart.map(item => 
+        `<li>${item.quantity}x ${item.name} (Talle: ${item.size}) - $${formatCurrency(item.price * item.quantity)}</li>`
+    ).join('');
+
+    let detallesPago = "No especificado";
+    // ===== CORRECCIÓN CLAVE =====
+    // Se usa la clase correcta: "activo"
+    const metodoActivo = document.querySelector(".pago-card.opcion-pago.activo");
+    // ===========================
+    if (metodoActivo) {
+        const metodo = metodoActivo.dataset.metodo;
+        if (metodo === 'tarjeta') {
+            const ultimosCuatroDigitos = document.getElementById("numero")?.value.slice(-4) || 'XXXX';
+            detallesPago = `Tarjeta de Crédito/Débito terminada en ${ultimosCuatroDigitos}`;
+        } else if (metodo === 'mercadopago') {
+            detallesPago = "Mercado Pago";
+        }
+    }
+
+    const metodoEnvio = localStorage.getItem("selectedMetodoEnvio");
+    let detallesDireccion = "No especificado";
+    let detallesEnvio = "No especificado";
+    if (metodoEnvio === 'domicilio') {
+        const direccionGuardada = JSON.parse(localStorage.getItem("selectedDireccion"));
+        detallesEnvio = "Envío a domicilio";
+        if (direccionGuardada) {
+            detallesDireccion = `${direccionGuardada.calle}, ${direccionGuardada.ciudad}, ${direccionGuardada.provincia}`;
+        }
+    } else if (metodoEnvio === 'punto') {
+        const puntoNombre = localStorage.getItem("selectedPuntoName");
+        detallesEnvio = "Retiro en punto de entrega";
+        detallesDireccion = puntoNombre || "Punto no especificado";
+    } else if (metodoEnvio === 'tienda') {
+        detallesEnvio = "Retiro en tienda MUTA";
+        detallesDireccion = "Av. Colón 740, Mendoza";
+    }
+
+    return {
+        customer_name: customerName,
+        order_id: orderId,
+        items_html: `<ul>${itemsHtml}</ul>`,
+        subtotal: `$${formatCurrency(subtotal)}`,
+        costo_envio: `$${formatCurrency(envioCosto)}`,
+        total_amount: `$${formatCurrency(total)}`,
+        detalles_pago: detallesPago,
+        sdetalles_envio: detallesEnvio,
+        detalles_direccion: detallesDireccion,
+        email_cliente: customerEmail 
+    };
+}
+
+
+function finalizarCompra(finishBtn) {
+    const originalText = finishBtn.textContent;
+    const templateParams = getOrderData();
+    if (!templateParams.customer_name || !templateParams.email_cliente || !templateParams.email_cliente.includes('@')) { 
+        alert("Por favor, completa tu nombre y un email válido."); 
+        return; 
+    }
+    finishBtn.textContent = "Procesando...";
+    finishBtn.disabled = true;
+    emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
+      .then((response) => { 
+          alert(`¡Gracias por tu compra, ${templateParams.customer_name}! 📧 Se ha enviado un email de confirmación.`); 
+          localStorage.removeItem("mutaCart"); 
+          localStorage.removeItem("selectedMetodoEnvio");
+          localStorage.removeItem("selectedDireccion");
+          localStorage.removeItem("selectedPunto");
+          window.location.href = "index.html"; 
+      })
+      .catch((error) => { 
+          console.error('ERROR AL ENVIAR EMAIL:', error); 
+          alert("Tu compra se completó, pero no pudimos enviar el email de confirmación."); 
+      })
+      .finally(() => { 
+          finishBtn.textContent = originalText; 
+          finishBtn.disabled = false; 
+      });
+}
+
 function waitForOverlayElement(selector, timeout = 5000) {
   const container = document.getElementById("checkout-overlay");
   return new Promise((resolve, reject) => {
