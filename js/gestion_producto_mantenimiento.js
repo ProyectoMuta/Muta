@@ -1,23 +1,45 @@
 document.addEventListener("DOMContentLoaded", async function () {
-  const tbody = document.querySelector('#tbl tbody');
-  const chips = document.querySelectorAll('.chip');
-  const q = document.getElementById('q');
+    const tbody = document.querySelector('#tbl tbody');
+    const chips = document.querySelectorAll('.chip');
+    const q = document.getElementById('q');
 
-  let productos = [];   // acá guardamos lo que viene de Mongo
-  let filter = 'todos';
-  let query = '';
+    let productos = [];   // acá guardamos lo que viene de Mongo
+    let filter = 'todos';
+    let query = '';
+
+    //Subnav de esta página con guardas
+      document.getElementById("nuevoProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "nuevo_producto_mantenimiento.html";
+    });
+    document.getElementById("categoriaProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "categoria_mantenimiento.html";
+    });
+    document.getElementById("inventarioProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "gestion_producto_mantenimiento.html";
+    });
 
   // --- Obtener productos desde PHP ---
-  async function cargarProductos() {
-    try {
-      let res = await fetch("backend/productController.php");
-      productos = await res.json();
-      render();
-    } catch (err) {
-      console.error("Error cargando productos:", err);
-      tbody.innerHTML = `<tr><td colspan="9">Error cargando productos</td></tr>`;
+    async function cargarProductos() {
+      try {
+        const res = await fetch("backend/productController.php");
+        const text = await res.text();  // leemos como texto por si PHP imprime warnings
+
+        let data;
+        try {
+          data = JSON.parse(text);      // intentamos parsear a JSON
+        } catch (e) {
+          console.error("La respuesta no es JSON válido:\n", text);
+          throw e;
+        }
+
+        // Aseguramos array (el endpoint puede devolver 1 item cuando se pide ?id=)
+        productos = Array.isArray(data) ? data : [data];
+        render();
+      } catch (err) {
+        console.error("Error cargando productos:", err);
+        tbody.innerHTML = `<tr><td colspan="9">Error cargando productos</td></tr>`;
+      }
     }
-  }
 
   function estadoBadge(est){
     const map = {
@@ -52,30 +74,31 @@ document.addEventListener("DOMContentLoaded", async function () {
       .filter(p => pasaFiltro(p) && pasaBusqueda(p))
       .map(p => {
         // Si el producto tiene variantes, tomamos la primera como ejemplo
-      const variantes = Array.isArray(p.variantes) ? p.variantes : [];
-      const talles    = variantes.map(v => v.talle).filter(Boolean).join(" · ");
-      const color     = variantes[0]?.color || "#000";
-      const stockTot  = variantes.reduce((acc,v)=> acc + (parseInt(v.stock,10)||0), 0);
+        const variantes = Array.isArray(p.variantes) ? p.variantes : [];
+        const talles    = variantes.map(v => v.talle).filter(Boolean).join(" · ");
+        const color     = variantes[0]?.color || "#000";
+        const stockTot  = variantes.reduce((acc,v)=> acc + (parseInt(v.stock,10) || 0), 0);
 
         return `
-        <tr>
-          <td>${p._id}</td>
-          <td>${p.nombre || ''}</td> 
-          <td>${p.categoria || ''}</td>
-          <td>${talles}</td>
-          <td><span class="dot" style="background:${color}"></span></td>
-          <td>$${p.precio || 0}</td> 
-          <td>${Number.isFinite(stockTot) ? stockTot : (p.stock ?? 0)}</td>
-          <td>${estadoBadge(p.estado || 'Activo')}</td>
-          <td>
-            <div class="actions">
-              <button class="btn-icon editar" data-id="${p._id}"><i class="bi bi-pencil"></i></button>
-              <button class="btn-icon eliminar" data-id="${p._id}"><i class="bi bi-trash"></i></button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+          <tr>
+            <td>${p._id}</td>
+            <td>${p.nombre || ''}</td>
+            <td>${p.categoria || ''}</td>
+            <td>${talles}</td>
+            <td><span class="dot" style="background:${color}"></span></td>
+            <td>$${p.precio || 0}</td>
+            <td>${Number.isFinite(stockTot) ? stockTot : (p.stock ?? 0)}</td>
+            <td>${estadoBadge(p.estado || 'Activo')}</td>
+            <td>
+              <div class="actions">
+                <button class="btn-icon editar"   data-id="${p._id}" title="Editar"><i class="bi bi-pencil"></i></button>
+                <button class="btn-icon eliminar" data-id="${p._id}" title="Eliminar"><i class="bi bi-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
   tbody.innerHTML = rows || `<tr><td colspan="9">Sin resultados</td></tr>`;
 }
 
@@ -87,6 +110,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!id) { alert('No se encontró el ID del producto'); return; }
 
     if (btn.classList.contains('editar')) {
+      //ir formulario de edicion con id
       window.location.href = `nuevo_producto_mantenimiento.html?id=${encodeURIComponent(id)}`;
     } else if (btn.classList.contains('eliminar')) {
       eliminarProducto(id);

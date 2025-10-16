@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Traer productos desde PHP (MongoDB)
     let res = await fetch("backend/productController.php");
     let productos = await res.json();
-
+    if (!contenedor) return;  
     // Renderizar productos como cards
     contenedor.innerHTML = productos.map(p => `
       <article class="card producto">
@@ -344,7 +344,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 document.addEventListener("DOMContentLoaded", async () => {
     const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
     //  este id lo tenés que poner en el HTML del carrusel NUEVOS INGRESOS
-
+    if (!contenedor) return;   
     try {
       let res = await fetch("backend/productController.php");
       let productos = await res.json();
@@ -372,25 +372,3 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("❌ Error cargando productos:", err);
     }
   });
-
-//nuevos productos ingresados por el usuario
-document.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-
-  if (!id) return;
-
-  try {
-    let res = await fetch(`backend/productController.php?id=${id}`);
-    let producto = await res.json();
-
-    document.getElementById("nombreProducto").textContent = producto.nombre;
-    document.getElementById("precioProducto").textContent = `$${producto.precio.toLocaleString("es-AR")}`;
-    document.getElementById("descripcionProducto").textContent = producto.descripcion;
-
-    // Imagen principal
-    document.getElementById("main-image").src = producto.imagenes?.[0] ?? "img/default.jpg";
-  } catch (err) {
-    console.error("Error cargando producto:", err);
-  }
-});

@@ -34,72 +34,82 @@ try {
             // CREAR PRODUCTO (POST)
             // =======================
             case 'POST':
+                $imagenes = [];
                 // Si viene como form-data (con imágenes)
                 if (!empty($_FILES['formFileMultiple']['name'][0])) {
-                    $imagenes = [];
                     $uploadDir = __DIR__ . "/../uploads/";
-
-                    if (!file_exists($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
+                    if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
 
                     foreach ($_FILES['formFileMultiple']['tmp_name'] as $i => $tmpName) {
                         $fileName = time() . "_" . basename($_FILES['formFileMultiple']['name'][$i]);
                         $filePath = $uploadDir . $fileName;
-
                         if (move_uploaded_file($tmpName, $filePath)) {
-                            $imagenes[] = "uploads/" . $fileName; // guardamos ruta relativa
+                            $imagenes[] = "uploads/" . $fileName; // ruta relativa
                         }
                     }
-                } else {
-                    $imagenes = [];
-                }
-                // --- Variantes (acepta array o escalar) ---
-                $asArray = function($v) {
-                    if (is_array($v)) return $v;
-                    if ($v === null || $v === '') return [];
-                    return [$v];
+                } 
+                // 2) Fuente de datos: JSON o form-data
+                $raw = file_get_contents('php://input');
+                $maybeJson = json_decode($raw, true);
+                $src = is_array($maybeJson) ? $maybeJson : $_POST;
+
+                // helper: devuelve siempre un array plano
+                $norm = function($v) {
+                if ($v === null) return [];
+                if (is_array($v)) return array_values($v);   // asegura índices 0..n
+                return [$v];                                 // valor suelto -> [valor]
                 };
+                // --- variantes ---
+                $talles = $norm($src['talle'] ?? $src['talles'] ?? null);
+                $stocks = $norm($src['stock'] ?? null);
+                $pesos  = $norm($src['peso']  ?? null);
+                $colors = $norm($src['color'] ?? null);
 
-                $talles = $asArray($_POST['talle'] ?? []);
-                $stocks = $asArray($_POST['stock'] ?? []);
-                $pesos  = $asArray($_POST['peso']  ?? []);
-                $colors = $asArray($_POST['color'] ?? []);
-
-
-                //variantes
                 $variantes = [];
-                if (isset($_POST['talle']) && is_array($_POST['talle'])) {
-                    $talles = $_POST['talle'];
-                    $stocks = $_POST['stock'] ?? [];
-                    $pesos  = $_POST['peso']  ?? [];
-                    $colors = $_POST['color'] ?? [];
-                    foreach ($talles as $i => $talle) {
-                        $variantes[] = [
-                            "talle" => $talle,
-                            "stock" => (int)($stocks[$i] ?? 0),
-                            "peso"  => (float)($pesos[$i] ?? 0),
-                            "color" => $colors[$i] ?? "#000000",
-                        ];
-                    }
+                $max = max(count($talles), count($stocks), count($pesos), count($colors));
+                for ($i = 0; $i < $max; $i++) {
+                    $t = $talles[$i] ?? null;
+                    if ($t === null || $t === '') continue;
+                    $variantes[] = [
+                        'talle' => $t,
+                        'stock' => isset($stocks[$i]) ? (int)$stocks[$i] : 0,
+                        'peso'  => isset($pesos[$i])  ? (float)$pesos[$i]  : 0.0,
+                        'color' => $colors[$i] ?? '#000000',
+                    ];
                 }
+
+                // Lee tipo de variante (usar $src porque puede venir JSON o form-data)
+                $tipoVariante = strtolower(trim($src['tipoVariante'] ?? 'remera'));
+
+                // Categoría: si viene vacía, usar por defecto según el tipo
+                $cat = trim($src['categoria'] ?? '');
+                if ($cat === '') {
+                    // Soporta "pantalon" / "pantalón"
+                    $cat = in_array($tipoVariante, ['pantalon','pantalón']) ? 'pantalones' : 'remeras';
+                }
+
+                // Subcategoría opcional (también desde $src)
+                $subcat = trim($src['subcategoria'] ?? '');
+
                 // stock total
                 $stockTotal = array_sum(array_map(fn($v) => (int)($v['stock'] ?? 0), $variantes));
-        
+
                 $nuevo = [
-                    "nombre"      => $_POST["nombre"] ?? "",
-                    "descripcion" => $_POST["descripcion"] ?? "",
-                    "precio"      => (int)($_POST["precio"] ?? 0),
-                    "precioPromo" => (int)($_POST["precioPromo"] ?? 0),
-                    "costo"       => (int)($_POST["costo"] ?? 0),
-                    "categoria"   => $_POST["categoria"] ?? "remeras",
-                    "subcategoria"=> $_POST["subcategoria"] ?? "",
-                    "imagenes"    => $imagenes,
-                    "variantes"   => $variantes,           
-                    "stock"       => $stockTotal,          
-                    "estado"      => $_POST["estado"] ?? "Activo",
-                    "fechaAlta"   => date("Y-m-d H:i:s")
+                    "nombre"        => $src["nombre"]        ?? "",
+                    "descripcion"   => $src["descripcion"]   ?? "",
+                    "precio"        => (int)($src["precio"] ?? 0),
+                    "precioPromo"   => (int)($src["precioPromo"] ?? 0),
+                    "costo"         => (int)($src["costo"]  ?? 0),
+                    "categoria"     => $cat,        // <- siempre seteado
+                    "subcategoria"  => $subcat,     // <- usar el saneado
+                    "tipoVariante"  => $tipoVariante, // <- opcional, útil para futuras vistas
+                    "imagenes"      => !empty($imagenes) ? $imagenes : ($src['imagenes'] ?? []),
+                    "variantes"     => $variantes,
+                    "stock"         => $stockTotal,
+                    "estado"        => $src["estado"] ?? "Activo",
+                    "fechaAlta"     => date("Y-m-d H:i:s"),
                 ];
+
 
                 $db->products->insertOne($nuevo);
                 echo json_encode(["message" => "✅ Producto agregado"]);
