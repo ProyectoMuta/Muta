@@ -19,20 +19,30 @@ document.addEventListener("componente:cargado", (e) => {
           return;
         }
 
-        try {
-          const res = await fetch("backend/userController.php?action=register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, email, password })
-          });
-          const data = await res.json();
+          try {
+            const res = await fetch("backend/userController.php?action=register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ nombre, email, password })
+            });
 
-          if (data.ok) {
-            alert("Registro exitoso. Ahora puedes iniciar sesión.");
-            document.getElementById("go-login")?.click();
-          } else {
-            alert("Error: " + (data.error || "No se pudo registrar"));
-          }
+            const text = await res.text();
+            console.log("Respuesta cruda del servidor:", text);
+
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch (err) {
+              alert("El servidor no devolvió JSON válido. Mira la consola.");
+              return;
+            }
+
+            if (data.ok) {
+              alert("Registro exitoso. Ahora puedes iniciar sesión.");
+              document.getElementById("go-login")?.click();
+            } else {
+              alert("Error: " + (data.error || "No se pudo registrar"));
+            }
         } catch (err) {
           console.error("Error en registro:", err);
           alert("Error de conexión con el servidor");

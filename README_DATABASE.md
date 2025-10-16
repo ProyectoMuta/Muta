@@ -1,5 +1,22 @@
 conectar en la web mediante http://localhost/muta/index.html
 
+agregrar el proyecto a la carpeta C:\xampp\htdocs
+
+Tener instalado composer y agregado al path.
+En D:\Muta\backend (cambiar a direcciond e tu proyecto), abrir cmd y hacer:
+composer install
+
+Descargar la extensión MongoDB para PHP
+
+Andá a la página oficial de PECL: https://pecl.php.net/package/mongodb/2.1.4/windows
+
+Elegí la versión que coincida con tu PHP (yo snt uso PHP 8.2.12 ).
+
+Descargá el .dll correcto según tu arquitectura:
+x64 si tu PHP es de 64 bits (lo más común en XAMPP moderno).
+Thread Safe (TS) si tu PHP es TS (lo podés ver ejecutando php -i | find "Thread").
+Ejemplo: php_mongodb-1.16.2-8.2-ts-x64.zip.
+
 1. MySQL/MariaDB (desde XAMPP)
 1.1 Crear base de datos y usuario
 Ejecutar en phpMyAdmin (pestaña SQL) o en consola:
@@ -27,13 +44,14 @@ Ingresar la contraseña muta123. Si entra sin problemas, la base y el usuario es
 Ejecutar en mutaDB:
 
 sql
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE TABLE usuarios ( 
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    nombre VARCHAR(100) NOT NULL, 
+    email VARCHAR(150) NOT NULL UNIQUE, 
+    password_hash VARCHAR(255) NOT NULL, 
+    rol ENUM('admin','cliente') DEFAULT 'cliente', 
+    estado ENUM('Activo','Inactivo') DEFAULT 'Activo' 
+    );
 
 2. MongoDB
 2.1 Instalación
@@ -95,36 +113,3 @@ MySQL: crear mutaDB, usuario muta_dev/muta123, tabla usuarios.
 MongoDB: instalar Community Server, no requiere configuración inicial, se autogenera al insertar.
 
 Errores comunes: extensión PHP, dependencias de Composer, librerías faltantes → soluciones arriba.
-
----------------------------------------------------------------
-📌 Configuración de Alias en Apache (XAMPP)
-Si tu proyecto no está dentro de htdocs (por ejemplo, lo tenés en D:\Muta), podés crear un Alias en Apache para que sea accesible desde el navegador sin mover carpetas.
-
-🔹 Pasos
-Abrí el archivo de configuración de Apache:
-
-C:\xampp\apache\conf\httpd.conf
-Al final del archivo, agregá lo siguiente (ajustando la ruta si tu proyecto está en otra carpeta):
-
-# Alias para el proyecto MUTA
-Alias /muta "D:/Muta"
-
-<Directory "D:/Muta">
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
-
-⚠️ Importante: usá / en lugar de \ en las rutas de Windows.
-
-Guardá los cambios y reiniciá Apache desde el panel de XAMPP.
-
-Ahora podés acceder a tu proyecto en:
-
-Código
-http://localhost/muta/
-Ejemplo para el backend:
-
-Código
-http://localhost/muta/backend/productController.php
-✅ Con esto, tu proyecto queda accesible sin necesidad de moverlo a htdocs.
