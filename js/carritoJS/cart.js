@@ -38,9 +38,18 @@ function setupCart() {
     miniCartDropdown: null // .cart-dropdown
   };
 
-  // Guardar carrito en localStorage
+  // Guardar carrito en localStorage si no hay usuario, o en DB si hay usuario
   function saveCart() {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      fetch("backend/userController.php?action=updateCart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: userId, carrito: cart })
+      }).catch(err => console.error("Error guardando carrito en DB:", err));
+    } else {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    }
   }
 
   // Formatear número

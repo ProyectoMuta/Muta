@@ -203,4 +203,50 @@
     await ensureComponentLoaded();
     injectHeartsIntoCategoryCards();
   });
+
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".icono_corazon, .btn-favorito");
+    if (!btn) return;
+
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      // Mostrar modal de login si no hay sesión
+      const modal = document.getElementById("acceso-usuario-container");
+      if (modal) modal.style.display = "flex";
+      return;
+    }
+
+    // Obtener favoritos actuales (desde localStorage como cache)
+    let favoritos = JSON.parse(localStorage.getItem("userFavoritos")) || [];
+
+    // Cada botón debe tener un data-id con el ID del producto
+    const productoId = btn.dataset.id;
+    if (!productoId) {
+      console.warn("El botón de favorito no tiene data-id");
+      return;
+    }
+
+    // Toggle: agregar o quitar
+    if (favoritos.includes(productoId)) {
+      favoritos = favoritos.filter(f => f !== productoId);
+      btn.classList.remove("activo"); // opcional: cambiar estilo
+    } else {
+      favoritos.push(productoId);
+      btn.classList.add("activo");
+    }
+
+    // Guardar en cache local
+    localStorage.setItem("userFavoritos", JSON.stringify(favoritos));
+
+    // Enviar a backend para persistir en MongoDB
+    try {
+      await fetch("backend/userController.php?action=updateFavoritos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: userId, favoritos })
+      });
+    } catch (err) {
+      console.error("Error guardando favoritos en DB:", err);
+    }
+  });
 })();
