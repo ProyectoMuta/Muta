@@ -110,8 +110,8 @@ try {
                     "fechaAlta"     => date("Y-m-d H:i:s"),
                 ];
 
-
                 $mongoDB->products->insertOne($nuevo);
+
                 echo json_encode(["message" => "✅ Producto agregado"]);
                 break;
 
