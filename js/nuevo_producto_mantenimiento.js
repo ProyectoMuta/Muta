@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (contVariantes && !contVariantes.querySelector(".grupo-variante")) addVarianteRow(); // ADDED
 
   // Cargar categorías/subcategorías (protegido)
-  fetch("/api/categorias")
+  fetch("backend/categoriasController.php")
     .then(r => r.ok ? r.json() : [])
     .then((data = []) => {
       const catSel = $("#inputState");            // name="categoria"
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!form) return;
 
     // ADDED: botón superior dispara submit del form
-    $("#guardarBtnTop")?.addEventListener("click", () => form.requestSubmit?.() || form.submit());
+    $("#guardarBtnTop")?.addEventListener("click", () => form.requestSubmit());
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

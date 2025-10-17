@@ -334,18 +334,26 @@ document.addEventListener("click", (e) => {
 
 // Abrir selección de envíos desde botón checkout
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".checkout-btn");
-  if (!btn) return;
+  const btnCheckout = e.target.closest(".checkout-btn");
+  if (!btnCheckout) return;
   e.preventDefault();
 
-  // Validación extra
+  // 1. Verificar sesión
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    document.getElementById("acceso-usuario-container").style.display = "flex";
+    return;
+  }
+
+  // 2. Verificar carrito (doble seguridad)
   const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
   if (cart.length === 0) {
     alert("Tu carrito está vacío. Agregá productos antes de continuar.");
     return;
   }
 
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btn)
+  // 3. Abrir overlay de envíos
+  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
 });
