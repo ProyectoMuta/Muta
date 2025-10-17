@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => 'a753ec88e9fb7d187d2bd586bc526fe4d26b8745',
+        'pretty_version' => 'dev-php_mongo_sql',
+        'version' => 'dev-php_mongo_sql',
+        'reference' => '11d5328ef19fea88583bf940d723551907497b4d',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => 'a753ec88e9fb7d187d2bd586bc526fe4d26b8745',
+            'pretty_version' => 'dev-php_mongo_sql',
+            'version' => 'dev-php_mongo_sql',
+            'reference' => '11d5328ef19fea88583bf940d723551907497b4d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
