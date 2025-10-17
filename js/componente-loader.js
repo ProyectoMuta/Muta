@@ -389,9 +389,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (err) {
       console.error("❌ Error cargando productos:", err);
     }
-<<<<<<< HEAD
-  });
-=======
   });
 
 //nuevos productos ingresados por el usuario
@@ -424,4 +421,3 @@ document.addEventListener("click", (e) => {
   const dropdown = btn.parentElement.querySelector(".cart-dropdown");
   dropdown.classList.toggle("active");
 });
->>>>>>> usuarios

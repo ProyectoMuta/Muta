@@ -12,7 +12,7 @@ try {
             case 'GET':
                 if (!empty($_GET['id'])) {
                     $id = $_GET['id'];
-                    $producto = $db->products->findOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
+                    $producto = $mongoDB->products->findOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
                     if ($producto) {
                         $producto["_id"] = (string)$producto["_id"];
                         echo json_encode($producto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -21,7 +21,7 @@ try {
                         echo json_encode(["error" => "Producto no encontrado"]);
                     }
                 } else {
-                    $productos = $db->products->find()->toArray();
+                    $productos = $mongoDB->products->find()->toArray();
                     $productos = array_map(function ($p) {
                         $p["_id"] = (string)$p["_id"];
                         return $p;
@@ -111,7 +111,7 @@ try {
                 ];
 
 
-                $db->products->insertOne($nuevo);
+                $mongoDB->products->insertOne($nuevo);
                 echo json_encode(["message" => "✅ Producto agregado"]);
                 break;
 
@@ -148,7 +148,7 @@ try {
                     // Nunca permitir cambiar el _id
                     unset($data['_id']);
 
-                    $db->products->updateOne(
+                    $mongoDB->products->updateOne(
                         ["_id" => new MongoDB\BSON\ObjectId($id)],
                         ['$set' => $data]
                     );
@@ -169,7 +169,7 @@ try {
                 exit;
             }
 
-            $db->products->deleteOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
+            $mongoDB->products->deleteOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
             echo json_encode(["message" => "🗑️ Producto eliminado"]);
             break;
 
