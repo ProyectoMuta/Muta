@@ -318,3 +318,74 @@ body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Aria
     padding: 12px;
   }
 }
+/* === Variantes: alineación y separación mejoradas === */
+#contenedor-variantes .grupo-variante{
+  align-items: center;                /* Centra verticalmente toda la fila */
+}
+
+/* Altura consistente de controles (select/inputs) */
+#contenedor-variantes .grupo-variante .form-control,
+#contenedor-variantes .grupo-variante .form-select{
+  height: 40px;
+}
+
+/* Bloque "Color" en línea, centrado y con aire */
+.color-inline{
+  display: inline-flex;
+  align-items: center;                /* Centra verticalmente label + swatch + icono */
+  gap: 16px;                          /* Más separación entre "Color", el swatch y el icono */
+  margin-left: 16px;                  /* Lo despega de los inputs de la izquierda */
+}
+
+/* Etiqueta "Color" */
+.color-inline .color-label{
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Cuadradito del selector de color */
+.color-inline .color-swatch,
+input[type="color"].color-swatch{
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Botón eliminar: SOLO ícono (sin rectángulo) */
+.color-inline .trash-btn{
+  background: transparent !important; /* quita el rectángulo gris */
+  border: none !important;
+  width: auto;
+  height: auto;
+  padding: 0;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Estilo del ícono */
+.color-inline .trash-btn i{
+  font-size: 18px;
+  color: #dc3545;                     /* rojo */
+  transition: transform .12s ease, color .12s ease;
+}
+
+.color-inline .trash-btn:hover i{
+  color: #b71c1c;
+  transform: scale(1.08);
+}
+
+/* En pantallas medias, si no entra todo en una línea, que se apile pulcro */
+@media (max-width: 992px){
+  .color-inline{
+    margin-left: 0;
+    gap: 12px;
+  }
+}

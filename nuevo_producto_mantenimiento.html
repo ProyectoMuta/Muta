@@ -103,36 +103,35 @@
         <option value="pantalon">Pantalón</option>
       </select>
     </div>
-
-      <div class="add-product-variant-section"> 
-        <label class="form-label1">Agregar Producto <i id="agregar1" class="icon-btn add-btn">+</i></label> 
-      </div>
-      
-      <div id="contenedor-variantes">
-        <div class="grupo-variante row g-2"></div>        
-      </div>
+    <div class="add-product-variant-section">
+    <label class="form-label1">Agregar variante
+        <i id="agregar1" class="icon-btn add-btn" role="button" title="Agregar">+</i>
+      </label>
+    </div>
+    <!-- CONTENEDOR DE VARIANTES -->
+    <div id="contenedor-variantes">
+      <!-- Las filas se agregan aquí con JS -->
+    </div>
 
       <div class="col-md-6">
-          <label for="inputState" class="form-label">Categoría</label>
-         <select id="inputState" class="form-select" name="categoria"></select>
+        <label for="inputState" class="form-label">Categoría</label>
+        <select id="inputState" class="form-select" name="categoria"></select>
       </div>
       <div class="col-md-6">
-          <label for="inputState" class="form-label">Subcategoría</label>
+          <label for="subcategoriaSelect" class="form-label">Subcategoría</label>
           <select id="subcategoriaSelect" class="form-select" name="subcategoria"></select>
       </div>
         
         
         <div class="col-12 d-flex justify-content-end gap-3">
-            <button id="volverBtn" class="guardar-btn23">Volver</button>
-           <button id="guardarBtn" type="submit" class="guardar-btn2">GUARDAR PRODUCTO</button>
-        </div>
-
+          <button id="volverBtn" type="button" class="guardar-btn23">Volver</button>
+          <button id="guardarBtnTop" class="guardar-btn">GUARDAR PRODUCTO</button>
+        </div> 
     </form>
           </article>    
     </main>
   </div>
 
-  <script src="js/nuevo_producto_mantenimiento.js"></script>
-  <script src="js/gestion_producto_mantenimiento.js"></script>
+  <script src="js/nuevo_producto_mantenimiento.js" defer></script>
 </body>
 </html>

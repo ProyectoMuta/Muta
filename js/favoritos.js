@@ -195,6 +195,9 @@
     });
   }
 
+  // cuando se re-renderizan “nuevos ingresos”, inyectar corazones de nuevo
+  document.addEventListener('nuevos:render', injectHeartsIntoCategoryCards);
+  
   // Inicializar al cargar página
   document.addEventListener("DOMContentLoaded", async () => {
     await ensureComponentLoaded();
