@@ -93,7 +93,7 @@
         </div>
         <div class="fav-actions">
           <button class="fav-remove" data-id="${p.id}">Quitar</button>
-          <button class="fav-add-cart">Agregar al carrito</button>
+          <button class="fav-view" data-id="${p.id}">Ver producto</button>
         </div>
       `;
       grid.appendChild(card);
@@ -109,31 +109,13 @@
         renderFavorites();
         return;
       }
-      // Agregar al carrito
-      const btnCart = e.target.closest(".fav-add-cart");
-      if (btnCart) {
-        const card = btnCart.closest(".fav-card");
-
-        const nombre = card.querySelector(".fav-name")?.textContent.trim() || "Producto";
-        const precioTexto = card.querySelector(".fav-price")?.textContent.trim() || "$0";
-        const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
-        const img = card.querySelector("img")?.getAttribute("src") || "";
-
-        // Como no hay talle ni color en favoritos → ponemos "Único"
-        const size = "Único";
-        const color = "Único";
-
-        // Llamamos directo a tu API global
-        addToCart(nombre, precio, img, size, color, 1);
-
-        // Feedback visual
-        const original = btnCart.textContent;
-        btnCart.textContent = "Agregado ✓";
-        btnCart.disabled = true;
-        setTimeout(() => {
-          btnCart.textContent = original;
-          btnCart.disabled = false;
-        }, 1200);
+      // Ver producto
+      const btnView = e.target.closest(".fav-view");
+      if (btnView) {
+        const id = btnView.getAttribute("data-id");
+        if (id) {
+          window.location.href = `producto.html?id=${encodeURIComponent(id)}`;
+        }
       }
     };
   }
@@ -203,6 +185,8 @@
     await ensureComponentLoaded();
     injectHeartsIntoCategoryCards();
   });
+    // AGREGAR ESTA LÍNEA para que sea accesible desde otros scripts:
+  window.injectHeartsIntoCategoryCards = injectHeartsIntoCategoryCards;
 
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest(".icono_corazon, .btn-favorito");

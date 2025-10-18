@@ -548,3 +548,18 @@ body { padding-top: 60px; }
 body.cart-page .cart-dropdown {
   display: none !important;
 }
+/* === CORAZÓN HOVER (agregar al final de navbar.css) === */
+
+.icono_corazon {
+  transition: color 0.3s ease, transform 0.2s ease;
+  position: relative;
+}
+
+.icono_corazon:hover {
+  color: #ff0000 !important;
+  transform: scale(1.15);
+}
+
+.icono_corazon:active {
+  transform: scale(0.95);
+}

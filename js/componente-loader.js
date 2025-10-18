@@ -27,25 +27,6 @@ function cargarComponente(id, ruta) {
     });
 }
 
-// === Chatbot (caso especial) ===
-fetch("componentesHTML/chatbot.html")
-  .then(r => r.text())
-  .then(d => { document.getElementById("chatbot").innerHTML = d });
-
-if (!document.getElementById("chatbotCSS")) {
-  const link = document.createElement("link");
-  link.id = "chatbotCSS";
-  link.rel = "stylesheet";
-  link.href = "css/chatbot.css";
-  document.head.appendChild(link);
-}
-if (!document.getElementById("chatbotJS")) {
-  const s = document.createElement("script");
-  s.id = "chatbotJS";
-  s.src = "js/chatbot.js";
-  document.body.appendChild(s);
-}
-
 /* === INTERACCIONES === */
 
 // --- Navbar con dropdowns (funciona para escritorio y móvil) ---
@@ -315,8 +296,12 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("hero-sale", "componentesHTML/hero-sale.html");
 
   if (document.getElementById("carousel-novedades"))
-    cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
-      .then(() => setupCarousel("carousel-novedades"));
+  cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
+    .then(() => {
+      setupCarousel("carousel-novedades");
+      // 🔔 Avisa a favoritos.js que hay nuevas cards para inyectar corazones
+      document.dispatchEvent(new CustomEvent("nuevos:render"));
+    });
 
   // --- Producto ---
   if (document.getElementById("galeria-producto"))
