@@ -57,7 +57,7 @@
   font-size: 14px;
 }
 
-.acceso-usuario-form button {
+.acceso-usuario-form button[type="submit"]  {
   padding: 10px;
   background: #111;
   color: #fff;
@@ -68,7 +68,7 @@
   transition: background-color 0.3s ease;
 }
 
-.acceso-usuario-form button:hover {
+.acceso-usuario-form button[type="submit"]:hover {
   background-color: #333;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .social-btn.google:hover {
-  background-color: #333;
+  background-color: #f5f5f5;
 }
 
 .social-btn.google img {
@@ -142,6 +142,87 @@
   margin: 20px 0 10px;
   margin-top: 30px;
 }
+/* --- NUEVOS ESTILOS PARA LA VISTA DE PERFIL --- */
+
+#acceso-usuario-perfil h2 {
+  text-align: left;
+}
+
+.perfil-datos-basicos {
+  text-align: left;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.perfil-datos-basicos p {
+  margin: 4px 0;
+}
+
+.separador-perfil {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 15px 0;
+}
+
+.perfil-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.perfil-menu li {
+  margin-bottom: 8px;
+}
+
+.perfil-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.perfil-btn:hover {
+  background-color: #e9e9e9;
+}
+
+.perfil-dropdown {
+  display: none;
+  padding: 10px;
+  margin-top: 5px;
+  background: #fafafa;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.btn-logout {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-logout:hover {
+  background: #c00;
+}
+
 
 /* Animación de entrada */
 @keyframes fadeIn {
