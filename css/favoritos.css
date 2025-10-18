@@ -74,11 +74,11 @@
   display:flex; align-items:center; justify-content:space-between;
   padding: 8px 12px; border-top: var(--fav-border);
 }
-.fav-remove, .fav-add-cart{
+.fav-remove, .fav-view{
   border:none; cursor:pointer; padding:6px 10px; border-radius:10px;
 }
 .fav-remove{ background:#f0f0f0; }
-.fav-add-cart{ background:#111; color:#fff; }
+.fav-view{ background:#111; color:#fff; }
 
 /* Estado vacío */
 .fav-empty{
