@@ -131,3 +131,22 @@ function actualizarNavbarUsuario(nombre) {
   }
   document.getElementById("open-auth").title = `Hola, ${nombre}`;
 }
+
+
+// --- NUEVA FUNCIÓN ---
+// Se encarga de mostrar la vista de perfil y llenarla con datos del localStorage
+function mostrarVistaPerfil() {
+    const nombre = localStorage.getItem("userName");
+    const email = localStorage.getItem("userEmail");
+
+    if (nombre && email) {
+        // Rellenamos los datos en el HTML
+        document.getElementById("perfil-nombre-completo").textContent = nombre;
+        document.getElementById("perfil-email").textContent = email;
+
+        // Ocultamos los otros formularios y mostramos el de perfil
+        document.getElementById("acceso-usuario-login").classList.remove("active");
+        document.getElementById("acceso-usuario-register").classList.remove("active");
+        document.getElementById("acceso-usuario-perfil").classList.add("active");
+    }
+}
