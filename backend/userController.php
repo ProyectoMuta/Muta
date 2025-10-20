@@ -142,4 +142,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'updateFavorito
     echo json_encode(["ok" => true]);
     exit;
 }
+
+// === Obtener favoritos ===
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['action'] === 'getFavoritos') {
+    $idUsuario = intval($_GET['id'] ?? 0);
+
+    if (!$idUsuario) {
+        http_response_code(400);
+        echo json_encode(["error" => "Falta id_usuario"]);
+        exit;
+    }
+
+    $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => $idUsuario]);
+
+    if (!$mongoUser) {
+        http_response_code(404);
+        echo json_encode(["error" => "Usuario no encontrado en Mongo"]);
+        exit;
+    }
+
+    // Devolver solo el array de favoritos
+    echo json_encode($mongoUser["favoritos"] ?? []);
+    exit;
+}
+
 // === Actualizar direcciones falta===
