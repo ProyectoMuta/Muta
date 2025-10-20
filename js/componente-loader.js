@@ -94,8 +94,11 @@ function setupAccesoUsuario() {
       // 1. Revisa si el usuario está logueado (buscando en localStorage)
       const userId = localStorage.getItem("userId");
       if (userId) {
-                // 2. Si SÍ está logueado, muestra la vista de perfil
-                mostrarVistaPerfil(); // Llama a la función que rellena y muestra el perfil
+            if (typeof mostrarVistaPerfil === "function") {
+              mostrarVistaPerfil();
+            } else {
+              console.warn("mostrarVistaPerfil no está definida todavía");
+            }
             } else {
                 // 3. Si NO está logueado, muestra la vista de login por defecto
                 loginBox.classList.add("active");
@@ -123,35 +126,53 @@ function setupAccesoUsuario() {
       loginBox.classList.add("active");
     });
   }
-  // --- AÑADIR ESTE BLOQUE DE CÓDIGO ---
-    if (btnLogout) {
-        btnLogout.addEventListener("click", (e) => { // <-- 2. Añade el evento 'click'
-            e.preventDefault();
+  
+  if (btnLogout) {
+    btnLogout.addEventListener("click", (e) => { 
+      e.preventDefault();
 
-            // 3. Pregunta al usuario para confirmar
-            if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
-                
-                // 4. Limpia toda la información de la sesión guardada
-                localStorage.clear();
+      if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
+        
+        // 1. Limpia toda la información de la sesión guardada
+        localStorage.clear();
+        localStorage.removeItem("muta_favoritos"); // 🔧 limpiar favoritos locales también
 
-                // 5. Actualiza la interfaz para que parezca "no logueado"
-                const icon = document.querySelector("#open-auth i");
-                if (icon) {
-                    icon.classList.remove("bi-person-check");
-                    icon.classList.add("bi-person");
-                }
-                document.getElementById("open-auth").title = "Mi cuenta";
+        // 2. Resetear modal de acceso
+        const nombreSpan = document.getElementById("perfil-nombre-completo");
+        const emailSpan = document.getElementById("perfil-email");
+        if (nombreSpan) nombreSpan.textContent = "Cargando...";
+        if (emailSpan) emailSpan.textContent = "Cargando...";
 
-                // 6. Oculta el modal de perfil/login
-                document.getElementById("acceso-usuario-container").style.display = "none";
-                
-                // 7. Muestra una confirmación al usuario
-                alert("Has cerrado la sesión.");
-            }
-        });
-    }
+        // Volver a vista de login por defecto
+        const loginBox = document.getElementById("acceso-usuario-login");
+        const registerBox = document.getElementById("acceso-usuario-register");
+        const perfilBox = document.getElementById("acceso-usuario-perfil");
+        if (loginBox && registerBox && perfilBox) {
+          loginBox.classList.add("active");
+          registerBox.classList.remove("active");
+          perfilBox.classList.remove("active");
+        }
+
+        // 3. Actualiza la interfaz para que parezca "no logueado"
+        const icon = document.querySelector("#open-auth i");
+        if (icon) {
+          icon.classList.remove("bi-person-check");
+          icon.classList.add("bi-person");
+        }
+        document.getElementById("open-auth").title = "Mi cuenta";
+
+        // 4. Oculta el modal de perfil/login
+        document.getElementById("acceso-usuario-container").style.display = "none";
+
+        // 5. Avisar a toda la app que se reseteó favoritos
+        document.dispatchEvent(new CustomEvent("favoritos:updated"));
+
+        // 6. Confirmación al usuario
+        alert("Has cerrado la sesión.");
+      }
+    });
+  }
 }
-
 
 // --- Tabs de producto ---
 function setupTabsProducto() {
@@ -359,12 +380,11 @@ document.addEventListener("DOMContentLoaded", () => {
 //para remeras
 document.addEventListener("DOMContentLoaded", async () => {
   const contenedor = document.getElementById("listaRemeras");
-
+  if (!contenedor) return; 
   try {
     // Traer productos desde PHP (MongoDB)
     let res = await fetch("backend/productController.php");
     let productos = await res.json();
-    if (!contenedor) return;  
     // Renderizar productos como cards
     contenedor.innerHTML = productos.map(p => `
       <article class="card producto">
@@ -386,7 +406,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 //cargar los productos 
 document.addEventListener("DOMContentLoaded", async () => {
     const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
-    //  este id lo tenés que poner en el HTML del carrusel NUEVOS INGRESOS
     if (!contenedor) return;   
     try {
       let res = await fetch("backend/productController.php");

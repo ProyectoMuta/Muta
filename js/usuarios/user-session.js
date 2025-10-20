@@ -75,6 +75,17 @@ document.addEventListener("componente:cargado", (e) => {
             }
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
+
+            // ✅ Traer favoritos desde DB solo si login fue exitoso
+            try {
+              const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
+              const favs = await resFav.json();
+              localStorage.setItem("muta_favoritos", JSON.stringify(favs));
+              document.dispatchEvent(new CustomEvent("favoritos:updated"));
+            } catch (err) {
+              console.error("Error cargando favoritos desde DB:", err);
+            }
+
           } else {
             alert("Error: " + (data.error || "Credenciales inválidas"));
           }
@@ -132,8 +143,6 @@ function actualizarNavbarUsuario(nombre) {
   document.getElementById("open-auth").title = `Hola, ${nombre}`;
 }
 
-
-// --- NUEVA FUNCIÓN ---
 // Se encarga de mostrar la vista de perfil y llenarla con datos del localStorage
 function mostrarVistaPerfil() {
     const nombre = localStorage.getItem("userName");
