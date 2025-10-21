@@ -327,7 +327,7 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-direcciones");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-direccion.html", btn)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarDirecciones());
 });
@@ -352,8 +352,12 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 3. Abrir overlay de envíos
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
+  // 3. Cerrar modal de login si estaba abierto
+  const modalLogin = document.getElementById("acceso-usuario-container");
+  if (modalLogin) modalLogin.style.display = "none";
+
+  // 4. Abrir overlay de envíos
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
 });
@@ -365,7 +369,7 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   const envio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset?.envio);
   localStorage.setItem("selectedEnvio", String(envio));
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-pago.html", e.target)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-pago.html", e.target)
     .then(() => waitForOverlayElement(".pago-modal", 4000))
     .then(() => inicializarPago());
 });
@@ -375,7 +379,7 @@ document.addEventListener("click", (e) => {
   const btnMapa = e.target.closest(".btn-ver-tienda");
   if (!btnMapa) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html", btnMapa);
+  mostrarOverlay("componentesHTML/mapaHTML/mapa-tienda.html", btnMapa);
 });
 
 // Alternar método de pago (tarjeta / Mercado Pago)
@@ -401,7 +405,7 @@ document.addEventListener("click", (e) => {
   const volver = e.target.closest(".volver-envios");
   if (!volver) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", volver)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", volver)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
 });
@@ -432,7 +436,7 @@ document.addEventListener("click", (e) => {
 
   const envio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset?.envio);
   localStorage.setItem("selectedEnvio", String(envio));
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-pago.html", e.target)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-pago.html", e.target)
     .then(() => waitForOverlayElement(".pago-modal", 4000))
     .then(() => inicializarPago());
 });
@@ -455,7 +459,7 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-ver-tienda");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html", btn);
+  mostrarOverlay("componentesHTML/mapaHTML/mapa-tienda.html", btn);
 });
 
 // Volver a envíos desde cualquier submodal (mapa-puntos, mapa-tienda, pago)
@@ -463,7 +467,7 @@ document.addEventListener("click", (e) => {
   const volver = e.target.closest(".volver-envios");
   if (!volver) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", volver)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", volver)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarEnvios());
 });
@@ -473,7 +477,7 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-direcciones");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-direccion.html", btn)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarDirecciones());
 });
@@ -575,7 +579,7 @@ function inicializarDirecciones() {
       const seleccionada = direcciones.find(d => d.id === id);
       if (seleccionada) {
         localStorage.setItem("selectedDireccion", JSON.stringify(seleccionada));
-        mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html")
+        mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html")
           .then(() => waitForOverlayElement(".envio-modal", 4000))
           .then(() => inicializarEnvios());
       }
@@ -647,7 +651,7 @@ function inicializarMapaPuntos() {
 // (opcional) Botón directo para abrir envíos desde fuera
 document.getElementById('abrir-envios')?.addEventListener('click', (e) => {
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", e.currentTarget)
+  mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", e.currentTarget)
     .then(()=> console.log('seleccion-envios abierto'))
     .catch(err => console.error('error abrir seleccion-envios', err));
 });

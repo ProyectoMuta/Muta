@@ -73,10 +73,12 @@ document.addEventListener("componente:cargado", (e) => {
             if (data.mongo) {
               localStorage.setItem("userMongo", JSON.stringify(data.mongo));
             }
+
+            // Cerrar modal de login
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
 
-            // ✅ Traer favoritos desde DB solo si login fue exitoso
+            // ✅ Traer favoritos desde DB
             try {
               const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
               const favs = await resFav.json();
@@ -84,6 +86,16 @@ document.addEventListener("componente:cargado", (e) => {
               document.dispatchEvent(new CustomEvent("favoritos:updated"));
             } catch (err) {
               console.error("Error cargando favoritos desde DB:", err);
+            }
+
+            // ✅ Traer carrito desde DB (sin merge)
+            try {
+              const resCart = await fetch(`backend/userController.php?action=getCart&id=${data.id}`);
+              const mongoCart = await resCart.json();
+              localStorage.setItem("mutaCart", JSON.stringify(mongoCart));
+              document.dispatchEvent(new CustomEvent("cart:updated"));
+            } catch (err) {
+              console.error("Error cargando carrito desde DB:", err);
             }
 
           } else {
@@ -109,26 +121,6 @@ document.addEventListener("componente:cargado", (e) => {
           }
         })
         .catch(err => console.error("Error cargando sesión:", err));
-    }
-
-    // === Logout ===
-    const openAuth = document.getElementById("open-auth");
-    if (openAuth) {
-      openAuth.addEventListener("contextmenu", (ev) => {
-        ev.preventDefault();
-        if (localStorage.getItem("userId")) {
-          if (confirm("¿Cerrar sesión?")) {
-            localStorage.clear();
-            const icon = document.querySelector("#open-auth i");
-            if (icon) {
-              icon.classList.remove("bi-person-check");
-              icon.classList.add("bi-person");
-            }
-            openAuth.title = "Mi cuenta";
-            alert("Sesión cerrada.");
-          }
-        }
-      });
     }
   }
 });
@@ -159,3 +151,10 @@ function mostrarVistaPerfil() {
         document.getElementById("acceso-usuario-perfil").classList.add("active");
     }
 }
+
+window.addEventListener("pageshow", () => {
+  const userId = localStorage.getItem("userId");
+  if (userId) {
+    actualizarNavbarUsuario(localStorage.getItem("userName"));
+  }
+});

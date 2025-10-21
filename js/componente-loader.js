@@ -128,14 +128,29 @@ function setupAccesoUsuario() {
   }
   
   if (btnLogout) {
-    btnLogout.addEventListener("click", (e) => { 
+    btnLogout.addEventListener("click", async (e) => { 
       e.preventDefault();
 
       if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
-        
+
+        //Persistir carrito en DB antes de limpiar
+        const userId = localStorage.getItem("userId");
+        const cart = JSON.parse(localStorage.getItem("mutaCart") || "[]");
+        if (userId) {
+          try {
+            await fetch("backend/userController.php?action=updateCart", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_usuario: userId, carrito: cart })
+            });
+          } catch (err) {
+            console.error("Error guardando carrito antes de logout:", err);
+          }
+        }
+
         // 1. Limpia toda la información de la sesión guardada
         localStorage.clear();
-        localStorage.removeItem("muta_favoritos"); // 🔧 limpiar favoritos locales también
+        localStorage.removeItem("muta_favoritos");
 
         // 2. Resetear modal de acceso
         const nombreSpan = document.getElementById("perfil-nombre-completo");
@@ -164,11 +179,17 @@ function setupAccesoUsuario() {
         // 4. Oculta el modal de perfil/login
         document.getElementById("acceso-usuario-container").style.display = "none";
 
-        // 5. Avisar a toda la app que se reseteó favoritos
+        // 5. Avisar a toda la app que se reseteó favoritos y carrito
         document.dispatchEvent(new CustomEvent("favoritos:updated"));
+        document.dispatchEvent(new CustomEvent("cart:updated"));
 
         // 6. Confirmación al usuario
         alert("Has cerrado la sesión.");
+
+        // Si estoy en cart.html, redirigir a index
+        if (window.location.pathname.endsWith("cart.html")) {
+          window.location.href = "index.html";
+        }
       }
     });
   }

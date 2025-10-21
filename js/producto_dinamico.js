@@ -108,13 +108,26 @@
     // Agregar al carrito
     const btnCart = document.getElementById('btnAgregarCarrito');
     if (btnCart && typeof window.addToCart === 'function') {
-      btnCart.onclick = e => {
+      btnCart.onclick = async e => {
         e.preventDefault();
         const colorSel = $cols.querySelector('.color-option.active')?.style.getPropertyValue('--color') || 'Único';
         const talleSel = $sizes.querySelector('.talle.active')?.textContent?.trim() || 'Único';
         const priceNum = (promo > 0 ? promo : base) || 0;
         const qty = Number($cant.value || 1);
-        window.addToCart(p.nombre || 'Producto', priceNum, imgs[0], talleSel, colorSel, qty);
+
+        // Esperar el resultado de addToCart
+        const agregado = await window.addToCart(p.nombre || 'Producto', priceNum, imgs[0], talleSel, colorSel, qty);
+
+        // Mostrar mensaje de éxito SOLO si realmente se agregó
+        const successMsg = document.getElementById("success-msg");
+        if (agregado && successMsg) {
+          successMsg.textContent = "Agregado con éxito";
+          successMsg.style.display = "block";
+
+          setTimeout(() => {
+            successMsg.style.display = "none";
+          }, 3000);
+        }
       };
     }
   }

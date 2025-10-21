@@ -136,13 +136,13 @@ function seleccionarPunto(punto, item, marker) {
   map.flyTo([punto.lat, punto.lng], 15, { duration: 0.5 });
 }
 
-// 🔑 Exponer estado al resto de la app
+// Exponer estado al resto de la app
 window.initMapaPuntos = initMapaPuntos;
 window.getSelectedPuntoId = () => selectedPuntoId;
 window.getAllPuntos = () => allPuntos;
 window.setSelectedPuntoId = (id) => { selectedPuntoId = id; };
 
-// ✅ Delegación de eventos para Confirmar punto
+// Delegación de eventos para Confirmar punto
 document.addEventListener("click", (e) => {
   if (e.target && e.target.id === "btn-confirmar-punto") {
     if (!selectedPuntoId) return;
