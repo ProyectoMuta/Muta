@@ -1,5 +1,201 @@
-.direccion-modal {
-  padding: 20px;
-  background: #fff;
-  border-radius: 12px;
+/* ============================
+   1. LISTA DE DIRECCIONES
+   ============================ */
+
+.direcciones-guardadas {
+  margin-bottom: 30px;
+}
+
+.direcciones-guardadas h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.direccion-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.direccion-item:hover {
+  border-color: #bbb;
+  background: #f9f9f9;
+}
+
+.direccion-item label {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  flex: 1;
+  cursor: default;
+}
+
+.direccion-item label strong {
+  font-size: 15px;
+  color: #111;
+}
+
+/* ============================
+   2. BOTONES DE ACCIÓN
+   ============================ */
+
+.acciones-dir {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seleccionar-dir {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.seleccionar-dir:hover {
+  background: #333;
+}
+
+.editar-dir {
+  background: #eee;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.editar-dir:hover {
+  background: #ddd;
+}
+
+.eliminar-dir {
+  background: transparent;
+  border: none;
+  color: #c00;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+.eliminar-dir:hover {
+  color: #900;
+}
+.eliminar-dir i {
+  pointer-events: none;
+}
+
+/* ============================
+   3. FORMULARIO DE DIRECCIÓN
+   ============================ */
+
+#form-nueva-direccion {
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+}
+
+/* Animación suave */
+.form-direccion {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+.form-direccion.visible {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#form-titulo {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-cancelar {
+  background: transparent;
+  border: none;
+  color: #c00;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-cancelar:hover {
+  color: #900;
+}
+
+#form-nueva-direccion label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+#form-nueva-direccion input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+#form-nueva-direccion input:focus {
+  outline: none;
+  border-color: #333;
+  box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+}
+
+#form-nueva-direccion .row {
+  display: flex;
+  gap: 15px;
+}
+
+#form-nueva-direccion .col-6 {
+  flex: 1;
+}
+
+/* ============================
+   4. RESPONSIVE
+   ============================ */
+
+
+
+@media (max-width: 600px) {
+  /* La fila del formulario se apila verticalmente */
+  #form-nueva-direccion .row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* El contenedor de cada dirección también se apila */
+  .direccion-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Los botones de acción se ponen en fila para ahorrar espacio */
+  .acciones-dir {
+    flex-direction: row;
+    gap: 8px;
+  }
 }

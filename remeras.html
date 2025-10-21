@@ -257,6 +257,21 @@
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>
+
+            <!-- Lista dinámica de remeras desde la base -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <div class="carousel-track">
+        <!-- 👇 acá JS inyecta los productos -->
+        <img src="img/remera-verde.png" alt="Remera verde">
+      </div>
+      <button class="carousel-next" aria-label="Siguiente">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+
   </main>
 
   <!-- Modal de acceso -->
@@ -264,15 +279,15 @@
 
   <!-- Footer -->
   <div id="footer"></div>
-  <div id="chatbot"></div> <!--se carga el chatbot-->
    <!-- Modal de Favoritos-->
   <div id="favoritos"></div>
 
   <!-- Script de carga de componentes -->
   <script src="js/componente-loader.js"></script>
-  <script defer src="js/favoritos.js"></script>
-  <!-- agrego carrito fijo-->
+  <script src="js/usuarios/user-session.js"></script>
   <script src="js/carritoJS/cart.js"></script>
+  <script defer src="js/favoritos.js"></script>
+  <script src='https://cdn.jotfor.ms/agent/embedjs/0199edc25850752f8dd01a2672b5d39088b4/embed.js'></script>
   <script>
     setupCart();
   </script>
@@ -286,5 +301,87 @@
 
     });
   </script>
+
+    <!-- 🚀 Nuevos ingresos dinámicos -->
+<!-- 🚀 NUEVOS INGRESOS DINÁMICOS (bloques de 8 + favoritos) -->
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const raizSeccion = document.getElementById("seccion-nuevos");
+  const anclaCarrusel = document.getElementById("carousel-nuevos"); // el primero del HTML (se usará como “plantilla”)
+  if (!raizSeccion || !anclaCarrusel) return;
+
+  // Helpers
+  const chunk = (arr, n=8) => arr.reduce((a,_,i)=> (i% n? a[a.length-1].push(arr[i]) : a.push([arr[i]]), a), []);
+  const moneyAR = (n) => typeof n === "number" ? n.toLocaleString("es-AR") : (parseFloat(n||0)||0).toLocaleString("es-AR");
+
+  try {
+    const res = await fetch("backend/productController.php");
+    const productos = await res.json();
+    if (!Array.isArray(productos)) throw new Error("Respuesta inesperada");
+
+    // Filtrar lo que quieras como “nuevos”
+    const nuevos = productos.filter(p => (p.categoria||"").toLowerCase()==="remeras");
+    if (!nuevos.length) {
+      anclaCarrusel.remove();        // oculto carrusel vacío
+      raizSeccion.style.display="none";
+      return;
+    }
+
+    // Particionar en grupos de 8
+    const grupos = chunk(nuevos, 8);
+
+    // Limpio el carrusel “plantilla” y lo reutilizo como el #1
+    const padre = anclaCarrusel.parentElement;
+    // Función para crear un carrusel con id único
+    const crearCarrusel = (id, items) => {
+      const carr = anclaCarrusel.cloneNode(true);
+      carr.id = id;
+      const track = carr.querySelector(".carousel-track");
+      track.innerHTML = items.map(p => `
+        <a href="producto_dinamico.html?id=${p._id}"
+           class="card"
+           data-id="${p._id}"
+           data-nombre="${p.nombre||''}"
+           data-precio="$${moneyAR(p.precio)}"
+           data-img="${(p.imagenes?.[0]) || 'img/default.jpg'}">
+          <img src="${(p.imagenes?.[0]) || 'img/default.jpg'}" alt="${p.nombre||'Producto'}">
+          <div class="info">
+            <h4>${p.nombre||''}</h4>
+            <p>$${moneyAR(p.precio)}</p>
+          </div>
+        </a>
+      `).join("");
+
+      // Aseguro la clase que usa favoritos.js para inyectar ♥
+      carr.classList.add("categoria-carousel");
+      return carr;
+    };
+
+    // Inserto / reemplazo
+    const primero = crearCarrusel("carousel-nuevos-1", grupos[0]);
+    padre.replaceChild(primero, anclaCarrusel);
+
+    // Carruseles extra si hay más de 8
+    for (let i=1;i<grupos.length;i++){
+      const otro = crearCarrusel(`carousel-nuevos-${i+1}`, grupos[i]);
+      // Agrego un subtítulo opcional
+      const h = document.createElement("h2");
+      h.className = "section-title";
+      h.textContent = "NUEVOS INGRESOS";
+      padre.appendChild(h);
+      padre.appendChild(otro);
+    }
+
+    // Inicializo todos los carruseles creados
+    [...document.querySelectorAll('[id^="carousel-nuevos-"]')].forEach(c => setupCarousel(c.id));
+
+    // Aviso a favoritos.js que hay cards nuevas para inyectar ♥
+    document.dispatchEvent(new CustomEvent("nuevos:render"));
+  } catch (err) {
+    console.error("❌ Error cargando nuevos ingresos:", err);
+  }
+});
+</script>
+
 </body>
 </html>

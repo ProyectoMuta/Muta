@@ -20,16 +20,34 @@
   const setFavs = (arr) => localStorage.setItem(FAV_KEY, JSON.stringify(arr));
 
   // API pública para marcar/desmarcar desde cualquier botón
-  function toggleFavorite(producto) {
-    const favs = getFavs();
-    const i = favs.findIndex(p => String(p.id) === String(producto.id));
-    if (i >= 0) favs.splice(i, 1);
-    else favs.push(producto);
-    setFavs(favs);
+  async function toggleFavorite(producto) {
+    let favoritos = getFavs();
+    const userId = localStorage.getItem("userId");
 
-    // Si el modal está abierto, re-render
-    const modal = document.getElementById("favModal");
-    if (modal && modal.classList.contains("is-open")) renderFavorites();
+    // Toggle
+    if (favoritos.some(p => String(p.id) === String(producto.id))) {
+      favoritos = favoritos.filter(p => String(p.id) !== String(producto.id));
+    } else {
+      favoritos.push(producto);
+    }
+
+    // Guardar en localStorage
+    localStorage.setItem("muta_favoritos", JSON.stringify(favoritos));
+
+    // 🚀 Persistir en DB si hay sesión
+    if (userId) {
+      try {
+        await fetch("backend/userController.php?action=updateFavoritos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, favoritos })
+        });
+      } catch (err) {
+        console.error("Error guardando favoritos en DB:", err);
+      }
+    }
+    // Avisar a toda la app
+    document.dispatchEvent(new CustomEvent("favoritos:updated"));
   }
   window.toggleFavorite = toggleFavorite;
 
@@ -45,9 +63,18 @@
 
   // ---------- Abrir / Cerrar ----------
   function openFavorites() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      //Si no hay sesión, forzar login en vez de abrir favoritos
+      const modalLogin = document.getElementById("acceso-usuario-container");
+      if (modalLogin) modalLogin.style.display = "flex";
+      return;
+    }
+
     const modal   = document.getElementById("favModal");
     const overlay = document.getElementById("favOverlay");
     if (!modal || !overlay) return;
+
     renderFavorites();
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
@@ -93,7 +120,7 @@
         </div>
         <div class="fav-actions">
           <button class="fav-remove" data-id="${p.id}">Quitar</button>
-          <button class="fav-add-cart">Agregar al carrito</button>
+          <button class="fav-view" data-id="${p.id}">Ver producto</button>
         </div>
       `;
       grid.appendChild(card);
@@ -107,33 +134,17 @@
         const favs = getFavs().filter(p => String(p.id) !== String(id));
         setFavs(favs);
         renderFavorites();
+        //Avisar a toda la app que cambió la lista de favoritos
+        document.dispatchEvent(new CustomEvent("favoritos:updated"));
         return;
       }
-      // Agregar al carrito
-      const btnCart = e.target.closest(".fav-add-cart");
-      if (btnCart) {
-        const card = btnCart.closest(".fav-card");
-
-        const nombre = card.querySelector(".fav-name")?.textContent.trim() || "Producto";
-        const precioTexto = card.querySelector(".fav-price")?.textContent.trim() || "$0";
-        const precio = parseFloat(precioTexto.replace(/[^0-9]/g, "")) || 0;
-        const img = card.querySelector("img")?.getAttribute("src") || "";
-
-        // Como no hay talle ni color en favoritos → ponemos "Único"
-        const size = "Único";
-        const color = "Único";
-
-        // Llamamos directo a tu API global
-        addToCart(nombre, precio, img, size, color, 1);
-
-        // Feedback visual
-        const original = btnCart.textContent;
-        btnCart.textContent = "Agregado ✓";
-        btnCart.disabled = true;
-        setTimeout(() => {
-          btnCart.textContent = original;
-          btnCart.disabled = false;
-        }, 1200);
+      // Ver producto
+      const btnView = e.target.closest(".fav-view");
+      if (btnView) {
+        const id = btnView.getAttribute("data-id");
+        if (id) {
+          window.location.href = `producto.html?id=${encodeURIComponent(id)}`;
+        }
       }
     };
   }
@@ -179,10 +190,20 @@
       const favs = getFavs();
       if (favs.some(p => String(p.id) === String(producto.id))) btn.innerHTML = "❤";
 
-      // Evitar que navegue la <a>
+      //Solo permitir marcar favoritos si hay sesión iniciada
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          //No hay sesión → abrir modal de login
+          const modalLogin = document.getElementById("acceso-usuario-container");
+          if (modalLogin) modalLogin.style.display = "flex";
+          return;
+        }
+
+        //Si hay sesión, toggle normal
         toggleFavorite(producto);
         btn.innerHTML = (btn.innerHTML === "♡") ? "❤" : "♡";
       });
@@ -195,9 +216,77 @@
     });
   }
 
+  //Listener global para refrescar corazones cuando cambian favoritos
+  document.addEventListener("favoritos:updated", () => {
+    const favs = getFavs();
+    document.querySelectorAll(".categoria-carousel .card").forEach(card => {
+      const btn = card.querySelector(".btn-like");
+      if (!btn) return;
+      const id = card.dataset.id || card.getAttribute("href");
+      if (favs.some(p => String(p.id) === String(id))) {
+        btn.innerHTML = "❤";
+      } else {
+        btn.innerHTML = "♡";
+      }
+    });
+  });
+
+  // cuando se re-renderizan “nuevos ingresos”, inyectar corazones de nuevo
+  document.addEventListener('nuevos:render', injectHeartsIntoCategoryCards);
+  
   // Inicializar al cargar página
   document.addEventListener("DOMContentLoaded", async () => {
     await ensureComponentLoaded();
     injectHeartsIntoCategoryCards();
   });
+    // AGREGAR ESTA LÍNEA para que sea accesible desde otros scripts:
+  window.injectHeartsIntoCategoryCards = injectHeartsIntoCategoryCards;
+
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".icono_corazon, .btn-favorito");
+    if (!btn) return;
+
+    const userId = localStorage.getItem("userId");
+
+    // Si NO hay sesión, mostrar login y salir
+    if (!userId) {
+      const modalLogin = document.getElementById("acceso-usuario-container");
+      if (modalLogin) modalLogin.style.display = "flex";
+      return; // no sigue con favoritos
+    }
+
+    // Si hay sesión, manejar favoritos normalmente
+    let favoritos = JSON.parse(localStorage.getItem("userFavoritos")) || [];
+
+    // Cada botón debe tener un data-id con el ID del producto
+    const productoId = btn.dataset.id;
+    if (!productoId) {
+      console.warn("El botón de favorito no tiene data-id");
+      return;
+    }
+
+    // Toggle: agregar o quitar
+    if (favoritos.includes(productoId)) {
+      favoritos = favoritos.filter(f => f !== productoId);
+      btn.classList.remove("activo");
+    } else {
+      favoritos.push(productoId);
+      btn.classList.add("activo");
+    }
+
+    // Guardar en cache local
+    localStorage.setItem("userFavoritos", JSON.stringify(favoritos));
+
+    // Enviar a backend para persistir en MongoDB
+    try {
+      await fetch("backend/userController.php?action=updateFavoritos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: userId, favoritos })
+      });
+    } catch (err) {
+      console.error("Error guardando favoritos en DB:", err);
+    }
+  });
+
 })();

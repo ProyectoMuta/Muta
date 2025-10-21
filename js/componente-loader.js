@@ -27,27 +27,9 @@ function cargarComponente(id, ruta) {
     });
 }
 
-// === Chatbot (caso especial) ===
-fetch("componentesHTML/chatbot.html")
-  .then(r => r.text())
-  .then(d => { document.getElementById("chatbot").innerHTML = d });
-
-if (!document.getElementById("chatbotCSS")) {
-  const link = document.createElement("link");
-  link.id = "chatbotCSS";
-  link.rel = "stylesheet";
-  link.href = "css/chatbot.css";
-  document.head.appendChild(link);
-}
-if (!document.getElementById("chatbotJS")) {
-  const s = document.createElement("script");
-  s.id = "chatbotJS";
-  s.src = "js/chatbot.js";
-  document.body.appendChild(s);
-}
-
 /* === INTERACCIONES === */
-// --- Navbar con dropdowns ---
+
+// --- Navbar con dropdowns (funciona para escritorio y móvil) ---
 function setupNavbarDropdowns() {
   const buttons = document.querySelectorAll(".nav-btn");
 
@@ -82,18 +64,47 @@ function setupNavbarDropdowns() {
   });
 }
 
+// --- Menú de Hamburguesa ---
+function setupHamburgerMenu() {
+  const menuToggle = document.querySelector(".menu-toggle");
+  const navLinks = document.querySelector(".nav-links");
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+  }
+}
+
+
 // --- Modal de acceso de usuario ---
 function setupAccesoUsuario() {
   const openAuth = document.getElementById("open-auth");
   const container = document.getElementById("acceso-usuario-container");
   const loginBox = document.getElementById("acceso-usuario-login");
   const registerBox = document.getElementById("acceso-usuario-register");
+  const perfilBox = document.getElementById("acceso-usuario-perfil");
   const goRegister = document.getElementById("go-register");
   const goLogin = document.getElementById("go-login");
+  const btnLogout = document.getElementById("btn-logout"); // <-- 1. Selecciona el botón
 
   if (openAuth && container) {
     openAuth.addEventListener("click", e => {
       e.preventDefault();
+      // 1. Revisa si el usuario está logueado (buscando en localStorage)
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+            if (typeof mostrarVistaPerfil === "function") {
+              mostrarVistaPerfil();
+            } else {
+              console.warn("mostrarVistaPerfil no está definida todavía");
+            }
+            } else {
+                // 3. Si NO está logueado, muestra la vista de login por defecto
+                loginBox.classList.add("active");
+                registerBox.classList.remove("active");
+                perfilBox.classList.remove("active");
+            }
       container.style.display = "flex";
     });
 
@@ -113,6 +124,52 @@ function setupAccesoUsuario() {
       e.preventDefault();
       registerBox.classList.remove("active");
       loginBox.classList.add("active");
+    });
+  }
+  
+  if (btnLogout) {
+    btnLogout.addEventListener("click", (e) => { 
+      e.preventDefault();
+
+      if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
+        
+        // 1. Limpia toda la información de la sesión guardada
+        localStorage.clear();
+        localStorage.removeItem("muta_favoritos"); // 🔧 limpiar favoritos locales también
+
+        // 2. Resetear modal de acceso
+        const nombreSpan = document.getElementById("perfil-nombre-completo");
+        const emailSpan = document.getElementById("perfil-email");
+        if (nombreSpan) nombreSpan.textContent = "Cargando...";
+        if (emailSpan) emailSpan.textContent = "Cargando...";
+
+        // Volver a vista de login por defecto
+        const loginBox = document.getElementById("acceso-usuario-login");
+        const registerBox = document.getElementById("acceso-usuario-register");
+        const perfilBox = document.getElementById("acceso-usuario-perfil");
+        if (loginBox && registerBox && perfilBox) {
+          loginBox.classList.add("active");
+          registerBox.classList.remove("active");
+          perfilBox.classList.remove("active");
+        }
+
+        // 3. Actualiza la interfaz para que parezca "no logueado"
+        const icon = document.querySelector("#open-auth i");
+        if (icon) {
+          icon.classList.remove("bi-person-check");
+          icon.classList.add("bi-person");
+        }
+        document.getElementById("open-auth").title = "Mi cuenta";
+
+        // 4. Oculta el modal de perfil/login
+        document.getElementById("acceso-usuario-container").style.display = "none";
+
+        // 5. Avisar a toda la app que se reseteó favoritos
+        document.dispatchEvent(new CustomEvent("favoritos:updated"));
+
+        // 6. Confirmación al usuario
+        alert("Has cerrado la sesión.");
+      }
     });
   }
 }
@@ -271,20 +328,23 @@ function setupCarousel(carouselId) {
 /* === CARGA DE COMPONENTES SEGÚN LA PÁGINA === */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Comunes ---
-  if (document.getElementById("navbar"))
+  if (document.getElementById("navbar")) {
     cargarComponente("navbar", "componentesHTML/navbar.html")
       .then(() => {
-        setupNavbarDropdowns();
+        setupNavbarDropdowns(); // Activa los dropdowns de categorías
+        setupHamburgerMenu();   // Activa el botón de hamburguesa
         document.dispatchEvent(new CustomEvent("navbar:ready"));
       });
+  }
 
-  if (document.getElementById("footer"))
+  if (document.getElementById("footer")) {
     cargarComponente("footer", "componentesHTML/footer.html");
+  }
 
-  if (document.getElementById("acceso-usuario"))
+  if (document.getElementById("acceso-usuario")) {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
       .then(setupAccesoUsuario);
-
+  }
   // --- Home ---
   if (document.getElementById("hero"))
     cargarComponente("hero", "componentesHTML/hero.html");
@@ -297,8 +357,12 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("hero-sale", "componentesHTML/hero-sale.html");
 
   if (document.getElementById("carousel-novedades"))
-    cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
-      .then(() => setupCarousel("carousel-novedades"));
+  cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
+    .then(() => {
+      setupCarousel("carousel-novedades");
+      // 🔔 Avisa a favoritos.js que hay nuevas cards para inyectar corazones
+      document.dispatchEvent(new CustomEvent("nuevos:render"));
+    });
 
   // --- Producto ---
   if (document.getElementById("galeria-producto"))
@@ -311,4 +375,93 @@ document.addEventListener("DOMContentLoaded", () => {
         setupProductoInteractions();
         document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
       });
+});
+
+//para remeras
+document.addEventListener("DOMContentLoaded", async () => {
+  const contenedor = document.getElementById("listaRemeras");
+  if (!contenedor) return; 
+  try {
+    // Traer productos desde PHP (MongoDB)
+    let res = await fetch("backend/productController.php");
+    let productos = await res.json();
+    // Renderizar productos como cards
+    contenedor.innerHTML = productos.map(p => `
+      <article class="card producto">
+        <img src="${p.imagen ?? 'img/default.jpg'}" alt="${p.name}" />
+        <div class="info">
+          <h3>${p.name}</h3>
+          <p>${p.descripcion ?? ''}</p>
+          <p><strong>$${p.price}</strong></p>
+          <p>Stock: ${p.stock}</p>
+          <button class="btn btn-dark">Agregar al carrito</button>
+        </div>
+      </article>
+    `).join("");
+  } catch (err) {
+    console.error("Error cargando productos:", err);
+    contenedor.innerHTML = `<p>Error al cargar productos.</p>`;
+  }
+});
+//cargar los productos 
+document.addEventListener("DOMContentLoaded", async () => {
+    const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
+    if (!contenedor) return;   
+    try {
+      let res = await fetch("backend/productController.php");
+      let productos = await res.json();
+
+      if (!Array.isArray(productos)) throw new Error("Respuesta inesperada");
+
+      // Filtrar solo remeras nuevas
+      const nuevos = productos.filter(p => p.categoria?.toLowerCase() === "remeras");
+
+      if (nuevos.length > 0) {
+        contenedor.innerHTML = nuevos.map(p => `
+          <a href="producto.html?id=${p._id}" class="card">
+            <img src="${p.imagenes?.[0] ?? 'img/default.jpg'}" alt="${p.nombre}">
+            <div class="info">
+              <h4>${p.nombre}</h4>
+              <p>$${p.precio?.toLocaleString("es-AR")}</p>
+            </div>
+          </a>
+        `).join("");
+      } else {
+        // Si no hay nuevos ingresos, ocultar toda la sección
+        document.getElementById("seccion-nuevos").style.display = "none";
+      }
+    } catch (err) {
+      console.error("❌ Error cargando productos:", err);
+    }
+  });
+
+//nuevos productos ingresados por el usuario
+document.addEventListener("DOMContentLoaded", async () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) return;
+
+  try {
+    let res = await fetch(`backend/productController.php?id=${id}`);
+    let producto = await res.json();
+
+    document.getElementById("nombreProducto").textContent = producto.nombre;
+    document.getElementById("precioProducto").textContent = `$${producto.precio.toLocaleString("es-AR")}`;
+    document.getElementById("descripcionProducto").textContent = producto.descripcion;
+
+    // Imagen principal
+    document.getElementById("main-image").src = producto.imagenes?.[0] ?? "img/default.jpg";
+  } catch (err) {
+    console.error("Error cargando producto:", err);
+  }
+});
+
+// 🔧 Habilitar apertura del carrito en móviles
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".cart-btn");
+  if (!btn) return;
+  e.preventDefault();
+  const dropdown = btn.parentElement.querySelector(".cart-dropdown");
+  dropdown.classList.toggle("active");
 });

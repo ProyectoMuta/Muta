@@ -6,21 +6,23 @@
   <title>Tu carrito - MUTA</title>
 
   <!-- Estilos globales y de componentes -->
-  <link rel="stylesheet" href="../css/global.css">
-  <link rel="stylesheet" href="../css/navbar.css">
-  <link rel="stylesheet" href="../css/footer.css">
-  <link rel="stylesheet" href="../css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/favoritos.css">
 
   <!-- Estilos específicos del carrito -->
-  <link rel="stylesheet" href="../css/carritoCSS/cart.css">
-  <link rel="stylesheet" href="../css/carritoCSS/seleccion-envios.css">
-  <link rel="stylesheet" href="../css/carritoCSS/seleccion-pago.css">
-  <link rel="stylesheet" href="../css/carritoCSS/seleccion-direccion.css">
-  <link rel="stylesheet" href="../css/mapaCSS/mapa-tienda.css">
-  <link rel="stylesheet" href="../css/carousel-novedades.css">
+  <link rel="stylesheet" href="css/carritoCSS/cart.css">
+  <link rel="stylesheet" href="css/carritoCSS/seleccion-envios.css">
+  <link rel="stylesheet" href="css/carritoCSS/seleccion-pago.css">
+  <link rel="stylesheet" href="css/carritoCSS/seleccion-direccion.css">
+  <link rel="stylesheet" href="css/mapaCSS/mapa-tienda.css">
+  <link rel="stylesheet" href="css/mapaCSS/mapa-puntos.css">
+  <link rel="stylesheet" href="css/carousel-novedades.css">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="../img/favicon.jpeg">
+  <link rel="icon" type="image/png" href="img/favicon.jpeg">
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -28,6 +30,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Tu script de mapa -->
+  <script src="../js/mapaJS/mapa-puntos.js"></script>
 </head>
 
 <body>
@@ -84,13 +92,34 @@
   <!-- Footer -->
   <div id="footer"></div>
   <div id="chatbot"></div>
+     <!-- Modal de Favoritos-->
+  <div id="favoritos"></div>
 
   <!-- Scripts -->
-  <script src="../js/componente-loader.js"></script>
-  <script src="../js/carritoJS/cart.js"></script>
-  <script src="../js/carritoJS/checkout.js"></script>
+   
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      
+      emailjs.init("c6rFoEWtP7zw8Eqi2"); 
+    })();
+  </script>
+
+  <script src="js/componente-loader.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/carritoJS/cart.js"></script>
+  <script defer src="js/favoritos.js"></script>
+  <script src="js/carritoJS/checkout.js"></script>
+
+  <script src="js/carritoJS/seleccion-envios.js"></script>
+  <script src="js/carritoJS/seleccion-direccion.js"></script>
+  <script src="js/carritoJS/seleccion-pago.js"></script>
   <script>
     setupCart();
+    
+    // Activa los listeners para todo el proceso de compra
+    inicializarProcesoDeCompra();
+
   </script>
 </body>
 </html>

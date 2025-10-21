@@ -1,98 +1,150 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+    const tbody = document.querySelector('#tbl tbody');
+    const chips = document.querySelectorAll('.chip');
+    const q = document.getElementById('q');
 
+    let productos = [];   // acá guardamos lo que viene de Mongo
+    let filter = 'todos';
+    let query = '';
 
-// Datos de ejemplo
-const DATA = [
-  { sku:'SKU-001', nombre:'Jean cargo bleach', categoria:'Pantalones', talles:['46','48','50'], color:'#6EC1E4', precio:43800, stock:32, estado:'ok' },
-  { sku:'SKU-002', nombre:'Camisa blanca', categoria:'Camisas', talles:['S','M'], color:'#ffffff', precio:12800, stock:8,  estado:'info' },
-  { sku:'SKU-003', nombre:'Pantalón negro', categoria:'Pantalones', talles:['L'], color:'#111111', precio:24800, stock:3,  estado:'warn' },
-  { sku:'SKU-004', nombre:'Remera blanca', categoria:'Remeras', talles:['S'], color:'#ffffff', precio:17800, stock:0,  estado:'gray' },
-  { sku:'SKU-005', nombre:'Remera negra (XL)', categoria:'Remeras', talles:['XL'], color:'#000000', precio:17800, stock:0,  estado:'danger' }, // pausado
-];
+    //Subnav de esta página con guardas
+      document.getElementById("nuevoProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "nuevo_producto_mantenimiento.html";
+    });
+    document.getElementById("categoriaProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "categoria_mantenimiento.html";
+    });
+    document.getElementById("inventarioProductoBtn")?.addEventListener("click", () => {
+      window.location.href = "gestion_producto_mantenimiento.html";
+    });
 
-const tbody = document.querySelector('#tbl tbody');
-const chips = document.querySelectorAll('.chip');
-const q = document.getElementById('q');
+  // --- Obtener productos desde PHP ---
+    async function cargarProductos() {
+      try {
+        const res = await fetch("backend/productController.php");
+        const text = await res.text();  // leemos como texto por si PHP imprime warnings
 
-let filter = 'todos';
-let query = '';
+        let data;
+        try {
+          data = JSON.parse(text);      // intentamos parsear a JSON
+        } catch (e) {
+          console.error("La respuesta no es JSON válido:\n", text);
+          throw e;
+        }
 
-function estadoBadge(est){
-  switch(est){
-    case 'ok':    return `<span class="badge ok">Activo</span>`;
-    case 'info':  return `<span class="badge info">Act./Promo</span>`;
-    case 'warn':  return `<span class="badge warn">Bajo stock</span>`;
-    case 'gray':  return `<span class="badge gray">Sin stock</span>`;
-    case 'danger':return `<span class="badge danger">Pausado</span>`;
-    default:      return `<span class="badge gray">${est}</span>`;
+        // Aseguramos array (el endpoint puede devolver 1 item cuando se pide ?id=)
+        productos = Array.isArray(data) ? data : [data];
+        render();
+      } catch (err) {
+        console.error("Error cargando productos:", err);
+        tbody.innerHTML = `<tr><td colspan="9">Error cargando productos</td></tr>`;
+      }
+    }
+
+  function estadoBadge(est){
+    const map = {
+      'Activo':     'ok',
+      'Bajo stock': 'warn',
+      'Sin stock':  'gray',
+      'Pausado':    'danger'
+    };
+    const cls = map[est] || 'gray';
+    return `<span class="badge ${cls}">${est}</span>`;
   }
-}
 
-function pasaFiltro(p){
-  if (filter === 'todos') return true;
-  if (filter === 'stock')   return p.stock > 0 && p.estado !== 'danger';
-  if (filter === 'bajo')    return p.stock > 0 && p.stock <= 5;
-  if (filter === 'sin')     return p.stock === 0 && p.estado !== 'danger';
-  if (filter === 'pausado') return p.estado === 'danger';
-  return true;
-}
+  function pasaFiltro(p){
+    const estado = p.estado || 'Activo';
+    const stock  = Number(p.stock ?? 0);
+    if (filter === 'todos')   return true;
+    if (filter === 'stock')   return stock > 0 && estado !== 'Pausado';
+    if (filter === 'bajo')    return stock > 0 && stock <= 5 && estado !== 'Pausado';
+    if (filter === 'sin')     return stock === 0 && estado !== 'Pausado';
+    if (filter === 'pausado') return estado === 'Pausado';
+    return true;
+  }
 
-function pasaBusqueda(p){
-  const s = `${p.sku} ${p.nombre} ${p.categoria}`.toLowerCase();
-  return s.includes(query);
-}
+  function pasaBusqueda(p){
+    const s = `${p.nombre} ${p.categoria}`.toLowerCase(); 
+    return s.includes(query);
+  }
 
-function render(){
-  const rows = DATA
-    .filter(p => pasaFiltro(p) && pasaBusqueda(p))
-    .map(p => `
-      <tr>
-        <td>${p.sku}</td>
-        <td>${p.nombre}</td>
-        <td>${p.categoria}</td>
-        <td>${p.talles.join(' · ')}</td>
-        <td><span class="dot" style="background:${p.color}"></span></td>
-        <td>$${p.precio.toLocaleString('es-AR')}</td>
-        <td>${p.stock}</td>
-        <td>${estadoBadge(p.estado)}</td>
-        <td>
-          <div class="actions">
-            <button class="btn-icon" title="Editar"><i class="bi bi-pencil"></i></button>
-            <button class="btn-icon" title="Duplicar"><i class="bi bi-files"></i></button>
-            <button class="btn-icon" title="Eliminar"><i class="bi bi-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+  // --- Renderizar tabla ---
+  function render(){
+    const rows = productos
+      .filter(p => pasaFiltro(p) && pasaBusqueda(p))
+      .map(p => {
+        // Si el producto tiene variantes, tomamos la primera como ejemplo
+        const variantes = Array.isArray(p.variantes) ? p.variantes : [];
+        const talles    = variantes.map(v => v.talle).filter(Boolean).join(" · ");
+        const color     = variantes[0]?.color || "#000";
+        const stockTot  = variantes.reduce((acc,v)=> acc + (parseInt(v.stock,10) || 0), 0);
+
+        return `
+          <tr>
+            <td>${p._id}</td>
+            <td>${p.nombre || ''}</td>
+            <td>${p.categoria || ''}</td>
+            <td>${talles}</td>
+            <td><span class="dot" style="background:${color}"></span></td>
+            <td>$${p.precio || 0}</td>
+            <td>${Number.isFinite(stockTot) ? stockTot : (p.stock ?? 0)}</td>
+            <td>${estadoBadge(p.estado || 'Activo')}</td>
+            <td>
+              <div class="actions">
+                <button class="btn-icon editar"   data-id="${p._id}" title="Editar"><i class="bi bi-pencil"></i></button>
+                <button class="btn-icon eliminar" data-id="${p._id}" title="Eliminar"><i class="bi bi-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
   tbody.innerHTML = rows || `<tr><td colspan="9">Sin resultados</td></tr>`;
 }
-render();
 
-// filtros
-chips.forEach(c => c.addEventListener('click', ()=>{
-  chips.forEach(x=>x.classList.remove('active'));
-  c.classList.add('active');
-  filter = c.dataset.filter;
-  render();
-}));
+  // Delegación de eventos en la tabla
+  tbody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (!id) { alert('No se encontró el ID del producto'); return; }
 
-// búsqueda
-q?.addEventListener('input', ()=>{
-  query = q.value.trim().toLowerCase();
-  render();
-});
-
-//subnav
- document.getElementById("nuevoProductoBtn").addEventListener("click", function () {
-    window.location.href = "nuevo_producto_mantenimiento.html"; // Cambiá por tu ruta real
+    if (btn.classList.contains('editar')) {
+      //ir formulario de edicion con id
+      window.location.href = `nuevo_producto_mantenimiento.html?id=${encodeURIComponent(id)}`;
+    } else if (btn.classList.contains('eliminar')) {
+      eliminarProducto(id);
+    }
   });
 
-  document.getElementById("categoriaProductoBtn").addEventListener("click", function () {
-    window.location.href = "categoria_mantenimiento.html"; // Vista de categorías
+  // --- Eliminar producto ---
+  async function eliminarProducto(id) {
+    if (!confirm("¿Seguro que quieres eliminar este producto?")) return;
+    try {
+      const res = await fetch(`backend/productController.php?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = await res.json();
+      alert(data.message || 'Producto eliminado');
+      cargarProductos();
+    } catch (err) {
+      console.error(err);
+      alert('Error eliminando producto');
+    }
+  }
+
+  // --- filtros ---
+  chips.forEach(c => c.addEventListener('click', ()=>{
+    chips.forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    filter = c.dataset.filter;
+    render();
+  }));
+
+  // --- búsqueda ---
+  q?.addEventListener('input', ()=>{
+    query = q.value.trim().toLowerCase();
+    render();
   });
 
-  document.getElementById("inventarioProductoBtn").addEventListener("click", function () {
-    window.location.href = "gestion_producto_mantenimiento.html"; // Vista de inventario
-  });
-
+  // Inicial
+  cargarProductos();
 });

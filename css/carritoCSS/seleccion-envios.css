@@ -18,7 +18,7 @@ body.modal-open {
   z-index: 9999;
 }
 
-/* Botón de retroceso genérico */
+/* Botón de retroceso */
 .btn-back {
   position: absolute;
   top: 15px;
@@ -49,12 +49,17 @@ body.modal-open {
 }
 
 /* Header y título */
-.envio-header { height: 40px; margin-bottom: 10px; }
+.envio-header {
+  /* ya no forzamos altura */
+  margin: 0;
+  padding: 0;
+}
+
 .envio-titulo {
   font-size: 28px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 30px;
+  margin: 0 0 20px 0; /* 👈 sin espacio arriba */
   color: #111;
   letter-spacing: 0.5px;
 }
@@ -110,6 +115,9 @@ body.modal-open {
 .envio-info h3 { margin: 0; font-size: 18px; color: #333; }
 .direccion, .horarios { font-size: 14px; color: #666; margin-top: 6px; }
 
+.envio-punto h3 { margin: 0; font-size: 18px; color: #333; }
+.punto-seleccionado { font-size: 14px; color: #666; margin-top: 6px; }
+
 .envio-accion {
   display: block;
   width: 100%;
@@ -129,12 +137,37 @@ body.modal-open {
 /* ============================
    3. RESPONSIVE
    ============================ */
-@media (max-width: 600px) {
+
+@media (max-width: 768px) {
+  .envio-titulo { font-size: 22px; }
+  .checkout-paso .circulo { width: 40px; height: 40px; }
+  .linea { transform: translateY(-8px); }
+  .envio-info h3, .envio-punto h3 { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
   .envio-modal {
     width: 100%;
     height: 100%;
     border-radius: 0;
-    padding: 16px;
+    padding: 15px; /* Se reduce el padding lateral del modal */
     max-height: none;
+  }
+
+  .envio-opciones {
+    gap: 15px;
+  }
+
+  .envio-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 15px;
+  }
+
+  .envio-costos {
+    text-align: left;
+    white-space: normal;
+    font-weight: 600;
   }
 }

@@ -1,3 +1,55 @@
-<div class="direccion-modal">
-  <p>Próximamente podrás guardar tus domicilios aquí.</p>
+<div class="envio-modal">
+  <div class="envio-header">
+    <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+
+  <h2 class="envio-titulo">Gestión de Direcciones</h2>
+
+  <!-- Lista de direcciones -->
+  <div class="direcciones-guardadas mb-4">
+    <h4>Direcciones guardadas</h4>
+    <!-- JS inyecta aquí -->
+  </div>
+
+  <!-- Botón para mostrar formulario -->
+  <button id="btn-mostrar-form" type="button" class="btn-pagar">+ Agregar dirección</button>
+
+  <!-- Formulario oculto por defecto -->
+  <form id="form-nueva-direccion" class="form-direccion oculto">
+    <div class="form-header">
+      <h4 id="form-titulo">Nueva dirección</h4>
+      <button type="button" id="cancelar-edicion" class="btn-cancelar">Cancelar</button>
+    </div>
+
+    <div class="mb-3">
+      <label for="nombre-direccion">Nombre de la dirección</label>
+      <input type="text" id="nombre-direccion" placeholder="Ej: Casa, Trabajo" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="calle">Calle</label>
+      <input type="text" id="calle" placeholder="Calle y número" required>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-6">
+        <label for="ciudad">Ciudad</label>
+        <input type="text" id="ciudad" placeholder="Ciudad" required>
+      </div>
+      <div class="col-6">
+        <label for="provincia">Provincia</label>
+        <input type="text" id="provincia" placeholder="Provincia" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="codigo-postal">Código Postal</label>
+      <input type="text" id="codigo-postal" placeholder="CP" required>
+    </div>
+
+    <button type="submit" class="btn-pagar">Guardar dirección</button>
+  </form>
+
 </div>

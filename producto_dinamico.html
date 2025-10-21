@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUTA - Producto</title>
+
+  <!-- estilos globales que ya usas -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/carritoCSS/cart.css">
+  <link rel="stylesheet" href="css/favoritos.css">
+  <link rel="stylesheet" href="css/tabs.css">
+  <link rel="stylesheet" href="css/producto_dinamico.css">
+  <link rel="icon" type="image/png" href="img/favicon.jpeg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+
+  <!-- Navbar dinámico (sí usamos componente-loader para esto) -->
+  <div id="navbar"></div>
+
+    <main class="producto-detalle">
+    <section class="container-producto">
+        <!-- Galería -->
+        <div class="galeria">
+        <div id="thumbs" class="thumbs"><!-- thumbs por JS --></div>
+        <img id="main-image" class="main-image" src="img/default.jpg" alt="Producto principal">
+        </div>
+
+        <!-- Info -->
+        <div class="info-producto">
+        <h1 id="nombreProducto">Producto</h1>
+        <p id="precioProducto" class="precio">$0</p>
+        <p id="descripcionProducto" class="descripcion"></p>
+
+        <div class="opciones">
+            <div class="bloque-colores">
+            <p class="label">Elige color:</p>
+            <div id="coloresWrap" class="colores"></div>
+            </div>
+
+            <div class="bloque-talles">
+            <p class="label">Elige talle:</p>
+            <div id="tallesWrap" class="talles"></div>
+            </div>
+
+            <div class="cantidad">
+            <button id="menos" class="btn-qty" type="button">-</button>
+            <input id="cantidad" type="number" min="1" value="1" />
+            <button id="mas" class="btn-qty" type="button">+</button>
+            </div>
+
+            <button id="btnAgregarCarrito" class="btn-carrito"">Agregar al carrito</button>
+        </div>
+        </div>
+    </section>
+    <!-- Pestañas de información -->
+    <div id="producto-tabs"></div>
+    </main>
+
+  <!-- Acceso de usuario -->
+  <div id="acceso-usuario"></div>
+  <!-- Footer dinámico -->
+  <div id="footer"></div>
+  <div id="chatbot"></div> <!--se carga el chatbot-->
+  <div id="favoritos"></div>
+
+  <!-- JS (orden importa) -->
+  <script src="js/componente-loader.js"></script>  
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/carritoJS/cart.js"></script>
+  <script defer src="js/favoritos.js"></script>
+  <script>setupCart();</script>
+  <script src="js/producto_dinamico.js"></script>
+</body>
+</html>
