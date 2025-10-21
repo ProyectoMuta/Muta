@@ -64,18 +64,34 @@ document.addEventListener("componente:cargado", (e) => {
             body: JSON.stringify({ email, password })
           });
           const data = await res.json();
-
-          if (data.ok) {
-            alert("Bienvenido " + data.nombre);
-            localStorage.setItem("userId", data.id);
-            localStorage.setItem("userName", data.nombre);
-            localStorage.setItem("userEmail", data.email);
-            if (data.mongo) {
-              localStorage.setItem("userMongo", JSON.stringify(data.mongo));
-            }
+if (data.ok) {
+                // 1. Guardamos TODOS los datos en localStorage
+                localStorage.setItem("userId", data.id);
+                localStorage.setItem("userName", data.nombre);
+                localStorage.setItem("userEmail", data.email);
+                localStorage.setItem("userRol", data.rol); // <-- ¡Guardamos el rol!
+                if (data.mongo) {
+                    localStorage.setItem("userMongo", JSON.stringify(data.mongo));
+                }
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
 
+            // 2. Comprobamos el ROL para la redirección
+                if (data.rol === 'admin') {
+                    // 🚀 SI ES ADMIN:
+                    alert("Bienvenido, Administrador. Serás redirigido al panel.");
+                    // Redirigimos a la página de mantenimiento
+                    window.location.href = "home_mantenimiento.html";
+                
+                } else {
+                    // SI ES CLIENTE (o cualquier otro rol):
+                    alert("Bienvenido " + data.nombre);
+                    actualizarNavbarUsuario(data.nombre);
+                    // Mostramos su vista de perfil (como ya hacíamos)
+                    mostrarVistaPerfil(); 
+                }
+
+            
             // ✅ Traer favoritos desde DB solo si login fue exitoso
             try {
               const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
