@@ -58,8 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
     $email = $data['email'] ?? '';
     $password = $data['password'] ?? '';
 
-    $stmt = $pdo->prepare("SELECT id, nombre, password_hash FROM usuarios WHERE email = ?");
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare("SELECT id, nombre, password_hash, rol FROM usuarios WHERE email = ?");    $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user || !password_verify($password, $user['password_hash'])) {
@@ -69,13 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
     }
 
     // Traer datos dinámicos desde MongoDB
-    $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
-
+    
+$mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
     echo json_encode([
         "ok" => true,
         "id" => $user['id'],
         "nombre" => $user['nombre'],
         "email" => $email,
+        "rol" => $user['rol'], // <-- AÑADIDO
         "mongo" => $mongoUser
     ]);
     exit;

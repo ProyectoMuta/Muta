@@ -59,20 +59,25 @@ document.addEventListener("DOMContentLoaded", () => {
           ${tipo === "remera" ? optsRemera : optsPantalon}
         </select>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <input type="number" class="form-control" name="stock[]" placeholder="Stock" value="${initial.stock ?? 0}">
       </div>
       <div class="col-md-2">
         <input type="number" class="form-control" name="peso[]" placeholder="Peso (g)" value="${initial.peso ?? 0}">
       </div>
-      <div class="col-md-3">
-        <div class="color-inline">
-          <span class="color-label">Color</span>
-          <input type="color" class="color-swatch" name="color[]" value="${initial.color ?? '#000000'}">
-          <button type="button" class="trash-btn eliminar-variante" title="Quitar">
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
+      <!-- CORRECTO -->
+<div class="col-md-2">
+    <div class="color-input-group">
+        <label for="productColor" class="form-label">Color</label>
+        <input type="color" 
+               class="form-control" 
+               name="color" 
+               id="productColor" 
+               value="#000000">
+    </div>
+</div>
+      <div class="col-md-1 d-flex align-items-center">
+        <i class="bi bi-trash text-danger eliminar-variante" ></i>
       </div>
     `;
     row.querySelector(".eliminar-variante").addEventListener("click", () => row.remove());

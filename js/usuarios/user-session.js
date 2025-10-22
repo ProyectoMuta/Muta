@@ -19,30 +19,30 @@ document.addEventListener("componente:cargado", (e) => {
           return;
         }
 
+        try {
+          const res = await fetch("backend/userController.php?action=register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, email, password })
+          });
+
+          const text = await res.text();
+          console.log("Respuesta cruda del servidor:", text);
+
+          let data;
           try {
-            const res = await fetch("backend/userController.php?action=register", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nombre, email, password })
-            });
+            data = JSON.parse(text);
+          } catch (err) {
+            alert("El servidor no devolvió JSON válido. Mira la consola.");
+            return;
+          }
 
-            const text = await res.text();
-            console.log("Respuesta cruda del servidor:", text);
-
-            let data;
-            try {
-              data = JSON.parse(text);
-            } catch (err) {
-              alert("El servidor no devolvió JSON válido. Mira la consola.");
-              return;
-            }
-
-            if (data.ok) {
-              alert("Registro exitoso. Ahora puedes iniciar sesión.");
-              document.getElementById("go-login")?.click();
-            } else {
-              alert("Error: " + (data.error || "No se pudo registrar"));
-            }
+          if (data.ok) {
+            alert("Registro exitoso. Ahora puedes iniciar sesión.");
+            document.getElementById("go-login")?.click();
+          } else {
+            alert("Error: " + (data.error || "No se pudo registrar"));
+          }
         } catch (err) {
           console.error("Error en registro:", err);
           alert("Error de conexión con el servidor");
@@ -66,10 +66,11 @@ document.addEventListener("componente:cargado", (e) => {
           const data = await res.json();
 
           if (data.ok) {
-            alert("Bienvenido " + data.nombre);
+            // 1. Guardamos datos en localStorage
             localStorage.setItem("userId", data.id);
             localStorage.setItem("userName", data.nombre);
             localStorage.setItem("userEmail", data.email);
+            localStorage.setItem("userRol", data.rol); // Guardamos el rol
             if (data.mongo) {
               localStorage.setItem("userMongo", JSON.stringify(data.mongo));
             }
@@ -77,6 +78,15 @@ document.addEventListener("componente:cargado", (e) => {
             // Cerrar modal de login
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
+
+            // 2. Comprobamos el ROL para la redirección
+            if (data.rol === 'admin') {
+              alert("Bienvenido, Administrador. Serás redirigido al panel.");
+              window.location.href = "home_mantenimiento.html";
+            } else {
+              alert("Bienvenido " + data.nombre);
+              mostrarVistaPerfil();
+            }
 
             // ✅ Traer favoritos desde DB
             try {
@@ -88,7 +98,7 @@ document.addEventListener("componente:cargado", (e) => {
               console.error("Error cargando favoritos desde DB:", err);
             }
 
-            // ✅ Traer carrito desde DB (sin merge)
+            // ✅ Traer carrito desde DB
             try {
               const resCart = await fetch(`backend/userController.php?action=getCart&id=${data.id}`);
               const mongoCart = await resCart.json();
@@ -138,21 +148,19 @@ function actualizarNavbarUsuario(nombre) {
   }
 }
 
-// Se encarga de mostrar la vista de perfil y llenarla con datos del localStorage
+// === Mostrar vista de perfil ===
 function mostrarVistaPerfil() {
-    const nombre = localStorage.getItem("userName");
-    const email = localStorage.getItem("userEmail");
+  const nombre = localStorage.getItem("userName");
+  const email = localStorage.getItem("userEmail");
 
-    if (nombre && email) {
-        // Rellenamos los datos en el HTML
-        document.getElementById("perfil-nombre-completo").textContent = nombre;
-        document.getElementById("perfil-email").textContent = email;
+  if (nombre && email) {
+    document.getElementById("perfil-nombre-completo").textContent = nombre;
+    document.getElementById("perfil-email").textContent = email;
 
-        // Ocultamos los otros formularios y mostramos el de perfil
-        document.getElementById("acceso-usuario-login").classList.remove("active");
-        document.getElementById("acceso-usuario-register").classList.remove("active");
-        document.getElementById("acceso-usuario-perfil").classList.add("active");
-    }
+    document.getElementById("acceso-usuario-login").classList.remove("active");
+    document.getElementById("acceso-usuario-register").classList.remove("active");
+    document.getElementById("acceso-usuario-perfil").classList.add("active");
+  }
 }
 
 window.addEventListener("pageshow", () => {
@@ -161,3 +169,4 @@ window.addEventListener("pageshow", () => {
     actualizarNavbarUsuario(localStorage.getItem("userName"));
   }
 });
+

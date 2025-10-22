@@ -195,6 +195,113 @@ function setupAccesoUsuario() {
   }
 }
 
+// ============================================
+// FUNCIÓN DE BÚSQUEDA - AGREGAR AL ARCHIVO componente-loader.js
+// ============================================
+
+// --- Buscador de productos ---
+function setupBuscador() {
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+  
+  if (!searchInput || !searchResults) return;
+
+  let searchTimeout;
+
+  // Event listener para búsqueda en tiempo real
+  searchInput.addEventListener("input", function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    
+    // Si la búsqueda tiene menos de 2 caracteres, ocultar resultados
+    if (query.length < 2) {
+      searchResults.classList.remove("active");
+      return;
+    }
+    
+    // Mostrar indicador de carga
+    searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
+    searchResults.classList.add("active");
+    
+    // Esperar 300ms después de que el usuario deje de escribir
+    searchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  
+
+  // Función para realizar la búsqueda
+  async function performSearch(query) {
+    try {
+      // 🔥 LLAMADA A TU BACKEND PHP
+      const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      
+      if (data.success && data.results) {
+        displayResults(data.results);
+      } else {
+        searchResults.innerHTML = `
+          <div class="search-no-results">
+            <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
+            <p>No se encontraron productos</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      console.error("Error en búsqueda:", err);
+      searchResults.innerHTML = `
+        <div class="search-no-results">
+          <p>Error al buscar productos</p>
+        </div>
+      `;
+    }
+  }
+  });
+  // Función para mostrar resultados
+  function displayResults(resultados) {
+
+    if (resultados.length === 0) {
+      searchResults.innerHTML = `
+        <div class="search-no-results">
+          <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
+          <p>No se encontraron productos</p>
+        </div>
+      `;
+      return;
+    }
+
+    searchResults.innerHTML = resultados.map(producto => `
+      
+      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item"> 
+      
+        <div class="result-image">
+          <img src="${producto.imagen || 'img/default.jpg'}" alt="${producto.nombre}">
+        </div>
+        <div class="result-info">
+          <div class="result-name">${producto.nombre}</div>
+          <div class="result-category">${producto.categoria}</div>
+        </div>
+        <div class="result-price">$${producto.precio.toLocaleString('es-AR')}</div>
+      </a>
+    `).join('');
+  }
+
+  // Cerrar resultados al hacer click fuera
+  document.addEventListener("click", function(e) {
+    if (!e.target.closest(".search-bar")) {
+      searchResults.classList.remove("active");
+    }
+  });
+
+  // Cerrar con la tecla ESC
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      searchResults.classList.remove("active");
+      searchInput.blur();
+    }
+  });
+}
+
+
 // --- Tabs de producto ---
 function setupTabsProducto() {
   const tabTitles = document.querySelectorAll(".tab-title");
@@ -345,9 +452,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(() => {
         setupNavbarDropdowns(); // Activa los dropdowns de categorías
         setupHamburgerMenu();   // Activa el botón de hamburguesa
+        setupBuscador();        // 🔥 NUEVA LÍNEA - Activa el buscador
         document.dispatchEvent(new CustomEvent("navbar:ready"));
-      });
-  }
+  })
+      
 
   if (document.getElementById("footer")) {
     cargarComponente("footer", "componentesHTML/footer.html");
@@ -387,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setupProductoInteractions();
         document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
       });
-});
+}});
 
 //para remeras
 document.addEventListener("DOMContentLoaded", async () => {
