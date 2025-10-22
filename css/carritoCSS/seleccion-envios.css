@@ -134,6 +134,24 @@ body.modal-open {
 }
 .envio-accion:hover { background: #666; }
 
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+.btn-close:hover {
+  color: #000;
+}
+
+.btn-close.cerrar-modal {
+  transform: scale(0.60); 
+}
+
 /* ============================
    3. RESPONSIVE
    ============================ */
