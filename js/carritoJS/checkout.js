@@ -24,6 +24,80 @@ function getSubtotal() {
   }
 }
 
+// --- Función genérica de cálculo ---
+function calcularCostoEnvioPorCP(cp) {
+  // Agrupación de CP por departamentos cercanos a Mendoza Capital
+  const grupos = {
+    capital: {
+      cps: ["5500", "5501", "5502"], // Mendoza Capital y alrededores inmediatos
+      km: 1
+    },
+    godoyCruz: {
+      cps: ["5501", "5509"],
+      km: 7
+    },
+    guaymallen: {
+      cps: ["5519", "5521", "5523"],
+      km: 20
+    },
+    guaymallen2: {
+      cps: ["5523"],
+      km: 10
+    },
+    lasHeras: {
+      cps: ["5539", "5540"],
+      km: 15
+    },
+    maipu: {
+      cps: ["5515", "5517", "5518"],
+      km: 18
+    },
+    lujan: {
+      cps: ["5507", "5509"],
+      km: 12
+    },
+    sanMartin: {
+      cps: ["5570", "5571"],
+      km: 45
+    },
+    rivadavia: {
+      cps: ["5577", "5579"],
+      km: 65
+    },
+    junin: {
+      cps: ["5582"],
+      km: 75
+    },
+    santaRosa: {
+      cps: ["5590"],
+      km: 75
+    },
+    lavalle: {
+      cps: ["5594"],
+      km: 70
+    }
+  };
+  // Buscar a qué grupo pertenece el CP
+  let km = null;
+  for (const depto in grupos) {
+    if (grupos[depto].cps.includes(cp)) {
+      km = grupos[depto].km;
+      break;
+    }
+  }
+  // Si está en la tabla → cálculo progresivo
+  if (km !== null) {
+    const costoBase = 2000;
+    const costoPorKm = 150;
+    const costo = costoBase + (km * costoPorKm);
+    return Math.min(costo, 16000); // nunca supera $16.000
+  }
+  // Si no está en la tabla → costo fijo máximo
+  return 16000;
+}
+
+window.calcularCostoEnvioPorCP = calcularCostoEnvioPorCP;
+
 // === Overlay helpers ===
 function mostrarOverlay(ruta, openerEl = null) {
   const overlayContainer = document.getElementById("checkout-overlay");
@@ -56,7 +130,7 @@ function mostrarOverlay(ruta, openerEl = null) {
 // === ORQUESTADOR PRINCIPAL DEL PROCESO DE PAGO ===
 // =======================================================
 function inicializarProcesoDeCompra() {
-    document.body.addEventListener('click', (e) => {
+    document.body.addEventListener('click', async (e) => {
         const target = e.target;
         const btnCheckout = target.closest(".checkout-btn");
         const opcionEnvio = target.closest(".opcion-envio");
@@ -66,32 +140,114 @@ function inicializarProcesoDeCompra() {
         const btnVolverEnvios = target.closest(".volver-envios");
         const btnCerrarModal = target.closest(".cerrar-modal");
 
+        // === Paso 1: abrir selección de envíos ===
         if (btnCheckout) {
             e.preventDefault();
             const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
-            if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
-            mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
-              .then(() => { if (typeof inicializarLogicaEnvios === 'function') inicializarLogicaEnvios(); });
+            if (cart.length === 0) { 
+                alert("Tu carrito está vacío."); 
+                return; 
+            }
+            mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
+              .then(() => waitForOverlayElement(".envio-modal", 4000))
+              .then(() => inicializarEnvios());
             return;
         }
 
+        // === Paso 2: elegir método de envío ===
         if (opcionEnvio && !target.closest('.envio-accion')) {
             e.preventDefault();
             const metodo = opcionEnvio.dataset.metodo;
             localStorage.setItem("selectedMetodoEnvio", metodo);
-            if (metodo === 'domicilio' && !localStorage.getItem('selectedDireccion')) { alert('Por favor, agrega y selecciona un domicilio.'); return; }
-            if (metodo === 'punto' && !localStorage.getItem('selectedPunto')) { alert('Por favor, selecciona un punto de retiro.'); return; }
-            localStorage.setItem("selectedEnvio", String(safeParsePrice(opcionEnvio.querySelector(".costo-envio")?.dataset.envio)));
-            mostrarOverlay("componentesHTML/carritoHTML/seleccion-pago.html", opcionEnvio)
+
+            // Validaciones estrictas
+            if (metodo === 'domicilio' || metodo === 'punto') {
+              const userId = localStorage.getItem("userId");
+              try {
+                const res = await fetch(`backend/userController.php?action=getDirecciones&id=${userId}`);
+                const direcciones = await res.json();
+
+                if (metodo === 'domicilio') {
+                  const domicilioSel = (direcciones.domicilios || []).find(d => d.seleccionada);
+                  if (!domicilioSel) {
+                    alert('Por favor, agrega y selecciona un domicilio.');
+                    return;
+                  }
+                }
+
+                if (metodo === 'punto') {
+                  const puntoSel = direcciones.punto && direcciones.punto.seleccionado ? direcciones.punto : null;
+                  if (!puntoSel) {
+                    alert('Por favor, selecciona un punto de retiro.');
+                    return;
+                  }
+                }
+              } catch (err) {
+                console.error("Error validando selección de envío:", err);
+                alert("No se pudo validar la dirección seleccionada.");
+                return;
+              }
+            }
+
+            // 🔑 ACTUALIZAR envioSeleccionado en Mongo
+            const userId = localStorage.getItem("userId");
+            if (userId) {
+              try {
+                await fetch("backend/userController.php?action=setEnvioSeleccionado", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id_usuario: userId, metodo })
+                });
+              } catch (err) {
+                console.error("Error actualizando envioSeleccionado:", err);
+              }
+            }
+
+            // Si pasó las validaciones, avanza al pago
+            localStorage.setItem("selectedEnvio", String(
+                safeParsePrice(opcionEnvio.querySelector(".costo-envio")?.dataset.envio)
+            ));
+
+            mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-pago.html", opcionEnvio)
               .then(() => { if (typeof inicializarLogicaPago === 'function') inicializarLogicaPago(); });
             return;
         }
-        
-        if (btnDirecciones) { e.preventDefault(); mostrarOverlay("componentesHTML/carritoHTML/seleccion-direccion.html", btnDirecciones).then(() => { if (typeof inicializarGestionDirecciones === 'function') inicializarGestionDirecciones(); }); return; }
-        if (btnVerMapaPuntos) { e.preventDefault(); mostrarOverlay("componentesHTML/mapaHTML/mapa-puntos.html", btnVerMapaPuntos).then(() => { if (typeof initMapaPuntos === 'function') initMapaPuntos(); }); return; }
-        if (btnVerTienda) { e.preventDefault(); mostrarOverlay("componentesHTML/mapaHTML/mapa-tienda.html", btnVerTienda); return; }
-        if (btnVolverEnvios) { e.preventDefault(); mostrarOverlay("componentesHTML/carritoHTML/seleccion-envios.html", btnVolverEnvios).then(() => { if (typeof inicializarLogicaEnvios === 'function') inicializarLogicaEnvios(); }); return; }
-        if (btnCerrarModal) { const overlay = document.getElementById("checkout-overlay"); if (overlay) overlay.innerHTML = ""; document.body.classList.remove("modal-open"); return; }
+
+        // === Otros botones ===
+        if (btnDirecciones) { 
+            e.preventDefault(); 
+            mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-direccion.html", btnDirecciones)
+              .then(() => { if (typeof inicializarGestionDirecciones === 'function') inicializarGestionDirecciones(); }); 
+            return; 
+        }
+
+        if (btnVerMapaPuntos) { 
+            e.preventDefault(); 
+            mostrarOverlay("/Muta/componentesHTML/mapaHTML/mapa-puntos.html", btnVerMapaPuntos)
+              .then(() => { if (typeof initMapaPuntos === 'function') initMapaPuntos(); }); 
+            return; 
+        }
+
+        if (btnVerTienda) { 
+            e.preventDefault(); 
+            mostrarOverlay("/Muta/componentesHTML/mapaHTML/mapa-tienda.html", btnVerTienda); 
+            return; 
+        }
+
+        if (btnVolverEnvios) { 
+            e.preventDefault(); 
+            mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", btnVolverEnvios)
+              .then(() => waitForOverlayElement(".envio-modal", 4000))
+              .then(() => inicializarEnvios());
+            return; 
+        }
+
+        if (btnCerrarModal) { 
+            const overlay = document.getElementById("checkout-overlay"); 
+            if (overlay) overlay.innerHTML = ""; 
+            document.body.classList.remove("modal-open"); 
+            return; 
+        }
     });
     
     document.addEventListener("submit", (e) => {
@@ -103,95 +259,113 @@ function inicializarProcesoDeCompra() {
 }
 
 // === LÓGICA DE ENVÍO DE EMAILJS ===
-function getOrderData() {
-    const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
-    const subtotal = getSubtotal();
-    const envioCosto = safeParsePrice(localStorage.getItem("selectedEnvio") || 0);
-    const total = subtotal + envioCosto;
-    
-    const customerName = document.getElementById("nombre-cliente")?.value || "Cliente Muta";
-    const customerEmail = document.getElementById("email-cliente")?.value;
-    
-    const orderId = `MUTA-${Math.floor(Math.random() * 90000) + 10000}`;
-    
-    const itemsHtml = cart.map(item => 
-        `<li>${item.quantity}x ${item.name} (Talle: ${item.size}) - $${formatCurrency(item.price * item.quantity)}</li>`
-    ).join('');
+async function getOrderData() {
+  const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+  const subtotal = getSubtotal();
+  const customerName = document.getElementById("nombre-cliente")?.value || "Cliente Muta";
+  const customerEmail = document.getElementById("email-cliente")?.value;
+  const orderId = `MUTA-${Math.floor(Math.random() * 90000) + 10000}`;
 
-    let detallesPago = "No especificado";
-    // ===== CORRECCIÓN CLAVE =====
-    // Se usa la clase correcta: "activo"
-    const metodoActivo = document.querySelector(".pago-card.opcion-pago.activo");
-    // ===========================
-    if (metodoActivo) {
-        const metodo = metodoActivo.dataset.metodo;
-        if (metodo === 'tarjeta') {
-            const ultimosCuatroDigitos = document.getElementById("numero")?.value.slice(-4) || 'XXXX';
-            detallesPago = `Tarjeta de Crédito/Débito terminada en ${ultimosCuatroDigitos}`;
-        } else if (metodo === 'mercadopago') {
-            detallesPago = "Mercado Pago";
-        }
+  const itemsHtml = cart.map(item =>
+    `<li>${item.quantity}x ${item.name} (Talle: ${item.size}) - $${formatCurrency(item.price * item.quantity)}</li>`
+  ).join('');
+
+  let detallesPago = "No especificado";
+  const metodoActivo = document.querySelector(".pago-card.opcion-pago.activo");
+  if (metodoActivo) {
+    const metodo = metodoActivo.dataset.metodo;
+    if (metodo === 'tarjeta') {
+      const ultimosCuatroDigitos = document.getElementById("numero")?.value.slice(-4) || 'XXXX';
+      detallesPago = `Tarjeta terminada en ${ultimosCuatroDigitos}`;
+    } else if (metodo === 'mercadopago') {
+      detallesPago = "Mercado Pago";
     }
+  }
 
-    const metodoEnvio = localStorage.getItem("selectedMetodoEnvio");
-    let detallesDireccion = "No especificado";
-    let detallesEnvio = "No especificado";
-    if (metodoEnvio === 'domicilio') {
-        const direccionGuardada = JSON.parse(localStorage.getItem("selectedDireccion"));
-        detallesEnvio = "Envío a domicilio";
-        if (direccionGuardada) {
-            detallesDireccion = `${direccionGuardada.calle}, ${direccionGuardada.ciudad}, ${direccionGuardada.provincia}`;
+  let detallesEnvio = "No especificado";
+  let detallesDireccion = "No especificado";
+  let envioCosto = 0;
+
+  const userId = localStorage.getItem("userId");
+  if (userId) {
+    try {
+      const res = await fetch(`backend/userController.php?action=getUser&id=${userId}`);
+      const data = await res.json();
+      const mongo = data.mongo;
+      const metodo = mongo.envioSeleccionado;
+
+      if (metodo === "domicilio") {
+        const domicilio = (mongo.direcciones?.domicilios || []).find(d => d.seleccionada);
+        if (domicilio) {
+          detallesEnvio = "Envío a domicilio";
+          detallesDireccion = `${domicilio.calle}, ${domicilio.ciudad}, ${domicilio.provincia}`;
+          envioCosto = window.calcularCostoEnvioPorCP(domicilio.cp);
         }
-    } else if (metodoEnvio === 'punto') {
-        const puntoNombre = localStorage.getItem("selectedPuntoName");
-        detallesEnvio = "Retiro en punto de entrega";
-        detallesDireccion = puntoNombre || "Punto no especificado";
-    } else if (metodoEnvio === 'tienda') {
+      } else if (metodo === "punto") {
+        const punto = mongo.direcciones?.punto;
+        if (punto && punto.seleccionado) {
+          detallesEnvio = "Retiro en punto de entrega";
+          detallesDireccion = `${punto.nombre} — ${punto.direccion}`;
+          envioCosto = window.calcularCostoEnvioPorCP(punto.cp);
+        }
+      } else if (metodo === "tienda") {
         detallesEnvio = "Retiro en tienda MUTA";
         detallesDireccion = "Av. Colón 740, Mendoza";
+        envioCosto = 0;
+      }
+    } catch (err) {
+      console.error("Error obteniendo dirección seleccionada:", err);
     }
+  }
 
-    return {
-        customer_name: customerName,
-        order_id: orderId,
-        items_html: `<ul>${itemsHtml}</ul>`,
-        subtotal: `$${formatCurrency(subtotal)}`,
-        costo_envio: `$${formatCurrency(envioCosto)}`,
-        total_amount: `$${formatCurrency(total)}`,
-        detalles_pago: detallesPago,
-        sdetalles_envio: detallesEnvio,
-        detalles_direccion: detallesDireccion,
-        email_cliente: customerEmail 
-    };
+  const total = subtotal + envioCosto;
+
+  return {
+    customer_name: customerName,
+    order_id: orderId,
+    items_html: `<ul>${itemsHtml}</ul>`,
+    subtotal: `$${formatCurrency(subtotal)}`,
+    costo_envio: `$${formatCurrency(envioCosto)}`,
+    total_amount: `$${formatCurrency(total)}`,
+    detalles_pago: detallesPago,
+    detalles_envio: detallesEnvio,
+    detalles_direccion: detallesDireccion,
+    email_cliente: customerEmail
+  };
 }
 
+async function finalizarCompra(finishBtn) {
+  const originalText = finishBtn.textContent;
+  const templateParams = await getOrderData();
 
-function finalizarCompra(finishBtn) {
-    const originalText = finishBtn.textContent;
-    const templateParams = getOrderData();
-    if (!templateParams.customer_name || !templateParams.email_cliente || !templateParams.email_cliente.includes('@')) { 
-        alert("Por favor, completa tu nombre y un email válido."); 
-        return; 
-    }
-    finishBtn.textContent = "Procesando...";
-    finishBtn.disabled = true;
-    emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
-      .then((response) => { 
-          alert(`¡Gracias por tu compra, ${templateParams.customer_name}! 📧 Se ha enviado un email de confirmación.`); 
-          localStorage.removeItem("mutaCart"); 
-          localStorage.removeItem("selectedMetodoEnvio");
-          localStorage.removeItem("selectedDireccion");
-          localStorage.removeItem("selectedPunto");
-          window.location.href = "index.html"; 
-      })
-      .catch((error) => { 
-          console.error('ERROR AL ENVIAR EMAIL:', error); 
-          alert("Tu compra se completó, pero no pudimos enviar el email de confirmación."); 
-      })
-      .finally(() => { 
-          finishBtn.textContent = originalText; 
-          finishBtn.disabled = false; 
-      });
+  if (!templateParams.customer_name || !templateParams.email_cliente || !templateParams.email_cliente.includes('@')) {
+    alert("Por favor, completa tu nombre y un email válido.");
+    return;
+  }
+
+  finishBtn.textContent = "Procesando...";
+  finishBtn.disabled = true;
+
+  emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
+    .then(() => {
+      alert(`¡Gracias por tu compra, ${templateParams.customer_name}!Se ha enviado un email de confirmación.`);
+
+      // Limpiar solo lo necesario
+      localStorage.removeItem("mutaCart");               // carrito
+      localStorage.removeItem("selectedMetodoEnvio");    // modalidad temporal
+      localStorage.removeItem("selectedDireccion");      // solo si usabas localStorage antes
+      localStorage.removeItem("selectedPunto");          // solo si usabas localStorage antes
+
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      console.error('ERROR AL ENVIAR EMAIL:', error);
+      alert("Tu compra se completó, pero no pudimos enviar el email de confirmación.");
+    })
+    .finally(() => {
+      finishBtn.textContent = originalText;
+      finishBtn.disabled = false;
+    });
 }
 
 function waitForOverlayElement(selector, timeout = 5000) {
@@ -251,42 +425,79 @@ function releaseFocus(modal) {
 }
 
 // === Inicializadores ===
-function inicializarEnvios() {
-  // Punto de retiro
-  const label = document.querySelector(".envio-punto .punto-seleccionado");
-  const savedName = localStorage.getItem("selectedPuntoName");
-  const savedDireccion = localStorage.getItem("selectedPuntoDireccion");
+async function inicializarEnvios() {
+  const subtotal = getSubtotal();
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
 
-  if (label) {
-    if (savedName && savedDireccion) {
-      label.textContent = `${savedName} — ${savedDireccion}`;
-    } else {
-      label.textContent = "No hay punto seleccionado";
-    }
+  let direcciones = {};
+  try {
+    const res = await fetch(`backend/userController.php?action=getDirecciones&id=${userId}`);
+    direcciones = await res.json();
+  } catch (err) {
+    console.error("Error cargando direcciones:", err);
   }
 
-  // Totales
-  const subtotal = getSubtotal();
-  document.querySelectorAll(".envio-costos").forEach(costos => {
-    const envio = safeParsePrice(costos.querySelector(".costo-envio")?.dataset?.envio);
-    const total = subtotal + envio;
-    const totalEl = costos.querySelector(".total-envio");
-    if (totalEl) totalEl.textContent = `Total: $${formatCurrency(total)}`;
-  });
+  // Buscar domicilio seleccionado
+  const domicilioSel = (direcciones.domicilios || []).find(d => d.seleccionada);
+  // Buscar punto seleccionado
+  const puntoSel = direcciones.punto && direcciones.punto.seleccionado ? direcciones.punto : null;
 
-  // Dirección de envío seleccionada
+  // === 1. Dirección de envío seleccionada (domicilio) ===
   const dirLabel = document.querySelector(".opcion-envio[data-metodo='domicilio'] .direccion");
-  const seleccionada = JSON.parse(localStorage.getItem("selectedDireccion"));
-
-  console.log("Dirección seleccionada:", seleccionada);
-
   if (dirLabel) {
-    if (seleccionada && seleccionada.nombre && seleccionada.calle && seleccionada.ciudad) {
-      dirLabel.textContent = `${seleccionada.nombre} - ${seleccionada.calle}, ${seleccionada.ciudad}`;
+    const costoEl = document.querySelector('.opcion-envio[data-metodo="domicilio"] .costo-envio');
+    if (domicilioSel) {
+      dirLabel.textContent = `${domicilioSel.nombre} - ${domicilioSel.calle}, ${domicilioSel.ciudad}`;
+      const costo = window.calcularCostoEnvioPorCP(domicilioSel.cp);
+      if (costoEl) {
+        costoEl.dataset.envio = costo;
+        costoEl.textContent = `Envío: $${formatCurrency(costo)}`;
+      }
     } else {
       dirLabel.textContent = "No hay dirección seleccionada";
+      if (costoEl) {
+        costoEl.dataset.envio = 0;
+        costoEl.textContent = "Envío: $0000";
+      }
     }
   }
+
+  // === 2. Punto de retiro seleccionado ===
+  const puntoElement = document.querySelector('.envio-punto .punto-seleccionado');
+  if (puntoElement) {
+    const costoEl = document.querySelector('.opcion-envio[data-metodo="punto"] .costo-envio');
+    if (puntoSel) {
+      puntoElement.textContent = `${puntoSel.nombre} — ${puntoSel.direccion}`;
+      const costo = window.calcularCostoEnvioPorCP(puntoSel.cp);
+      if (costoEl) {
+        costoEl.dataset.envio = costo;
+        costoEl.textContent = `Envío: $${formatCurrency(costo)}`;
+      }
+    } else {
+      puntoElement.textContent = "No hay punto seleccionado";
+      if (costoEl) {
+        costoEl.dataset.envio = 0;
+        costoEl.textContent = "Envío: $0000";
+      }
+    }
+  }
+
+  // === 3. Retiro en tienda (siempre gratis) ===
+  const tiendaCostoEl = document.querySelector('.opcion-envio[data-metodo="tienda"] .costo-envio');
+  if (tiendaCostoEl) {
+    tiendaCostoEl.dataset.envio = 0;
+    tiendaCostoEl.textContent = "Envío: GRATIS";
+  }
+
+  // === 4. Recalcular totales ===
+  document.querySelectorAll(".opcion-envio").forEach(opcion => {
+    const costoEnvio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset.envio || "0");
+    const totalElement = opcion.querySelector(".total-envio");
+    if (totalElement) {
+      totalElement.textContent = `Total: $${formatCurrency(subtotal + costoEnvio)}`;
+    }
+  });
 }
 
 function actualizarTotalesPago(envio = 0) {
@@ -320,6 +531,52 @@ function inicializarPago() {
     });
     cuotasSelect.dispatchEvent(new Event("change"));
   }
+  mostrarResumenEnvio();
+}
+
+// === Resumen de envío en checkout ===
+async function mostrarResumenEnvio() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
+
+  const contenedor = document.getElementById("resumen-envio");
+  if (!contenedor) return;
+
+  try {
+    const res = await fetch(`backend/userController.php?action=getUser&id=${userId}`);
+    const data = await res.json();
+    const mongo = data.mongo;
+    const metodo = mongo.envioSeleccionado;
+
+    let resumen = "";
+    if (metodo === "domicilio") {
+      const domicilio = (mongo.direcciones?.domicilios || []).find(d => d.seleccionada);
+      if (domicilio) {
+        resumen = `
+          <strong>Envío a domicilio</strong><br>
+          ${domicilio.nombre} — ${domicilio.calle}, ${domicilio.ciudad}, ${domicilio.provincia}
+        `;
+      }
+    } else if (metodo === "punto") {
+      const punto = mongo.direcciones?.punto;
+      if (punto && punto.seleccionado) {
+        resumen = `
+          <strong>Retiro en punto de entrega</strong><br>
+          ${punto.nombre} — ${punto.direccion}
+        `;
+      }
+    } else if (metodo === "tienda") {
+      resumen = `
+        <strong>Retiro en tienda MUTA</strong><br>
+        Av. Colón 740, Mendoza
+      `;
+    }
+
+    contenedor.innerHTML = resumen || "<em>No se ha seleccionado método de envío</em>";
+  } catch (err) {
+    console.error("Error mostrando resumen de envío:", err);
+    contenedor.innerHTML = "<em>Error al cargar el resumen de envío</em>";
+  }
 }
 
 // === Event listeners ===
@@ -327,7 +584,7 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-direcciones");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-direccion.html", btn)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarDirecciones());
 });
@@ -352,22 +609,14 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 3. Abrir overlay de envíos
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
+  // 3. Cerrar modal de login si estaba abierto
+  const modalLogin = document.getElementById("acceso-usuario-container");
+  if (modalLogin) modalLogin.style.display = "none";
+
+  // 4. Abrir overlay de envíos
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", btnCheckout)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
-});
-
-// Seleccionar opción de envío → abrir pago
-document.addEventListener("click", (e) => {
-  const opcion = e.target.closest(".opcion-envio");
-  if (!opcion) return;
-  e.preventDefault();
-  const envio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset?.envio);
-  localStorage.setItem("selectedEnvio", String(envio));
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-pago.html", e.target)
-    .then(() => waitForOverlayElement(".pago-modal", 4000))
-    .then(() => inicializarPago());
 });
 
 // Botón "Ver ubicación" → abrir mapa
@@ -375,7 +624,7 @@ document.addEventListener("click", (e) => {
   const btnMapa = e.target.closest(".btn-ver-tienda");
   if (!btnMapa) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html", btnMapa);
+  mostrarOverlay("/Muta/componentesHTML/mapaHTML/mapa-tienda.html", btnMapa);
 });
 
 // Alternar método de pago (tarjeta / Mercado Pago)
@@ -401,7 +650,7 @@ document.addEventListener("click", (e) => {
   const volver = e.target.closest(".volver-envios");
   if (!volver) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", volver)
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", volver)
     .then(() => waitForOverlayElement(".envio-costos", 4000))
     .then(() => inicializarEnvios());
 });
@@ -421,28 +670,12 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Seleccionar opción de envío → abrir pago
-document.addEventListener("click", (e) => {
-  // Si el click vino de un botón de acción dentro del grupo, ignorar
-  if (e.target.closest(".envio-accion")) return;
-
-  const opcion = e.target.closest(".opcion-envio");
-  if (!opcion) return;
-  e.preventDefault();
-
-  const envio = safeParsePrice(opcion.querySelector(".costo-envio")?.dataset?.envio);
-  localStorage.setItem("selectedEnvio", String(envio));
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-pago.html", e.target)
-    .then(() => waitForOverlayElement(".pago-modal", 4000))
-    .then(() => inicializarPago());
-});
-
 // Abrir mapa-puntos desde botón "ver o cambiar en el mapa"
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".ver-cambiar-mapa");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("componentesHTML/mapaHTML/mapa-puntos.html", btn)
+  mostrarOverlay("/Muta/componentesHTML/mapaHTML/mapa-puntos.html", btn)
     .then(() => {
       if (typeof initMapaPuntos === "function") {
         initMapaPuntos();
@@ -455,7 +688,7 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-ver-tienda");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/mapaHTML/mapa-tienda.html", btn);
+  mostrarOverlay("/Muta/componentesHTML/mapaHTML/mapa-tienda.html", btn);
 });
 
 // Volver a envíos desde cualquier submodal (mapa-puntos, mapa-tienda, pago)
@@ -463,7 +696,7 @@ document.addEventListener("click", (e) => {
   const volver = e.target.closest(".volver-envios");
   if (!volver) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", volver)
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", volver)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarEnvios());
 });
@@ -473,31 +706,43 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn-direcciones");
   if (!btn) return;
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-direccion.html", btn)
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-direccion.html", btn)
     .then(() => waitForOverlayElement(".envio-modal", 4000))
     .then(() => inicializarDirecciones());
 });
 
-function inicializarDirecciones() {
+// === Lógica de gestión de direcciones ===
+async function inicializarDirecciones() {
   const lista = document.querySelector(".direcciones-guardadas");
   const form = document.getElementById("form-nueva-direccion");
   const btnMostrarForm = document.getElementById("btn-mostrar-form");
   const btnCancelar = document.getElementById("cancelar-edicion");
   const tituloForm = document.getElementById("form-titulo");
 
-  let direcciones = JSON.parse(localStorage.getItem("mutaDirecciones")) || [];
-  let modoEdicion = false;
-  let idEditando = null;
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
 
-  // Renderizar lista
+  // Traer direcciones desde Mongo
+  let direcciones = {};
+  try {
+    const res = await fetch(`backend/userController.php?action=getDirecciones&id=${userId}`);
+    direcciones = await res.json();
+    localStorage.setItem("mutaDirecciones", JSON.stringify(direcciones)); // cache local
+  } catch (err) {
+    console.error("Error cargando direcciones:", err);
+  }
+
+  // Extraer domicilios
+  const domicilios = direcciones.domicilios || [];
+
   lista.innerHTML = "<h4>Direcciones guardadas</h4>";
-  if (direcciones.length === 0) {
+  if (domicilios.length === 0) {
     const vacio = document.createElement("p");
     vacio.textContent = "No hay direcciones guardadas";
     vacio.style.color = "#666";
     lista.appendChild(vacio);
   } else {
-    direcciones.forEach((dir) => {
+    domicilios.forEach((dir) => {
       const div = document.createElement("div");
       div.className = "direccion-item";
       div.innerHTML = `
@@ -538,51 +783,63 @@ function inicializarDirecciones() {
     idEditando = null;
   };
 
-  // Guardar dirección
-  form.onsubmit = (ev) => {
+  // Guardar dirección en Mongo
+  form.onsubmit = async (ev) => {
     ev.preventDefault();
     const nueva = {
-      id: modoEdicion ? idEditando : "dir" + Date.now(),
+      id: modoEdicion ? idEditando : undefined,
+      tipo: "domicilio",
       nombre: document.getElementById("nombre-direccion").value,
       calle: document.getElementById("calle").value,
       ciudad: document.getElementById("ciudad").value,
       provincia: document.getElementById("provincia").value,
-      cp: document.getElementById("codigo-postal").value
+      cp: document.getElementById("codigo-postal").value,
+      seleccionada: false
     };
 
-    if (modoEdicion) {
-      direcciones = direcciones.map(d => d.id === idEditando ? nueva : d);
-    } else {
-      direcciones.push(nueva);
+    try {
+      await fetch("backend/userController.php?action=saveDomicilio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: userId, direccion: nueva })
+      });
+      inicializarDirecciones(); // recargar lista
+    } catch (err) {
+      console.error("Error guardando dirección:", err);
     }
-
-    localStorage.setItem("mutaDirecciones", JSON.stringify(direcciones));
-    form.reset();
-    form.classList.remove("visible");
-    btnMostrarForm.style.display = "block";
-    btnCancelar.style.display = "none";
-    tituloForm.textContent = "Nueva dirección";
-    modoEdicion = false;
-    idEditando = null;
-    inicializarDirecciones();
   };
 
   // Acciones en lista
-  lista.addEventListener("click", (e) => {
+  lista.addEventListener("click", async (e) => {
     const id = e.target.dataset.id;
 
     if (e.target.classList.contains("seleccionar-dir")) {
-      const seleccionada = direcciones.find(d => d.id === id);
-      if (seleccionada) {
-        localStorage.setItem("selectedDireccion", JSON.stringify(seleccionada));
-        mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html")
+      try {
+        // 1. Marcar domicilio como seleccionado
+        await fetch("backend/userController.php?action=selectDomicilio", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, id_direccion: id })
+        });
+
+        // 2. Actualizar modalidad de envío en Mongo
+        await fetch("backend/userController.php?action=setEnvioSeleccionado", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, metodo: "domicilio" })
+        });
+
+        // 3. Refrescar UI de envíos
+        mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html")
           .then(() => waitForOverlayElement(".envio-modal", 4000))
           .then(() => inicializarEnvios());
+      } catch (err) {
+        console.error("Error seleccionando dirección:", err);
       }
     }
 
     if (e.target.classList.contains("editar-dir")) {
-      const dir = direcciones.find(d => d.id === id);
+      const dir = (direcciones.domicilios || []).find(d => d.id === id);
       if (!dir) return;
       document.getElementById("nombre-direccion").value = dir.nombre;
       document.getElementById("calle").value = dir.calle;
@@ -601,16 +858,21 @@ function inicializarDirecciones() {
     if (e.target.classList.contains("eliminar-dir") || e.target.closest(".eliminar-dir")) {
       const confirmar = confirm("¿Está seguro de eliminar esta dirección?");
       if (confirmar) {
-        direcciones = direcciones.filter(d => d.id !== id);
-        localStorage.setItem("mutaDirecciones", JSON.stringify(direcciones));
-        inicializarDirecciones();
+        try {
+          await fetch(`backend/userController.php?action=deleteDireccion&id_usuario=${userId}&id_direccion=${id}`, {
+            method: "DELETE"
+          });
+          inicializarDirecciones();
+        } catch (err) {
+          console.error("Error eliminando dirección:", err);
+        }
       }
     }
   });
 }
 
 // Inicializador de mapa-puntos (solo renderiza lista/iframe si hace falta)
-function inicializarMapaPuntos() {
+async function inicializarMapaPuntos() {
   const lista = document.getElementById("puntos-lista");
   const iframe = document.getElementById("iframe-puntos");
   const info = document.getElementById("seleccion-info");
@@ -628,14 +890,44 @@ function inicializarMapaPuntos() {
       el.dataset.lng = p.lng;
       el.innerHTML = `<strong>${p.nombre}</strong><div class="dir">${p.direccion}</div>`;
 
-      el.addEventListener("click", () => {
+      el.addEventListener("click", async () => {
+        // Actualizar UI local
         window.setSelectedPuntoId && window.setSelectedPuntoId(p.id);
         info.textContent = `${p.nombre} — ${p.direccion}`;
         iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
+
+        // Guardar también en localStorage (opcional)
+        localStorage.setItem("selectedPunto", p.id);
+        localStorage.setItem("selectedPuntoName", p.nombre);
+        localStorage.setItem("selectedPuntoDireccion", p.direccion);
+        localStorage.setItem("selectedPuntoCP", p.cp);
+
+        // Guardar en Mongo y actualizar método de envío
+        const userId = localStorage.getItem("userId");
+        if (userId) {
+          try {
+            await fetch("backend/userController.php?action=savePunto", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_usuario: userId, punto: p })
+            });
+
+            await fetch("backend/userController.php?action=setEnvioSeleccionado", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_usuario: userId, metodo: "punto" })
+            });
+
+            await inicializarEnvios(); // 🔄 refrescar UI de selección de envíos
+          } catch (err) {
+            console.error("Error guardando punto de retiro:", err);
+          }
+        }
       });
 
       lista.appendChild(el);
 
+      // Si ya había un punto seleccionado, mostrarlo en el mapa
       if (seleccionado === p.id) {
         iframe.src = `https://www.google.com/maps?q=${p.lat},${p.lng}&z=16&output=embed`;
         info.textContent = `${p.nombre} — ${p.direccion}`;
@@ -647,7 +939,7 @@ function inicializarMapaPuntos() {
 // (opcional) Botón directo para abrir envíos desde fuera
 document.getElementById('abrir-envios')?.addEventListener('click', (e) => {
   e.preventDefault();
-  mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", e.currentTarget)
+  mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", e.currentTarget)
     .then(()=> console.log('seleccion-envios abierto'))
     .catch(err => console.error('error abrir seleccion-envios', err));
 });
