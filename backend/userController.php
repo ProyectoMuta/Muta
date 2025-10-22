@@ -42,7 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
             "punto" => null
         ],
         "envioSeleccionado" => null,
-        "pago" => null
+        "pago" => [
+            "metodo" => null,       // "tarjeta" | "mercadopago" | null
+            "titular" => null,      // nombre del titular (solo si tarjeta)
+            "ultimos4" => null,     // últimos 4 dígitos (solo si tarjeta)
+            "vencimiento" => null   // MM/AA (solo si tarjeta)
+        ]
     ]);
 
     echo json_encode(["ok" => true, "id" => $idUsuario]);
@@ -338,4 +343,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $_GET['action'] === 'deleteDomici
     exit;
 }
 
-// === Actualizar método de pago (más adelante)===
+// === Guardar método de pago ===
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'savePago') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $idUsuario = intval($data['id_usuario'] ?? 0);
+    $pago = $data['pago'] ?? null;
+
+    if (!$idUsuario || !$pago) {
+        http_response_code(400);
+        echo json_encode(["error" => "Faltan datos"]);
+        exit;
+    }
+
+    $mongoDB->usuarios_datos->updateOne(
+        ["id_usuario" => $idUsuario],
+        ['$set' => [
+            "pago.metodo" => $pago['metodo'],
+            "pago.titular" => $pago['titular'] ?? null,
+            "pago.ultimos4" => $pago['ultimos4'] ?? null,
+            "pago.vencimiento" => $pago['vencimiento'] ?? null
+        ]]
+    );
+
+    echo json_encode(["ok" => true]);
+    exit;
+}
