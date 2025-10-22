@@ -38,7 +38,7 @@ async function initMapaPuntos() {
     maxZoom: 20
   }).addTo(map);
 
-  const res = await fetch("../data/puntos-retiro.json");
+  const res = await fetch("/Muta/data/puntos-retiro.json");
   allPuntos = await res.json();
   console.log("Puntos cargados:", allPuntos);
 
@@ -80,10 +80,12 @@ async function initMapaPuntos() {
   map.on("moveend", renderizarPuntosEnVista);
 }
 
-
 function renderizarPuntosEnVista() {
+  if (!map) return; // seguridad extra
   const bounds = map.getBounds();
   const lista = document.getElementById("puntos-lista");
+  if (!lista) return; // evita error si el modal ya no existe
+
   lista.innerHTML = "";
   markersLayer.clearLayers();
 
@@ -125,15 +127,32 @@ function renderizarPuntosEnVista() {
 function seleccionarPunto(punto, item, marker) {
   selectedPuntoId = punto.id;
 
-  document.querySelectorAll(".punto-item").forEach(el => el.classList.remove("activo"));
+  // Seguridad: si ya no existe la lista, no seguimos
+  const lista = document.querySelectorAll(".punto-item");
+  if (!lista.length) return;
+
+  // Quitar clase activo de todos y marcar el actual
+  lista.forEach(el => el.classList.remove("activo"));
   if (item) item.classList.add("activo");
 
+  // Re-renderizar puntos visibles
   renderizarPuntosEnVista();
 
-  document.getElementById("seleccion-info").textContent = `Seleccionado: ${punto.nombre}`;
-  document.getElementById("btn-confirmar-punto").disabled = false;
+  // Seguridad: si ya no existe el contenedor de info o botón, no hacemos nada
+  const infoEl = document.getElementById("seleccion-info");
+  if (infoEl) {
+    infoEl.textContent = `Seleccionado: ${punto.nombre}`;
+  }
 
-  map.flyTo([punto.lat, punto.lng], 15, { duration: 0.5 });
+  const btnConfirmar = document.getElementById("btn-confirmar-punto");
+  if (btnConfirmar) {
+    btnConfirmar.disabled = false;
+  }
+
+  // Mover el mapa solo si sigue existiendo
+  if (map) {
+    map.flyTo([punto.lat, punto.lng], 15, { duration: 0.5 });
+  }
 }
 
 // Exponer estado al resto de la app
@@ -143,26 +162,36 @@ window.getAllPuntos = () => allPuntos;
 window.setSelectedPuntoId = (id) => { selectedPuntoId = id; };
 
 // Delegación de eventos para Confirmar punto
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   if (e.target && e.target.id === "btn-confirmar-punto") {
     if (!selectedPuntoId) return;
     const p = allPuntos.find(x => x.id === selectedPuntoId);
     if (!p) return;
 
-    // Guardar en localStorage
-    localStorage.setItem("selectedPunto", p.id);
-    localStorage.setItem("selectedPuntoName", p.nombre);
-    localStorage.setItem("selectedPuntoDireccion", p.direccion);
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      try {
+        // Guardar punto en Mongo
+        await fetch("backend/userController.php?action=savePunto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, punto: p })
+        });
 
-    // Volver al modal de envíos en el documento padre
-    window.parent.mostrarOverlay("../componentesHTML/carritoHTML/seleccion-envios.html", e.target)
+        // Actualizar modalidad de envío
+        await fetch("backend/userController.php?action=setEnvioSeleccionado", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, metodo: "punto" })
+        });
+      } catch (err) {
+        console.error("Error guardando punto en Mongo:", err);
+      }
+    }
+
+    // Volver al modal de envíos y refrescar
+    window.parent.mostrarOverlay("/Muta/componentesHTML/carritoHTML/seleccion-envios.html", e.target)
       .then(() => window.parent.waitForOverlayElement(".envio-modal", 4000))
-      .then(() => {
-        window.parent.inicializarEnvios();
-        const label = window.parent.document.querySelector(".envio-punto .punto-seleccionado");
-        if (label) {
-          label.textContent = `${p.nombre} — ${p.direccion}`;
-        }
-      });
+      .then(() => window.parent.inicializarEnvios());
   }
 });

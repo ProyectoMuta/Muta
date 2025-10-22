@@ -230,21 +230,12 @@ function setupCalculoEnvio() {
         return;
       }
 
-      // Distancias simuladas por CP
-      const distancias = {
-        "5500": 1,
-        "5501": 7,
-        "5507": 12,
-        "5519": 20,
-      };
-      const km = distancias[codigo] || 25;
-
-      let costo;
-      if (km <= 5) costo = "3.000 pesos";
-      else if (km <= 10) costo = "8.000 pesos";
-      else costo = "16.000 pesos";
-
-      resultadoEnvio.textContent = `El costo aproximado de envío es ${costo}.`;
+      if (typeof window.calcularCostoEnvioPorCP === "function") {
+        const costo = window.calcularCostoEnvioPorCP(codigo);
+        resultadoEnvio.textContent = `El costo aproximado de envío es $${costo.toLocaleString("es-AR")}`;
+      } else {
+        resultadoEnvio.textContent = "No se pudo calcular el costo de envío.";
+      }
     });
   }
 }

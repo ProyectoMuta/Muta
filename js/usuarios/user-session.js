@@ -128,11 +128,14 @@ document.addEventListener("componente:cargado", (e) => {
 // === Función auxiliar para actualizar navbar ===
 function actualizarNavbarUsuario(nombre) {
   const icon = document.querySelector("#open-auth i");
+  const openAuth = document.getElementById("open-auth");
   if (icon) {
     icon.classList.remove("bi-person");
     icon.classList.add("bi-person-check");
   }
-  document.getElementById("open-auth").title = `Hola, ${nombre}`;
+  if (openAuth) {
+    openAuth.title = `Hola, ${nombre}`;
+  }
 }
 
 // Se encarga de mostrar la vista de perfil y llenarla con datos del localStorage
