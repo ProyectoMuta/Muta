@@ -63,6 +63,7 @@ function setupHamburgerMenu() {
   }
 }
 // --- Modal de acceso de usuario ---
+
 function setupAccesoUsuario() {
   const openAuth = document.getElementById("open-auth");
   const container = document.getElementById("acceso-usuario-container");
@@ -73,6 +74,15 @@ function setupAccesoUsuario() {
   const goLogin = document.getElementById("go-login");
   const btnLogout = document.getElementById("btn-logout");
 
+  window.__googleButtonRendered = false;
+
+  function renderGoogleButtonIfNeeded() {
+      if (!window.__googleButtonRendered && typeof setupGoogleButton === 'function') {
+          setupGoogleButton();
+          window.__googleButtonRendered = true; // Marcar como renderizado
+      }
+  }
+  
   if (openAuth && container) {
     openAuth.addEventListener("click", e => {
       e.preventDefault();
@@ -170,6 +180,63 @@ function setupAccesoUsuario() {
   }
 }
 // ============================================
+// ✅ FUNCIONES INTEGRADAS PARA GOOGLE SIGN-IN
+// ============================================
+
+function setupGoogleButton() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.error("La librería de Google (GSI) no se ha cargado. Revisa que el script esté en el <head> de tu HTML.");
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: "342902827600-gafqbggc11nsh2uqeue9t2v7gvb2s5ra.apps.googleusercontent.com",
+    callback: handleGoogleSignIn
+  });
+  const googleButtonContainer = document.getElementById("g_id_signin");
+  if (googleButtonContainer) {
+    google.accounts.id.renderButton(
+      googleButtonContainer,
+      { theme: "outline", size: "large", text: "continue_with", shape: "rectangular" }
+    );
+  } else {
+    console.error("No se encontró el contenedor '#g_id_signin' para el botón de Google.");
+  }
+}
+
+async function handleGoogleSignIn(response) {
+  try {
+    const res = await fetch('backend/userController.php?action=google-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: response.credential }),
+    });
+
+    if (!res.ok) { // Captura respuestas de error del servidor (ej. 401, 400)
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Error del servidor: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data.ok) {
+      localStorage.setItem('userId', data.id);
+      localStorage.setItem('userName', data.nombre);
+      localStorage.setItem('userEmail', data.email);
+      if (data.foto) localStorage.setItem('userFoto', data.foto);
+      alert('¡Bienvenido, ' + data.nombre + '!');
+      window.location.reload();
+    } else {
+      // Este bloque es por si el servidor responde con ok:false
+      alert('Error al iniciar sesión con Google: ' + (data.error || 'Error desconocido.'));
+    }
+  } catch (error) {
+    console.error('Error en la petición a google-login:', error);
+    alert('Hubo un problema de conexión al intentar iniciar sesión con Google: ' + error.message);
+  }
+}
+
+
+// ============================================
 // FUNCIÓN DE BÚSQUEDA - AÑADIR LÍNEA DE PRUEBA
 // ============================================
 function setupBuscador() {
@@ -199,9 +266,6 @@ function setupBuscador() {
     }
   });
 
-
-
-  // --- Lógica de búsqueda en tiempo real (sin cambios) ---
   let searchTimeout;
 
   searchInput.addEventListener("input", function() {

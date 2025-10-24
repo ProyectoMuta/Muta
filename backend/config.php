@@ -9,7 +9,7 @@ try {
     $mongoDB = $client->mutaDB; // base de datos en Mongo
     $db = $mongoDB;
 } catch (Exception $e) {
-    die("Error al conectar con MongoDB: " . $e->getMessage());
+    die(json_encode(["ok" => false, "error" => "MongoDB error: " . $e->getMessage()]));
 }
 // --------------------
 // Conexión a MySQL (XAMPP)

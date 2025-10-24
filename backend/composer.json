@@ -1,6 +1,7 @@
 {
     "require": {
         "mongodb/mongodb": "^2.1",
-        "symfony/polyfill-php85": "*"
+        "symfony/polyfill-php85": "*",
+        "phpmailer/phpmailer": "^7.0"
     }
 }
