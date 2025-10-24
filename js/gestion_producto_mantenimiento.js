@@ -75,10 +75,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       let data;
       try {
-        data = await res.json();
-      } catch {
-        const raw = await res.text();
-        data = JSON.parse(raw.replace(/^\uFEFF/, "").trim());
+        data = await res.json();   // ✅ solo una lectura
+      } catch (err) {
+        console.error("Respuesta no es JSON válido:", err);
+        tbody.innerHTML = `<tr><td colspan="9">Error: respuesta inválida del servidor</td></tr>`;
+        return;
       }
 
       if (data && Array.isArray(data.items)) {
@@ -108,8 +109,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   return '#000';
 }
-
-  
 
   function estadoDe(p) {
   return (p.estado || 'Activo').trim();
