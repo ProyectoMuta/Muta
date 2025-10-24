@@ -40,6 +40,19 @@ body.modal-open {
 }
 .btn-back:hover { color: #000; }
 
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+.btn-close:before { content: '×'; }
+.btn-close:hover { color: #000; }
+
 /* === Título === */
 .pago-titulo {
   text-align: center;
@@ -49,62 +62,36 @@ body.modal-open {
   color: #111;
 }
 
-/* === Opciones de pago === */
-.pago-opciones {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
+/* === Contenido === */
+.pago-contenido {
+  margin-top: 30px;
 }
 
-.pago-card {
-  flex: 1;
-  padding: 15px;
-  border-radius: 12px;
-  background: #f1f1f1;
+.contenido-mercadopago {
+  display: block;
+}
+
+.contenido-mercadopago p {
+  font-size: 15px;
+  color: #555;
   text-align: center;
-  cursor: pointer;
-  transition: background 0.2s, border 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  line-height: 1.6;
+  margin-bottom: 20px;
 }
 
-.pago-card i {
-  font-size: 28px;
-}
-
-.pago-card.activo {
-  background: #fff;
-  border: 2px solid #333;
-  color: #111;
-}
-
-.pago-card:hover {
-  background: #eaeaea;
-}
-
-/* 🔹 Accesibilidad: foco visible */
-.pago-card:focus-visible {
-  outline: 3px solid rgba(51,51,51,0.4);
-  outline-offset: 2px;
-}
-
-/* === Contenido dinámico === */
-.pago-contenido form {
+.contenido-mercadopago form {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.pago-contenido label {
+.contenido-mercadopago label {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 2px;
 }
 
-.pago-contenido input,
-.pago-contenido select {
+.contenido-mercadopago input {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -112,9 +99,20 @@ body.modal-open {
 }
 
 /* 🔹 Feedback en inputs inválidos */
-.pago-contenido input:invalid {
+.contenido-mercadopago input:invalid {
   border-color: #c00;
   background: #fff6f6;
+}
+
+.contenido-mercadopago input:focus {
+  outline: 2px solid rgba(51,51,51,0.4);
+  border-color: #333;
+}
+
+hr {
+  margin: 15px 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
 }
 
 .pago-total {
@@ -129,7 +127,15 @@ body.modal-open {
   color: #111;
 }
 
-/* === Botones de pagar === */
+.resumen-envio {
+  margin-bottom: 15px;
+}
+
+.mb-3 {
+  margin-bottom: 15px;
+}
+
+/* === Botón de pagar === */
 .btn-pagar {
   display: block;
   width: 100%;
@@ -153,14 +159,6 @@ body.modal-open {
   outline-offset: 2px;
 }
 
-.detalle-cuotas {
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: #333;
-}
-
 /* === Responsive === */
 @media (max-width: 600px) {
   .pago-modal {
@@ -171,24 +169,17 @@ body.modal-open {
     max-height: none;
   }
 
-  .pago-card {
-    font-size: 14px;
-  }
-
-  .circulo {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-
   .btn-back {
     top: 10px;
     left: 10px;
     font-size: 20px;
   }
 
-  .pago-total,
-  .detalle-cuotas {
+  .pago-titulo {
+    font-size: 20px;
+  }
+
+  .pago-total {
     font-size: 14px;
   }
 
