@@ -132,25 +132,10 @@ function setupAccesoUsuario() {
       e.preventDefault();
 
       if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
-
-        //Persistir carrito en DB antes de limpiar
-        const userId = localStorage.getItem("userId");
-        const cart = JSON.parse(localStorage.getItem("mutaCart") || "[]");
-        if (userId) {
-          try {
-            await fetch("backend/userController.php?action=updateCart", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id_usuario: userId, carrito: cart })
-            });
-          } catch (err) {
-            console.error("Error guardando carrito antes de logout:", err);
-          }
-        }
-
+        
         // 1. Limpia toda la información de la sesión guardada
         localStorage.clear();
-        localStorage.removeItem("muta_favoritos");
+        localStorage.removeItem("muta_favoritos"); // 🔧 limpiar favoritos locales también
 
         // 2. Resetear modal de acceso
         const nombreSpan = document.getElementById("perfil-nombre-completo");
@@ -179,17 +164,11 @@ function setupAccesoUsuario() {
         // 4. Oculta el modal de perfil/login
         document.getElementById("acceso-usuario-container").style.display = "none";
 
-        // 5. Avisar a toda la app que se reseteó favoritos y carrito
+        // 5. Avisar a toda la app que se reseteó favoritos
         document.dispatchEvent(new CustomEvent("favoritos:updated"));
-        document.dispatchEvent(new CustomEvent("cart:updated"));
 
         // 6. Confirmación al usuario
         alert("Has cerrado la sesión.");
-
-        // Si estoy en cart.html, redirigir a index
-        if (window.location.pathname.endsWith("cart.html")) {
-          window.location.href = "index.html";
-        }
       }
     });
   }
@@ -201,38 +180,56 @@ function setupAccesoUsuario() {
 
 // --- Buscador de productos ---
 function setupBuscador() {
+// 🔥 LÍNEA DE PRUEBA: Para ver si la función se ejecuta
+  console.log("✅ setupBuscador se está ejecutando");
+
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
-  
-  if (!searchInput || !searchResults) return;
+  const searchToggle = document.getElementById("search-toggle");
+  const searchContainer = document.getElementById("search-container");
 
+  if (!searchToggle || !searchContainer) {
+    // Mensaje de error más específico
+    console.error("❌ No se encontró el botón de la lupa (#search-toggle) o el contenedor (#search-container).");
+    return;
+  }
+
+  // --- Lógica para desplegar/ocultar el buscador en móvil ---
+  searchToggle.addEventListener("click", (e) => {
+    // Otra prueba para ver si el clic funciona
+    console.log("🖱️ ¡Clic en la lupa detectado!"); 
+    e.stopPropagation();
+    searchContainer.classList.toggle("active");
+
+    if (searchContainer.classList.contains("active")) {
+      searchInput.focus();
+    }
+  });
+
+
+
+  // --- Lógica de búsqueda en tiempo real (sin cambios) ---
   let searchTimeout;
 
-  // Event listener para búsqueda en tiempo real
   searchInput.addEventListener("input", function() {
     clearTimeout(searchTimeout);
     const query = this.value.trim();
     
-    // Si la búsqueda tiene menos de 2 caracteres, ocultar resultados
     if (query.length < 2) {
       searchResults.classList.remove("active");
       return;
     }
     
-    // Mostrar indicador de carga
     searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
     searchResults.classList.add("active");
     
-    // Esperar 300ms después de que el usuario deje de escribir
     searchTimeout = setTimeout(() => {
       performSearch(query);
     }, 300);
-  
+  });
 
-  // Función para realizar la búsqueda
   async function performSearch(query) {
     try {
-      // 🔥 LLAMADA A TU BACKEND PHP
       const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       
@@ -255,7 +252,7 @@ function setupBuscador() {
       `;
     }
   }
-  });
+
   // Función para mostrar resultados
   function displayResults(resultados) {
 

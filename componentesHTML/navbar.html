@@ -60,15 +60,20 @@
     </div>
 
     <!-- Buscador mejorado -->
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Buscar producto..." autocomplete="off">
-                
-                <!-- Dropdown de resultados -->
-                <div class="search-results" id="searchResults"></div>
-            </div>
+    <div class="search-bar" id="search-container">
+        <input type="text" id="searchInput" placeholder="Buscar producto..." autocomplete="off">
+        
+        <div class="search-results" id="searchResults"></div>
+    </div>
 
+   
+     
     <!-- Iconos -->
     <div class="icons">
+    <!--Lupa-->
+      <button id="search-toggle" class="icono_lupa" title="Buscar" type="button">
+        <i class="bi bi-search"></i>
+      </button>
       <!-- Perfil -->
       <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
         <i class="bi bi-person"></i>
