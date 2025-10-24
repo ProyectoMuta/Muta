@@ -29,7 +29,7 @@
   float: right;
 }
 
-/* Botón "Ver mi carrito" y "Finalizar compra" unificados */
+/* Botón "Finalizar compra" */
 .checkout-btn {
   display: block;
   width: 100%;
