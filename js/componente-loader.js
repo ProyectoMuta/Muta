@@ -170,16 +170,14 @@ function setupAccesoUsuario() {
   }
 }
 // ============================================
-// FUNCIÓN DE BÚSQUEDA
+// FUNCIÓN DE BÚSQUEDA - AÑADIR LÍNEA DE PRUEBA
 // ============================================
-// --- Buscador de productos ---
 function setupBuscador() {
-// 🔥 LÍNEA DE PRUEBA: Para ver si la función se ejecuta
+  // 🔥 LÍNEA DE PRUEBA: Para ver si la función se ejecuta
   console.log("✅ setupBuscador se está ejecutando");
 
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
-
   const searchToggle = document.getElementById("search-toggle");
   const searchContainer = document.getElementById("search-container");
 
@@ -210,12 +208,10 @@ function setupBuscador() {
     clearTimeout(searchTimeout);
     const query = this.value.trim();
     
-
     if (query.length < 2) {
       searchResults.classList.remove("active");
       return;
     }
-
     
     searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
     searchResults.classList.add("active");
@@ -230,10 +226,9 @@ function setupBuscador() {
       const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       
-     if (data.success && data.results) {
+      if (data.success && data.results) {
         displayResults(data.results);
       } else {
-        // Mostramos el error que dimos ANTES (el de "no se encontraron productos")
         searchResults.innerHTML = `
           <div class="search-no-results">
             <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
@@ -241,21 +236,16 @@ function setupBuscador() {
           </div>
         `;
       }
-    
-    // --- BLOQUE 'catch' AÑADIDO ---
     } catch (err) {
-      console.error("Error en la función performSearch:", err);
-      // Mostramos un error genérico si el 'fetch' falla
+      console.error("Error en búsqueda:", err);
       searchResults.innerHTML = `
         <div class="search-no-results">
-          <p>Error al buscar productos. Intenta de nuevo.</p>
+          <p>Error al buscar productos</p>
         </div>
       `;
     }
   }
 
-
-  // Función para mostrar resultados
   function displayResults(resultados) {
     if (resultados.length === 0) {
       searchResults.innerHTML = `
@@ -266,8 +256,9 @@ function setupBuscador() {
       `;
       return;
     }
+
     searchResults.innerHTML = resultados.map(producto => `
-      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item">
+      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item"> 
         <div class="result-image">
           <img src="${producto.imagen || 'img/default.jpg'}" alt="${producto.nombre}">
         </div>
@@ -280,21 +271,27 @@ function setupBuscador() {
     `).join('');
   }
 
-  // Cerrar resultados al hacer click fuera
+  // Cerrar resultados y el buscador desplegable al hacer click fuera
   document.addEventListener("click", function(e) {
+    // Si el click no fue ni en el icono ni en la barra, cierra la barra
+    if (!e.target.closest("#search-toggle") && !e.target.closest(".search-bar")) {
+        searchContainer.classList.remove("active");
+    }
+    // Si el click fue fuera de la barra, cierra solo los resultados
     if (!e.target.closest(".search-bar")) {
       searchResults.classList.remove("active");
     }
   });
 
-  // Cerrar con la tecla ESC
   document.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
       searchResults.classList.remove("active");
+      searchContainer.classList.remove("active"); // También cierra el buscador
       searchInput.blur();
     }
   });
 }
+
 // --- Tabs de producto ---
 function setupTabsProducto() {
   const tabTitles = document.querySelectorAll(".tab-title");
