@@ -1,4 +1,5 @@
 // Helpers robustos para esperar elementos dinámicos 
+// cart.js
 function waitForElement(selector, timeout = 8000) {
   return new Promise((resolve, reject) => {
     const el = document.querySelector(selector);
@@ -29,6 +30,26 @@ function onDOMReady(fn) {
 function setupCart() {
   const CART_KEY = "mutaCart";
   let cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+
+  // limpia automaticamente prodcutos no vendibles
+    async function validateCartItems(){
+    const toKeep = [];
+    for (const item of cart){
+      const res = await fetch(`backend/productController.php?id=${encodeURIComponent(item.id)}`);
+      if (!res.ok) continue;
+      const p = await res.json();
+      const est = (p.estado || 'Activo').trim();
+      const sellable = (est === 'Activo' || est === 'Bajo stock');
+      if (sellable) toKeep.push(item);
+    }
+    if (toKeep.length !== cart.length){
+      cart = toKeep;
+      saveCart();
+      renderMiniCart();
+      renderFixedCart();
+    }
+  }
+
 
   // Referencias se setean cuando existan los elementos
   const state = {
@@ -71,23 +92,28 @@ function setupCart() {
                 <div class="cart-items-container">`;
 
     cart.forEach((item, index) => {
-      const lineTotal = item.price * item.quantity;
-      html += `
-        <div class="cart-item">
-          <img src="${item.img}" alt="${item.name}">
-          <div class="item-info">
-            <div class="d-flex justify-content-between align-items-start">
-              <p class="item-name mb-0">${item.name}</p>
-              <button data-index="${index}" class="remove-item btn btn-link text-danger p-0 ms-2" title="Eliminar">
-                <i class="bi bi-trash" style="font-size:14px;"></i>
-              </button>
-            </div>
-            <p class="item-details mb-0">TALLE: ${item.size} | COLOR: ${item.color}</p>
-            <p class="item-details mb-0">CANT: ${item.quantity}</p>
-            <p class="item-price mb-0">$${format(lineTotal)}</p>
+    const lineTotal = item.price * item.quantity;
+    const color = item.color || '#000';
+    html += `
+      <div class="cart-item">
+        <img src="${item.img}" alt="${item.name}">
+        <div class="item-info">
+          <div class="d-flex justify-content-between align-items-start">
+            <p class="item-name mb-0">${item.name}</p>
+            <button data-index="${index}" class="remove-item btn btn-link text-danger p-0 ms-2" title="Eliminar">
+              <i class="bi bi-trash" style="font-size:14px;"></i>
+            </button>
           </div>
+          <p class="item-details mb-0">
+            TALLE: ${item.size} |
+            COLOR:
+            <span class="color-dot mini" style="background:${color}"></span>
+          </p>
+          <p class="item-details mb-0">CANT: ${item.quantity}</p>
+          <p class="item-price mb-0">$${format(lineTotal)}</p>
         </div>
-      `;
+      </div>
+    `;
     });
 
     html += `</div>`; // cerrar scroll
@@ -110,6 +136,38 @@ function setupCart() {
       countEl.textContent = cart.reduce((sum, p) => sum + p.quantity, 0);
     }
   }
+  // Cuando el navbar ya está inyectado
+  document.addEventListener("navbar:ready", () => {
+    // Guarda refs para que renderMiniCart pinte ahí
+    state.miniCartDropdown = document.querySelector(".cart-dropdown") || null;
+    state.cartCount        = document.querySelector(".cart-count") || null;
+    renderMiniCart();
+
+    // Wiring de apertura/cierre del mini-carrito
+    const icon = document.querySelector(".cart-btn");
+    const drop = document.querySelector(".cart-dropdown");
+    if (!icon || !drop) return;
+
+    let timer = null;
+    const open  = () => { drop.classList.add("is-open"); drop.style.pointerEvents = "auto"; };
+    const close = () => { drop.classList.remove("is-open"); drop.style.pointerEvents = ""; };
+
+    icon.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      drop.classList.contains("is-open") ? close() : open();
+    });
+
+    [icon, drop].forEach(el => {
+      el.addEventListener("mouseenter", () => { clearTimeout(timer); open(); });
+      el.addEventListener("mouseleave", () => { timer = setTimeout(close, 160); });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!drop.contains(e.target) && !icon.contains(e.target)) close();
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  });
+
 
   // ================================
   // Render carrito fijo (cart.html)
@@ -147,20 +205,27 @@ function setupCart() {
         <img src="${item.img}" alt="${item.name}">
         <div class="cart-item-info flex-grow-1">
           <h5>${item.name}</h5>
-          <div class="cart-item-row">
-            <span>TALLE: ${item.size}</span> | 
-            <span>COLOR: ${item.color}</span> | 
-            <span>CANT: 
+
+          <!-- Línea con talle, color y cantidad -->
+          <div class="inline-specs">
+            <span>TALLE: ${item.size}</span> |
+            <span>COLOR: <span class="color-dot" style="background:${item.color}"></span></span> |
+            <span>
+              CANT:
               <input type="number" min="1" value="${item.quantity}" data-index="${index}" class="update-qty">
-            </span> 
-            x $${format(item.price)}
+              × $${format(item.price)}
+            </span>
           </div>
-          <p><strong>$${format(lineTotal)}</strong></p>
+
+          <!-- Total debajo -->
+          <p class="line-total">$${format(lineTotal)}</p>
         </div>
+
         <button data-index="${index}" class="remove-item btn btn-link text-danger p-0 ms-2" title="Eliminar">
           <i class="bi bi-trash" style="font-size:16px;"></i>
         </button>
       `;
+
       list.appendChild(li);
     });
 
@@ -204,6 +269,9 @@ function setupCart() {
         updateCarousel();
       });
     }
+    function formatARS(n){
+      return Number(n||0).toLocaleString('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 });
+    }
   }
 
   // ================================
@@ -238,22 +306,22 @@ function setupCart() {
   // ================================
   // API pública para agregar productos
   // ================================
-  window.addToCart = (name, price, img, size, color, qty = 1) => {
-    const existing = cart.find(i => i.name === name && i.size === size && i.color === color);
+  window.addToCart = (id, name, price, img, size, color, qty = 1) => {
+    const existing = cart.find(i => i.id === id && i.size === size && i.color === color);
     if (existing) {
       existing.quantity += qty;
     } else {
-      cart.push({ name, price, img, size, color, quantity: qty });
+      cart.push({ id, name, price, img, size, color, quantity: qty });
     }
     saveCart();
     renderMiniCart();
     renderFixedCart();
   };
-
 // ================================
 // Página de producto
 // ================================
   function wireProductPage() {
+    if (document.documentElement.dataset.dynamicProduct === '1') return;
     const btn = document.querySelector(".btn-carrito");
     if (!btn) return;
 
@@ -335,8 +403,19 @@ function setupCart() {
       if (!valido) return;
 
       // Agregar al carrito
-      addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
+      const id = document.querySelector('.info-producto')?.dataset.productId 
+           || new URL(location.href).searchParams.get('id') 
+           || nombre; // último fallback
 
+          addToCart(
+            id,            // id
+            nombre,        // name
+            precio,        // price (número)
+            img,           // img
+            selectedTalle, // size
+            selectedColor, // color
+            cantidad       // qty
+          );
       // Mostrar cartel de éxito
       if (successMsg) {
         successMsg.textContent = "Agregado con éxito";
@@ -384,6 +463,17 @@ function setupCart() {
       }
     }
   });
+    window.addEventListener('producto:eliminado', (ev) => {
+    const id = ev.detail?.id;
+    if (!id) return;
+    const before = cart.length;
+    cart = cart.filter(it => String(it.id) !== String(id));
+    if (cart.length !== before) {
+      saveCart();
+      renderMiniCart();
+      renderFixedCart();
+    }
+  });
 
   // ================================
   // Inicialización
@@ -408,6 +498,7 @@ function setupCart() {
       // Render inicial
       renderMiniCart();
       renderFixedCart();
+      await validateCartItems();
     } catch (err) {
       wireProductPage(); // fallback
     }

@@ -22,8 +22,24 @@
 /* Info */
 .info-producto h1{ font-size: 32px; margin-bottom: 10px; }
 .precio{ font-size: 24px; font-weight: 700; margin-bottom: 14px; }
-.precio .tachado{ font-weight: 400; color:#777; text-decoration: line-through; margin-left: 6px; }
 .descripcion{ color:#444; margin: 10px 0 18px; max-width: 58ch; }
+
+.precio .promo { font-weight:700; font-size:28px; }
+.precio .tachado { color:#999; text-decoration:line-through; margin-left:8px; }
+.precio .off { color:#e53935; font-weight:700; margin-left:10px; }
+
+/* Precio en línea con separación */
+#precioProducto{
+  display: flex;
+  align-items: baseline;
+  gap: 12px;            /* separa promo, tachado y OFF */
+  flex-wrap: wrap;
+}
+
+#precioProducto .promo{ font-weight: 700; }
+#precioProducto .tachado{ text-decoration: line-through; color:#9aa0a6; }
+#precioProducto .off{ color:#d93025; font-weight:700; } /* rojo */
+
 
 /* Opciones */
 .opciones{ display: grid; gap: 16px; }
@@ -211,3 +227,143 @@
   height: auto;
   border-radius: 10px;
 }
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative; /* Necesario para ubicar el toast */
+}
+
+.title-row #btnFavDetail{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.9em;   /* un toque menor que el h1 */
+  cursor: pointer;
+}
+/* Corazón junto al título — SOLO en la página de producto dinámico */
+.producto-detalle .title-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* Reset total del botón para quitar el cuadradito/borde/fondo */
+.producto-detalle .title-row #btnFavDetail{
+  all: unset;                 /* quita estilos por defecto del botón */
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Tamaño MÁS GRANDE que el H1 */
+  font-size: clamp(28px, 3.2vw, 36px);  /* ajustá el máximo si lo querés aún más grande */
+}
+
+/* Sin focus feo; opcional: dejá un focus suave para accesibilidad */
+.producto-detalle .title-row #btnFavDetail:focus-visible{
+  outline: none;
+  text-shadow: 0 0 0.02px currentColor; /* focus sutil (o dejalo vacío si no lo querés) */
+}
+
+/* Evita padding interno raro en Firefox */
+.producto-detalle .title-row #btnFavDetail::-moz-focus-inner{
+  border: 0;
+  padding: 0;
+}
+.cart-dropdown .cart-item{ display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #eee; }
+.cart-dropdown .cart-item img{ width:64px; height:64px; object-fit:cover; border-radius:6px; }
+.cart-dropdown .item-info{ flex:1; min-width:0; }
+.cart-dropdown .item-name{ font-weight:600; line-height:1.1; }
+.cart-dropdown .remove-item{ align-self:flex-start; margin-left:8px; }
+
+/*Toasts para Favoritos (Agregado / Eliminado ) */
+.toasts {
+  position: absolute;
+  left: calc(100% + 8px); /* al lado derecho del corazón */
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 4px;
+  z-index: 20;
+}
+
+.toast {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a1a1a;
+  background: #e8f5e9; /* verde claro */
+  border: 1px solid #c8e6c9;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  animation: toastIn .2s ease-out both;
+  white-space: nowrap;
+}
+
+.toast.error {
+  background: #fdecea; /* rojo claro */
+  border-color: #f5c2c0;
+}
+
+@keyframes toastIn {
+  from { opacity:0; transform: translate(10px,-50%); }
+  to   { opacity:1; transform: translate(0,-50%); }
+}
+/* ===== Alinear corazón y mensaje de favorito ===== */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* contenedor corazón + texto */
+.fav-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* corazón */
+.btn-like {
+  font-size: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+.btn-like:hover {
+  transform: scale(1.1);
+}
+
+/* mensaje de estado (Agregado / Eliminado) */
+.fav-status-msg {
+  font-size: 14px;
+  background: #f8d7da;         /* fondo rojo claro por defecto */
+  color: #721c24;              /* texto rojo oscuro */
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-weight: 500;
+  transition: opacity .3s ease;
+}
+.fav-status-msg.added {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+.opciones.disabled { opacity: .5; pointer-events: none; }
+.note-out {
+  display:inline-block;
+  background:#fee2e2;
+  color:#b91c1c;
+  font-weight:700;
+  padding:.35rem .7rem;
+  border-radius:999px;
+  margin-bottom:.5rem;
+}
+

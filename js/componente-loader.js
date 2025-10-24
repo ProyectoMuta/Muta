@@ -207,39 +207,11 @@ function setupColores() {
     });
   });
 }
-
-// --- Cantidad (+/-) ---
-function setupCantidad() {
-  const inputCantidad = document.getElementById("cantidad");
-  const btnMas = document.getElementById("mas");
-  const btnMenos = document.getElementById("menos");
-
-  if (inputCantidad && btnMas && btnMenos) {
-    const clonedMas = btnMas.cloneNode(true);
-    const clonedMenos = btnMenos.cloneNode(true);
-    btnMas.parentNode.replaceChild(clonedMas, btnMas);
-    btnMenos.parentNode.replaceChild(clonedMenos, btnMenos);
-
-    clonedMas.addEventListener("click", (e) => {
-      e.preventDefault();
-      inputCantidad.value = parseInt(inputCantidad.value) + 1;
-    });
-
-    clonedMenos.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (parseInt(inputCantidad.value) > 1) {
-        inputCantidad.value = parseInt(inputCantidad.value) - 1;
-      }
-    });
-  }
-}
-
 // --- Interacciones de producto ---
 function setupProductoInteractions() {
   setupCalculoEnvio();
   setupTalles();
   setupColores();
-  setupCantidad();
 }
 
 // --- Carrusel genérico ---
@@ -289,14 +261,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("navbar")) {
     cargarComponente("navbar", "componentesHTML/navbar.html")
       .then(() => {
-        setupNavbarDropdowns(); // Activa los dropdowns de categorías
-        setupHamburgerMenu();   // Activa el botón de hamburguesa
+        // evita re-binds si por error se ejecuta dos veces
+        if (!window.__navInited) {
+          setupNavbarDropdowns();
+          setupHamburgerMenu();
+          window.__navInited = true;
+        }
+         // cargar categorías habilitadas una vez que el UL ya existe
+        fillNavbarCategories('nav-cat-list');
         document.dispatchEvent(new CustomEvent("navbar:ready"));
       });
   }
 
   if (document.getElementById("footer")) {
-    cargarComponente("footer", "componentesHTML/footer.html");
+    cargarComponente("footer", "componentesHTML/footer.html")
+    .then(() => fillNavbarCategories('footer-cat-list'));
   }
 
   if (document.getElementById("acceso-usuario")) {
@@ -330,62 +309,89 @@ document.addEventListener("DOMContentLoaded", () => {
         document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
       });
 });
+  // --- Carga de categorías habilitadas en el navbar ---
+async function fillNavbarCategories(targetUlId = 'nav-cat-list') { 
+  const ul = document.getElementById(targetUlId); 
+  if (!ul) return;
 
-//para remeras
-document.addEventListener("DOMContentLoaded", async () => {
-  const contenedor = document.getElementById("listaRemeras");
+  // slug -> ruta (remeras fuera de /categoriasHTML/)
+  const pageFor = (slug) => {
+    const PREFIX = location.pathname.split('/').length > 3 ? '../' : '';
+    if (slug === 'remeras') return `${PREFIX}remeras.html`;
+    return `${PREFIX}${slug}.html`
+  };
+
+  // fallback por si el fetch falla
+  const FALLBACK = [
+    { name: 'REMERAS', slug: 'remeras', enabled: true },
+    { name: 'PANTALONES', slug: 'pantalones', enabled: true },
+    { name: 'BUZOS', slug: 'buzos', enabled: true },
+    { name: 'CAMPERAS', slug: 'camperas', enabled: true },
+    { name: 'CAMISAS', slug: 'camisas', enabled: true },
+    { name: 'BERMUDAS', slug: 'bermudas', enabled: true },
+    { name: 'VESTIDOS', slug: 'vestidos', enabled: true },
+    { name: 'ACCESORIOS', slug: 'accesorios', enabled: true },
+  ];
+
+  function render(cats) {
+    ul.innerHTML = cats
+      .filter(c => c.enabled)                            // <-- sólo habilitadas
+      .sort((a,b) => (a.name||'').localeCompare(b.name||''))
+      .map(c => `<li><a href="${pageFor(c.slug)}">${(c.name||c.slug).toUpperCase()}</a></li>`)
+      .join('') || '<li><em>Sin categorías</em></li>';
+  }
 
   try {
-    // Traer productos desde PHP (MongoDB)
-    let res = await fetch("backend/productController.php");
-    let productos = await res.json();
-    if (!contenedor) return;  
-    // Renderizar productos como cards
-    contenedor.innerHTML = productos.map(p => `
-      <article class="card producto">
-        <img src="${p.imagen ?? 'img/default.jpg'}" alt="${p.name}" />
-        <div class="info">
-          <h3>${p.name}</h3>
-          <p>${p.descripcion ?? ''}</p>
-          <p><strong>$${p.price}</strong></p>
-          <p>Stock: ${p.stock}</p>
-          <button class="btn btn-dark">Agregar al carrito</button>
-        </div>
-      </article>
-    `).join("");
-  } catch (err) {
-    console.error("Error cargando productos:", err);
-    contenedor.innerHTML = `<p>Error al cargar productos.</p>`;
+    const res = await fetch('backend/productController.php?action=cats',{cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    render(Array.isArray(data?.categories) ? data.categories : FALLBACK);
+  } catch {
+    render(FALLBACK);
+  }
+}
+// Home: filtra/enciende cartas del carrusel de categorías según presets habilitados
+document.addEventListener('DOMContentLoaded', async () => {
+  const track = document.querySelector('#carousel-categorias .carousel-track');
+  if (!track) return;
+
+  // detectá slug de cada card (por data-attr o por nombre en el href/img)
+  const cards = [...track.querySelectorAll('a.card')].map(a => {
+    // intenta por data-slug; si no, deduce por el src/href
+    let slug = a.dataset.slug;
+    if (!slug) {
+      const href = a.getAttribute('href') || '';
+      const m = href.match(/categoriasHTML\/([a-z-]+)\.html|\/?([a-z-]+)\.html/i);
+      slug = (m && (m[1]||m[2])) || '';
+      if (!slug && a.querySelector('img[src*="categorias/categoria-"]')) {
+        const src = a.querySelector('img').src;
+        const m2 = src.match(/categoria-([a-z-]+)\./i);
+        slug = m2 ? m2[1] : '';
+      }
+    }
+    return { a, slug };
+  });
+
+  const pageFor = (slug) => {
+    if (slug === 'remeras') return 'remeras.html';
+    return `categoriasHTML/${slug}.html`;
+  };
+
+  try {
+    const res = await fetch('backend/productController.php?action=cats',{cache:'no-store'});
+    const data = await res.json();
+    const enabled = new Map((data.categories||[]).map(c => [c.slug, !!c.enabled]));
+
+    cards.forEach(({a, slug}) => {
+      if (!slug || enabled.get(slug) !== true) {
+        a.remove();                      // fuera del DOM si está deshabilitada
+      } else {
+        a.href = pageFor(slug);          // corrige el enlace
+      }
+    });
+  } catch (e) {
+    // si falla el fetch, dejá todo como estaba
+    console.warn('No se pudo validar categorías del carrusel:', e);
   }
 });
-//cargar los productos 
-document.addEventListener("DOMContentLoaded", async () => {
-    const contenedor = document.querySelector("#carousel-nuevos .carousel-track"); 
-    //  este id lo tenés que poner en el HTML del carrusel NUEVOS INGRESOS
-    if (!contenedor) return;   
-    try {
-      let res = await fetch("backend/productController.php");
-      let productos = await res.json();
 
-      if (!Array.isArray(productos)) throw new Error("Respuesta inesperada");
-
-      // Filtrar solo remeras nuevas
-      const nuevos = productos.filter(p => p.categoria?.toLowerCase() === "remeras");
-
-      if (nuevos.length > 0) {
-        contenedor.innerHTML = nuevos.map(p => `
-          <a href="producto.html?id=${p._id}" class="card">
-            <img src="${p.imagenes?.[0] ?? 'img/default.jpg'}" alt="${p.nombre}">
-            <div class="info">
-              <h4>${p.nombre}</h4>
-              <p>$${p.precio?.toLocaleString("es-AR")}</p>
-            </div>
-          </a>
-        `).join("");
-      } else {
-        // Si no hay nuevos ingresos, ocultar toda la sección
-        document.getElementById("seccion-nuevos").style.display = "none";
-      }
-    } catch (err) {
-      console.error("❌ Error cargando productos:", err);
-    }

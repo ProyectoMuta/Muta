@@ -445,3 +445,107 @@ button:focus, .remove-item:focus, .checkout-btn:focus, input:focus {
     margin-top: 10px;
   }
 }
+/* Pelotita de color (base) */
+.color-dot{
+  display:inline-block;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:1.5px solid rgba(0,0,0,.3);   /* aro finito */
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); /* halo clarito */
+  vertical-align: -2px;                /* alinea con el texto */
+}
+
+/* Versión mini para el mini-carrito */
+.color-dot.mini{
+  width:14px;
+  height:14px;
+  border-width:1px;
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.65);
+  vertical-align: -1px;
+}
+/* Fila: [ specs (talle|color|cant × $unit) ] | [ total ] */
+.cart-item-row{
+  display: grid;
+  grid-template-columns: 1fr auto; /* izquierda y derecha */
+  align-items: center;
+  gap: 12px;
+}
+
+/* Todo lo de la izquierda en una sola línea */
+.inline-specs{
+  display: flex;
+  align-items: center;
+  gap: 16px;            /* espacio entre "TALLE|COLOR" y "CANT × $unit" */
+  flex-wrap: wrap;      /* por si no entra en pantallas chicas */
+}
+
+.item-details{ margin: 0; }
+
+.qty-price{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.qty-price .qty-label{ font-weight: 600; }
+.qty-price .unit-price{ font-weight: 600; }
+.qty-price .times{ opacity: .9; }
+
+/* Total alineado a la derecha */
+.line-total{
+  font-weight: 700;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+/* Responsive: si no entra, se apila pero mantiene total a la derecha */
+@media (max-width: 600px){
+  .cart-item-row{
+    grid-template-columns: 1fr auto;
+  }
+  .inline-specs{ gap: 10px; }
+}
+/* Corrige flex y alineación */
+#cart-page-items li > .cart-item-info { flex: 1; }
+
+.cart-item-row {
+  display: grid;
+  grid-template-columns: 1fr auto; /* izquierda - derecha */
+  align-items: center;
+  gap: 12px;
+}
+
+.inline-specs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #555;
+}
+
+.inline-specs input.update-qty {
+  width: 55px;
+  padding: 3px;
+  text-align: center;
+  margin-left: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.line-total {
+  font-weight: 700;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .inline-specs {
+    flex-wrap: wrap;
+    gap: 8px;
+    white-space: normal;
+  }
+}

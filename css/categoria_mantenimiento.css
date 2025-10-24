@@ -2,7 +2,6 @@
 
 
 main {
-   
     width: 100%;
     max-width: 1200px;
     background-color: #fff;
@@ -132,4 +131,154 @@ main {
 
 .save-btn:hover {
     background-color: #a9a9a9;
+}
+/* ==== Tarjetas de categoría + subcategorías ==== */
+.cat-card{
+  background:#f6f6f6;              /* gris claro para destacar la categoría */
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:14px 16px;
+  margin:12px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.cat-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.cat-title{
+  font-weight:700;
+  letter-spacing:.3px;
+  color:#202020;
+}
+
+.sub-list{
+  margin-top:10px;
+  padding:10px 12px;
+  border-top:1px dashed #e6e6e6;
+  background:#fff;                 /* subcategorías sobre blanco */
+  border-radius:8px;
+}
+
+.sub-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 2px;
+}
+
+/* ---------- Switch invertido: OFF rojo (derecha) / ON verde (izquierda) ---------- */
+.switch{
+  position:relative;
+  display:inline-block;
+  width:48px;
+  height:26px;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.switch .slider{
+  position:absolute;
+  inset:0;                     /* top/right/bottom/left:0 */
+  background:#f87171;          /* rojo claro = OFF */
+  border-radius:26px;
+  transition:background .2s ease;
+}
+
+/* “perilla” */
+.switch .slider:before{
+  content:"";
+  position:absolute;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:#fff;
+  bottom:3px;
+  right:3px;                   /* OFF va a la DERECHA */
+  transition:left .2s ease, right .2s ease;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+
+/* ON (habilitado): verde y perilla a la IZQUIERDA */
+.switch input:checked + .slider{
+  background: #4ade80;          /* verde claro */
+}
+.switch input:checked + .slider:before{
+  left:3px;                    /* mueve a la IZQUIERDA */
+  right:auto;
+}
+
+/* Estado deshabilitado visual (si hicieras disabled en el input) */
+.switch input:disabled + .slider{
+  filter:grayscale(1);
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+/* Opcional: mejorar contenedor de la lista */
+#categories-list{
+  border:1px solid #eee;
+  background:#fdfdfd;
+  border-radius:8px;
+  padding:12px;
+}
+
+/* Botón guardar consistente */
+.save-btn{
+  background:#717171;
+  color:#fff;
+  padding:12px 24px;
+  border:none;
+  border-radius:24px;
+  font-weight:700;
+}
+.save-btn:hover{ 
+    background:#5e5e5e;
+}
+
+.input-group {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.input-group select { 
+    flex-basis: 28%;
+    max-width: none;
+    min-width: 220px;
+}
+/* Ajustes visuales */
+
+.cat-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+.cat-title{
+    font-weight:700; 
+    color:#202020; 
+    letter-spacing:.3px;
+}
+.sub-row{
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    padding:8px 2px;
+}
+
+/* Responsive de los selects superiores */
+.input-group{ 
+    gap:10px; 
+    flex-wrap:wrap; 
+}
+.input-group select{ 
+    flex-basis:28%; 
+    min-width:220px; 
+    max-width:none; 
 }

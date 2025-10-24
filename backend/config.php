@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/vendor/autoload.php'; // carga automática de Composer
+require __DIR__ . '/vendor/autoload.php';
 
 try {
     // Conexión a MongoDB en localhost

@@ -49,86 +49,98 @@
           <h3 class="titulo-nuevo-producto">NUEVO PRODUCTO</h3>
           <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
         </div>
-        <section class="grid">
-        
-          <article id= "formulario" class="card span-2" >
-    
-    <form id="formProducto" class="row g-2" enctype="multipart/form-data">
-    <div class="col-md-12">
-      <label class="form-label">Nombre del producto</label>
-      <input class="form-control" id="inputNombre" name="nombre" required>
-    </div>
+        <!-- GRID principal -->
+      <section class="grid">
+        <article id="formulario" class="card span-2">
+          <!-- FORMULARIO DE PRODUCTO -->
+          <form id="formProducto" class="row g-2" enctype="multipart/form-data">
+            <!-- Nombre -->
+            <div class="col-md-12">
+              <label class="form-label">Nombre del producto</label>
+              <input class="form-control" id="inputNombre" name="nombre" required>
+            </div>
 
-    <div class="col-md-12">
-      <label class="form-label">Descripción</label>
-      <textarea class="form-control" id="exampleFormControlTextarea1" name="descripcion" rows="3" required>Descripción del producto </textarea>
-    </div>
+            <!-- Descripción -->
+            <div class="col-md-12">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" id="exampleFormControlTextarea1" name="descripcion" rows="3" required>Descripción del producto </textarea>
+            </div>
 
-    <div class="col-md-12">
-      <label for="formFileMultiple" class="form-label">Agregar imágenes</label>
-      <input type="file" id="formFileMultiple" name="formFileMultiple[]" multiple>
-    </div>
+            <!-- Imágenes -->
+            <div class="col-md-12">
+              <label for="formFileMultiple" class="form-label">Agregar imágenes</label>
+              <input type="file" id="formFileMultiple" name="formFileMultiple[]" multiple>
+              <!-- Contenedor de previews -->
+              <div id="preview" class="preview-grid"></div>
+            </div>
 
-    <div class="col-12 col-md-6">
-      <label class="form-label">Precio de venta</label>
-      <input placeholder="$0000" class="form-control" id="input-precio-venta" name="precio" required>
-    </div>
+            <!-- Precios -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">Precio de venta</label>
+              <input placeholder="$0000" class="form-control" id="input-precio-venta" name="precio" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Precio promocional</label>
+              <input placeholder="$0000" class="form-control" id="input-precio-promocional" name="precioPromo">
+            </div>
 
-    <div class="col-12 col-md-6">
-      <label  class="form-label">Precio promocional</label>
-      <input placeholder="$0000" class="form-control" id="input-precio-promocional" name="precioPromo">
-    </div>
+            <!-- Costo -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">Costo</label>
+              <input placeholder="$0000" class="form-control" id="input-costo" name="costo" required>
+            </div>
 
-    <div class="col-12 col-md-6">
-      <label class="form-label">Costo</label>
-      <input placeholder="$0000" class="form-control" id="input-costo" name="costo" required>
-    </div>
+            <!-- Estado -->
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="estado">Estado</label>
+              <select id="estado" class="form-select" name="estado" required>
+                <option value="" disabled selected>Seleccioná estado..</option>
+                <option value="Activo">Activo</option>
+                <option value="Bajo stock">Bajo stock</option>
+                <option value="Sin stock">Sin stock</option>
+                <option value="Pausado">Pausado</option>
+              </select>
+            </div>
 
-    <div class="col-12 col-md-6">
-      <label class="form-label" for="estado">Estado</label>
-      <select id="estado" class="form-select" name="estado" required>
-        <option value="" disabled selected>Seleccioná estado..</option>
-        <option value="Activo">Activo</option>
-        <option value="Bajo stock">Bajo stock</option>
-        <option value="Sin stock">Sin stock</option>
-        <option value="Pausado">Pausado</option>
-      </select>
-    </div>
+            <!-- Inventario / variantes -->
+            <label class="form-label3">Inventario</label>
+            <div class="col-12 col-md-6">
+              <label class="form-label">Tipo de talle   (Remeras S-XXXL / Pantalones 38-58)</label>
+              <select id="tipoVariante" class="form-select" name="tipoVariante" required>
+                <option value="remera">Remera</option>
+                <option value="pantalon">Pantalón</option>
+              </select>
+            </div>
 
-    <label class="form-label3">Inventario</label> 
-    <div class="col-12 col-md-6">
-      <label class="form-label">Tipo de talle   (Remeras S-XXXL / Pantalones 38-58)</label>
-      <select id="tipoVariante" class="form-select" name="tipoVariante" required>
-        <option value="remera">Remera</option>
-        <option value="pantalon">Pantalón</option>
-      </select>
-    </div>
-    <div class="add-product-variant-section">
-    <label class="form-label1">Agregar variante
-        <i id="agregar1" class="icon-btn add-btn" role="button" title="Agregar">+</i>
-      </label>
-    </div>
-    <!-- CONTENEDOR DE VARIANTES -->
-    <div id="contenedor-variantes">
-      <!-- Las filas se agregan aquí con JS -->
-    </div>
+            <div class="add-product-variant-section">
+              <label class="form-label1">
+                Agregar variante
+                <!-- Botón (+) controlado por JS: sólo 1 fila -->
+                <i id="agregar1" class="icon-btn add-btn" role="button" title="Agregar">+</i>
+              </label>
+            </div>
 
-      <div class="col-md-6">
-        <label for="inputState" class="form-label">Categoría</label>
-        <select id="inputState" class="form-select" name="categoria"></select>
-      </div>
-      <div class="col-md-6">
-          <label for="subcategoriaSelect" class="form-label">Subcategoría</label>
-          <select id="subcategoriaSelect" class="form-select" name="subcategoria"></select>
-      </div>
-        
-        
-        <div class="col-12 d-flex justify-content-end gap-3">
-          <button id="volverBtn" type="button" class="guardar-btn23">Volver</button>
-          <button id="guardarBtnTop" class="guardar-btn">GUARDAR PRODUCTO</button>
-        </div> 
-    </form>
-          </article>    
+            <!-- CONTENEDOR DE VARIANTES (filas dinámicas) -->
+            <div id="contenedor-variantes"><!-- Las filas se agregan aquí con JS --></div>
+
+            <!-- Categoría / Subcategoría (dinámicas desde backend /cats) -->
+            <div class="col-md-6">
+              <label for="inputState" class="form-label">Categoría</label>
+              <select id="inputState" class="form-select" name="categoria"></select>
+            </div>
+            <div class="col-md-6">
+              <label for="subcategoriaSelect" class="form-label">Subcategoría</label>
+              <select id="subcategoriaSelect" class="form-select" name="subcategoria"></select>
+            </div>
+
+            <!-- Acciones -->
+            <div class="col-12 d-flex justify-content-end gap-3">
+              <button id="volverBtn" type="button" class="guardar-btn23">Volver</button>
+              <button id="guardarBtnTop" class="guardar-btn">GUARDAR PRODUCTO</button>
+            </div>
+          </form>
+        </article>
+      </section>
     </main>
   </div>
 

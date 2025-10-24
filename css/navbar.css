@@ -11,22 +11,6 @@ html, body { width: 100%; max-width: 100%; overflow-x: hidden; font-family: 'NAT
   width: 100%;
   z-index: 1000;
 }
-
-/* === BARRA PROMOCIONAL === */
-/*.promo-bar {
-  background-color: #333;
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 1px;
-  padding: 3px;
-  font-family: 'Red Rose', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-}
-*/
 /* PROMO BAR */
 .promo-bar { display: none; }
 .circle {

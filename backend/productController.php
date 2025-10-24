@@ -1,185 +1,610 @@
 <?php
-require 'config.php'; // conexión MongoDB
+require 'config.php';
 header("Content-Type: application/json; charset=UTF-8");
 
+/* ========= Helpers ========= */
+
+function bsonToArray($doc) {
+  if ($doc instanceof MongoDB\Model\BSONDocument) $doc = $doc->getArrayCopy();
+  if (isset($doc['_id'])) $doc['_id'] = (string)$doc['_id'];
+  return $doc;
+}
+
+const PRESET_CATEGORIES = ['remeras','pantalones','camperas','camisas','buzos','bermudas','vestidos','accesorios'];
+const PRESET_SUBCATS    = ['CLASICAS','NOVEDADES','ESTILO MUTA','NUEVOS INGRESOS'];
+
+const LIMITED_SUBS   = ['clasicas','novedades','estilo-muta']; // slugs
+const MAX_SUB_ITEMS  = 8;
+
+function slugify_local($s){
+  $t = iconv('UTF-8','ASCII//TRANSLIT',$s);
+  $t = preg_replace('~[^\\pL\\d]+~u','-',$t);
+  $t = trim($t,'-');
+  $t = strtolower($t);
+  return preg_replace('~[^-a-z0-9]+~','',$t) ?: 'n-a';
+}
+
+function countCarouselItems($db, $catSlug, $subSlug){
+  $q = [
+    "eliminado"        => ['$ne'=>true],
+    "estado"           => ['$in'=>["Activo","Bajo stock","Sin stock"]],
+    "categoriaSlug"    => $catSlug,
+    "subcategoriaSlug" => $subSlug,
+  ];
+  return $db->products->countDocuments($q);
+}
+
+/* ========= Bootstrap categorías (tabla categories_config) ========= */
+
+$cfgCol = $db->selectCollection('categories_config');
+$cfgCol->createIndex(['slug' => 1], ['unique' => true]);
+
+function ensureDefaultCategories(\MongoDB\Collection $cfgCol){
+  foreach (PRESET_CATEGORIES as $name){
+    $slug = slugify_local($name);
+    $cfgCol->updateOne(
+      ['slug' => $slug],
+      [
+        '$setOnInsert' => [
+          'nombre'  => ucfirst($name),
+          'slug'    => $slug,
+          'enabled' => true,
+          'subs'    => array_map(fn($s)=>[
+            'nombre'  => $s,
+            'slug'    => slugify_local($s),
+            'enabled' => true
+          ], PRESET_SUBCATS),
+        ],
+      ],
+      ['upsert' => true]
+    );
+  }
+}
+
+function dedupeBySlug(\MongoDB\Collection $col){
+  $cursor = $col->aggregate([
+    ['$sort'  => ['_id' => -1]],
+    ['$group' => ['_id'=>'$slug','keep'=>['$first'=>'$_id'],'dups'=>['$push'=>'$_id']]]
+  ]);
+  $toDelete = [];
+  foreach ($cursor as $g){
+    $ids  = $g['dups'];
+    $keep = (string)$g['keep'];
+    foreach ($ids as $id){
+      if ((string)$id !== $keep) $toDelete[] = $id;
+    }
+  }
+  if ($toDelete){
+    $col->deleteMany(['_id' => ['$in' => $toDelete]]);
+  }
+}
+
+dedupeBySlug($cfgCol);
+ensureDefaultCategories($cfgCol);
+
+/* ========= Router ========= */
+/* ======== Helpers de enabled ======== */
+function getCatDoc(\MongoDB\Collection $cfgCol, string $catSlug) {
+  return $cfgCol->findOne(['slug'=>$catSlug]);
+}
+function isCatEnabled(\MongoDB\Collection $cfgCol, string $catSlug): bool {
+  if (!$catSlug) return false;
+  $doc = getCatDoc($cfgCol, $catSlug);
+  return $doc && !empty($doc['enabled']);
+}
+function isSubEnabled(\MongoDB\Collection $cfgCol, string $catSlug, string $subSlug): bool {
+  if (!$catSlug || !$subSlug) return false;
+  $doc = getCatDoc($cfgCol, $catSlug);
+  if (!$doc || empty($doc['enabled'])) return false;
+  foreach (($doc['subs'] ?? []) as $s) {
+    if (slugify_local($s['nombre'] ?? '') === $subSlug) {
+      return !empty($s['enabled']);
+    }
+  }
+  return false;
+}
+
 try {
-    $method = $_SERVER['REQUEST_METHOD'];
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method'])) {
+    $_SERVER['REQUEST_METHOD'] = strtoupper($_POST['_method']);
+  }
 
-    switch ($method) {
-            // =======================
-            // LISTAR PRODUCTOS (GET)
-            // =======================
-            case 'GET':
-                if (!empty($_GET['id'])) {
-                    $id = $_GET['id'];
-                    $producto = $db->products->findOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
-                    if ($producto) {
-                        $producto["_id"] = (string)$producto["_id"];
-                        echo json_encode($producto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                    } else {
-                        http_response_code(404);
-                        echo json_encode(["error" => "Producto no encontrado"]);
-                    }
-                } else {
-                    $productos = $db->products->find()->toArray();
-                    $productos = array_map(function ($p) {
-                        $p["_id"] = (string)$p["_id"];
-                        return $p;
-                    }, $productos);
-                    echo json_encode($productos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                }
-                break;
+  $method = $_SERVER['REQUEST_METHOD'];
 
-            // =======================
-            // CREAR PRODUCTO (POST)
-            // =======================
-            case 'POST':
-                $imagenes = [];
-                // Si viene como form-data (con imágenes)
-                if (!empty($_FILES['formFileMultiple']['name'][0])) {
-                    $uploadDir = __DIR__ . "/../uploads/";
-                    if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+  switch ($method) {
+    /* ===== GET ===== */
+    case 'GET':
+      // Listado de nuevos ingresos (opcional por categoría)
+      if (isset($_GET['action']) && $_GET['action'] === 'new_arrivals') {
+    $cat = $_GET['categoriaSlug'] ?? '';
+    error_log("Categoría recibida: " . $cat);
+    if ($cat && !isCatEnabled($cfgCol, $cat)) {
+        echo json_encode(['items' => []]);
+        exit;
+    }
+    $q = [
+        'eliminado'   => ['$ne' => true],
+        '$or' => [
+            ['newArrival' => true],
+            ['subcategoriaSlug' => 'nuevos-ingresos']
+        ],
+        'publicable'  => true
+    ];
+    if ($cat) {
+        $q['categoriaSlug'] = $cat;
+    }
+    $cur = $db->products->find($q, ['sort' => ['_id' => -1], 'limit' => 24]);
+    $items = [];
+    foreach ($cur as $doc) {
+        $arr = bsonToArray($doc);
+        $cs = $arr['categoriaSlug'] ?? '';
+        if ($cat && $cs !== $cat) {
+            continue;
+        }
+        if ($cs && !isCatEnabled($cfgCol, $cs)) {
+            continue;
+        }
+        $ss = $arr['subcategoriaSlug'] ?? '';
+        if ($cs && $ss && !isSubEnabled($cfgCol, $cs, $ss)) {
+            continue;
+        }
+        $items[] = $arr;
+    }
+    echo json_encode(['items' => $items], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+      // Estado simple de una categoría (y sus subcats)
+      if (isset($_GET['action']) && $_GET['action']==='cat_status') {
+        $slug = slugify_local($_GET['slug'] ?? '');
+        $doc  = $slug ? getCatDoc($cfgCol, $slug) : null;
+        if (!$doc) { echo json_encode(['enabled'=>false,'subcats'=>[]]); exit; }
+        $subs = [];
+        foreach (($doc['subs'] ?? []) as $s) {
+          $subs[] = [
+            'name'    => $s['nombre'] ?? '',
+            'slug'    => slugify_local($s['nombre'] ?? ''),
+            'enabled' => !empty($s['enabled'])
+          ];
+        }
+        echo json_encode([
+          'enabled' => !empty($doc['enabled']),
+          'subcats' => $subs
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+      }
+      // Conteo para validar topes desde el front
+      if (isset($_GET['action']) && $_GET['action']==='count') {
+        $cat  = $_GET['categoriaSlug']    ?? '';
+        $sub  = $_GET['subcategoriaSlug'] ?? '';
+        $tot  = ($cat && $sub) ? countCarouselItems($db, $cat, $sub) : 0;
+        echo json_encode(["total"=>$tot], JSON_UNESCAPED_UNICODE);
+        exit;
+      }
 
-                    foreach ($_FILES['formFileMultiple']['tmp_name'] as $i => $tmpName) {
-                        $fileName = time() . "_" . basename($_FILES['formFileMultiple']['name'][$i]);
-                        $filePath = $uploadDir . $fileName;
-                        if (move_uploaded_file($tmpName, $filePath)) {
-                            $imagenes[] = "uploads/" . $fileName; // ruta relativa
-                        }
-                    }
-                } 
-                // 2) Fuente de datos: JSON o form-data
-                $raw = file_get_contents('php://input');
-                $maybeJson = json_decode($raw, true);
-                $src = is_array($maybeJson) ? $maybeJson : $_POST;
+      // Config de categorías/subs
+      if (isset($_GET['action']) && $_GET['action'] === 'cats') {
+        $docs = $cfgCol->find([], ['sort'=>['_id'=>-1]])->toArray();
+        $bySlug = [];
+        foreach ($docs as $d) {
+          $arr = bsonToArray($d);
+          $subsRaw = $arr['subs'] ?? [];
+          if ($subsRaw instanceof \MongoDB\Model\BSONArray) $subsRaw = $subsRaw->getArrayCopy();
+          elseif ($subsRaw instanceof \Traversable) $subsRaw = iterator_to_array($subsRaw, false);
+          elseif (!is_array($subsRaw)) $subsRaw = [];
 
-                // helper: devuelve siempre un array plano
-                $norm = function($v) {
-                if ($v === null) return [];
-                if (is_array($v)) return array_values($v);   // asegura índices 0..n
-                return [$v];                                 // valor suelto -> [valor]
-                };
-                // --- variantes ---
-                $talles = $norm($src['talle'] ?? $src['talles'] ?? null);
-                $stocks = $norm($src['stock'] ?? null);
-                $pesos  = $norm($src['peso']  ?? null);
-                $colors = $norm($src['color'] ?? null);
+          $slug = $arr['slug'] ?? '';
+          if ($slug==='' || isset($bySlug[$slug])) continue;
 
-                $variantes = [];
-                $max = max(count($talles), count($stocks), count($pesos), count($colors));
-                for ($i = 0; $i < $max; $i++) {
-                    $t = $talles[$i] ?? null;
-                    if ($t === null || $t === '') continue;
-                    $variantes[] = [
-                        'talle' => $t,
-                        'stock' => isset($stocks[$i]) ? (int)$stocks[$i] : 0,
-                        'peso'  => isset($pesos[$i])  ? (float)$pesos[$i]  : 0.0,
-                        'color' => $colors[$i] ?? '#000000',
-                    ];
-                }
+          $bySlug[$slug] = [
+            'name'    => $arr['nombre'] ?? '',
+            'slug'    => $slug,
+            'enabled' => (bool)($arr['enabled'] ?? false),
+            'subcats' => array_map(function($s){
+              if ($s instanceof \MongoDB\Model\BSONDocument) $s = $s->getArrayCopy();
+              return ['name'=>$s['nombre']??'', 'enabled'=>(bool)($s['enabled']??false)];
+            }, $subsRaw),
+          ];
+        }
+        echo json_encode(['categories' => array_values($bySlug)], JSON_UNESCAPED_UNICODE);
+        exit;
+      }
 
-                // Lee tipo de variante (usar $src porque puede venir JSON o form-data)
-                $tipoVariante = strtolower(trim($src['tipoVariante'] ?? 'remera'));
+      // Listado paginado / filtrado
+if (isset($_GET['action']) && $_GET['action']==='list') {
+    $limit = max(1, min(100, (int)($_GET['limit'] ?? 24)));
+    $skip  = max(0, (int)($_GET['skip'] ?? 0));
 
-                // Categoría: si viene vacía, usar por defecto según el tipo
-                $cat = trim($src['categoria'] ?? '');
-                if ($cat === '') {
-                    // Soporta "pantalon" / "pantalón"
-                    $cat = in_array($tipoVariante, ['pantalon','pantalón']) ? 'pantalones' : 'remeras';
-                }
+    $cat = $_GET['categoriaSlug']    ?? '';
+    $sub = $_GET['subcategoriaSlug'] ?? '';
 
-                // Subcategoría opcional (también desde $src)
-                $subcat = trim($src['subcategoria'] ?? '');
+    //Admin: muestra todos los estados
+    //Público (carrousels/listas): llamar con &public=1
+    $isPublic = isset($_GET['public']) && $_GET['public']=='1';
 
-                // stock total
-                $stockTotal = array_sum(array_map(fn($v) => (int)($v['stock'] ?? 0), $variantes));
-
-                $nuevo = [
-                    "nombre"        => $src["nombre"]        ?? "",
-                    "descripcion"   => $src["descripcion"]   ?? "",
-                    "precio"        => (int)($src["precio"] ?? 0),
-                    "precioPromo"   => (int)($src["precioPromo"] ?? 0),
-                    "costo"         => (int)($src["costo"]  ?? 0),
-                    "categoria"     => $cat,        // <- siempre seteado
-                    "subcategoria"  => $subcat,     // <- usar el saneado
-                    "tipoVariante"  => $tipoVariante, // <- opcional, útil para futuras vistas
-                    "imagenes"      => !empty($imagenes) ? $imagenes : ($src['imagenes'] ?? []),
-                    "variantes"     => $variantes,
-                    "stock"         => $stockTotal,
-                    "estado"        => $src["estado"] ?? "Activo",
-                    "fechaAlta"     => date("Y-m-d H:i:s"),
-                ];
-
-
-                $db->products->insertOne($nuevo);
-                echo json_encode(["message" => "✅ Producto agregado"]);
-                break;
-
-                // =======================
-                // EDITAR PRODUCTO (PUT)
-                // =======================
-                case 'PUT':
-                    parse_str($_SERVER["QUERY_STRING"], $params);
-                    $id = $params["id"] ?? null;
-
-                    if (!$id) {
-                        http_response_code(400);
-                        echo json_encode(["error" => "ID requerido"]);
-                        exit;
-                    }
-
-                    $data = json_decode(file_get_contents("php://input"), true) ?? [];
-
-                    // Si viene 'variantes' como array en el JSON, recalculamos stock total
-                    if (isset($data['variantes']) && is_array($data['variantes'])) {
-                        // normalizar campos numéricos
-                        $data['variantes'] = array_map(function($v){
-                            return [
-                                "talle" => $v['talle'] ?? '',
-                                "stock" => (int)($v['stock'] ?? 0),
-                                "peso"  => (float)($v['peso'] ?? 0),
-                                "color" => $v['color'] ?? '#000000',
-                            ];
-                        }, $data['variantes']);
-
-                        $data['stock'] = array_sum(array_map(fn($v) => (int)($v['stock'] ?? 0), $data['variantes']));
-                    }
-
-                    // Nunca permitir cambiar el _id
-                    unset($data['_id']);
-
-                    $db->products->updateOne(
-                        ["_id" => new MongoDB\BSON\ObjectId($id)],
-                        ['$set' => $data]
-                    );
-
-                    echo json_encode(["message" => "✏️ Producto actualizado"]);
-                    break;
-
-        // =======================
-        // ELIMINAR PRODUCTO (DELETE)
-        // =======================
-        case 'DELETE':
-            parse_str($_SERVER["QUERY_STRING"], $params);
-            $id = $params["id"] ?? null;
-
-            if (!$id) {
-                http_response_code(400);
-                echo json_encode(["error" => "ID requerido"]);
-                exit;
-            }
-
-            $db->products->deleteOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
-            echo json_encode(["message" => "🗑️ Producto eliminado"]);
-            break;
-
-        default:
-            http_response_code(405);
-            echo json_encode(["error" => "Método no permitido"]);
-            break;
+    if ($isPublic) {
+      $q = [
+        "eliminado" => ['$ne' => true],
+        "estado"    => ['$in' => ["Activo", "Bajo stock", "Sin stock"]],
+        "publicable" => true
+      ];
     }
 
+    if ($cat) $q['categoriaSlug'] = $cat;
+    if ($sub) $q['subcategoriaSlug'] = $sub;
+
+    // Respetar enabled solo si viene categoría/sub
+    if ($cat && !isCatEnabled($cfgCol, $cat)) { echo json_encode(['items'=>[],'total'=>0]); exit; }
+    if ($cat && $sub && !isSubEnabled($cfgCol, $cat, $sub)) { echo json_encode(['items'=>[],'total'=>0]); exit; }
+
+    $total = $db->products->countDocuments($q);
+    $cur   = $db->products->find($q, ['limit'=>$limit,'skip'=>$skip,'sort'=>['_id'=>-1]]);
+    $items = array_map('bsonToArray', $cur->toArray());
+
+    echo json_encode(['items'=>$items,'total'=>$total], JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+
+
+      // Get por id
+      if (!empty($_GET['id'])) {
+        $id = $_GET['id'];
+        $producto = $db->products->findOne(["_id" => new MongoDB\BSON\ObjectId($id)]);
+        if ($producto) echo json_encode(bsonToArray($producto), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        else { http_response_code(404); echo json_encode(["error"=>"Producto no encontrado"]); }
+        break;
+      }
+
+      // listados simples
+      if (isset($_GET['publicList']) && $_GET['publicList']=='1') {
+        $f = ["eliminado"=>['$ne'=>true], "estado"=>['$in'=>["Activo","Bajo stock","Sin stock"]]];
+        $cur = $db->products->find($f);
+        $out = [];
+        foreach ($cur as $doc) {
+          $arr = bsonToArray($doc);
+          $cs = $arr['categoriaSlug'] ?? '';
+          $ss = $arr['subcategoriaSlug'] ?? '';
+          if ($cs && !isCatEnabled($cfgCol, $cs)) continue;
+          if ($cs && $ss && !isSubEnabled($cfgCol, $cs, $ss)) continue;
+          $out[] = $arr;
+        }
+        echo json_encode($out, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+      } else {
+        $f = (isset($_GET['public']) && $_GET['public']=='1')
+              ? ["publicable"=>true, "eliminado"=>['$ne'=>true]]
+              : [];
+        $cur = $db->products->find($f);
+        $out = [];
+        foreach ($cur as $doc) {
+          $arr = bsonToArray($doc);
+          $cs = $arr['categoriaSlug'] ?? '';
+          $ss = $arr['subcategoriaSlug'] ?? '';
+          if ($cs && !isCatEnabled($cfgCol, $cs)) continue;
+          if ($cs && $ss && !isSubEnabled($cfgCol, $cs, $ss)) continue;
+          $out[] = $arr;
+        }
+        echo json_encode($out, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+      }
+      break;
+
+
+      /* ===== POST (crear) ===== */
+      case 'POST':
+          // guardar presets de categorías/subs
+          if (isset($_GET['action']) && $_GET['action'] === 'catsSave') {
+              $raw = file_get_contents('php://input');
+              $data = json_decode($raw, true);
+              if (!$data || !isset($data['categories']) || !is_array($data['categories'])) {
+                http_response_code(400); echo json_encode(['error'=>'payload inválido']); exit;
+              }
+              foreach ($data['categories'] as $cat) {
+                  $slug = slugify_local($cat['slug'] ?? ($cat['name'] ?? ''));
+                  if (!$slug) continue;
+                  $cfgCol->updateOne(
+                    ['slug'=>$slug],
+                    ['$set'=>[
+                      'nombre'  => $cat['name'] ?? ucfirst($slug),
+                      'enabled' => (bool)($cat['enabled'] ?? false),
+                      'subs'    => array_map(fn($s)=>[
+                        'nombre'  => $s['name'] ?? '',
+                        'slug'    => slugify_local($s['name'] ?? ''),
+                        'enabled' => (bool)($s['enabled'] ?? false),
+                      ], ($cat['subcats'] ?? [])),
+                    ]],
+                    ['upsert'=>true]
+                  );
+              }
+              echo json_encode(['ok'=>true]); exit;
+            }
+
+            // toggle preset (rápido)
+            if (isset($_POST['action']) && $_POST['action']==='togglePreset') {
+              $catSlug = $_POST['categorySlug'] ?? '';
+              $subSlug = $_POST['subSlug'] ?? '';
+              $enabled = isset($_POST['enabled']) ? (bool)$_POST['enabled'] : true;
+              if ($catSlug===''){ http_response_code(400); echo json_encode(['error'=>'categorySlug requerido']); exit; }
+              if ($subSlug===''){
+                $cfgCol->updateOne(['slug'=>$catSlug], ['$set'=>['enabled'=>$enabled]]);
+              } else {
+                $cfgCol->updateOne(['slug'=>$catSlug,'subs.slug'=>$subSlug], ['$set'=>['subs.$.enabled'=>$enabled]]);
+              }
+              echo json_encode(['message'=>'✅ Preset actualizado']); exit;
+            }
+
+            // ------- crear producto --------
+            $existing  = [];
+            if (isset($_POST['existingImages'])) $existing = json_decode($_POST['existingImages'], true) ?: [];
+            $imagenes  = [];
+
+            if (!empty($_FILES['formFileMultiple']['name'][0])) {
+              $uploadDir = __DIR__ . "/../uploads/";
+              if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+              $names = $_FILES['formFileMultiple']['name'];
+              $tmps  = $_FILES['formFileMultiple']['tmp_name'];
+              $errs  = $_FILES['formFileMultiple']['error'];
+              for ($i=0; $i<count($names); $i++) {
+                if ($errs[$i] === UPLOAD_ERR_OK && is_uploaded_file($tmps[$i])) {
+                  $safe = preg_replace('/\s+/', '_', basename($names[$i]));
+                  $fileName = time() . "_$safe";
+                  if (move_uploaded_file($tmps[$i], $uploadDir . $fileName)) $imagenes[] = "uploads/" . $fileName;
+                }
+              }
+            }
+            $imagenes = array_slice(array_merge($existing, $imagenes), 0, 3);
+
+            $raw = file_get_contents('php://input');
+            $maybeJson = json_decode($raw, true);
+            $src = is_array($maybeJson) ? $maybeJson : $_POST;
+
+            $norm = function($v){ if ($v===null) return []; if (is_array($v)) return array_values($v); return [$v]; };
+            $talles = $norm($src['talle'] ?? $src['talles'] ?? null);
+            $stocks = $norm($src['stock'] ?? null);
+            $pesos  = $norm($src['peso']  ?? null);
+            $colors = $norm($src['color'] ?? null);
+
+            $variantes = [];
+            $max = max(count($talles), count($stocks), count($pesos), count($colors));
+            for ($i=0; $i<$max; $i++) {
+              $t = $talles[$i] ?? null;
+              if ($t===null || $t==='') continue;
+              $variantes[] = [
+                'talle'=>$t,
+                'stock'=> isset($stocks[$i]) ? (int)$stocks[$i] : 0,
+                'peso' => isset($pesos[$i])  ? (float)$pesos[$i]  : 0.0,
+                'color'=> $colors[$i] ?? '#000000',
+              ];
+            }
+
+            $tipoVariante = strtolower(trim($src['tipoVariante'] ?? 'remera'));
+
+            $catNameIn = trim($src['categoria'] ?? '');
+            if ($catNameIn==='') $catNameIn = in_array($tipoVariante, ['pantalon','pantalón']) ? 'pantalones' : 'remeras';
+            $subNameIn = trim($src['subcategoria'] ?? '');
+
+            $catDoc = $cfgCol->findOne(['slug'=>slugify_local($catNameIn)]);
+            if (!$catDoc || !$catDoc['enabled']) {
+              $catDoc = $cfgCol->findOne(['slug'=>'remeras','enabled'=>true]) ?: $cfgCol->findOne(['enabled'=>true]);
+              if (!$catDoc) { http_response_code(400); echo json_encode(['error'=>'No hay categorías habilitadas']); exit; }
+            }
+            $catName = $catDoc['nombre'];  $catSlug = $catDoc['slug'];
+
+            $subSlug = null; $subNameOut = '';
+            if ($subNameIn!==''){
+              $sub = null;
+              foreach ($catDoc['subs'] as $s){ if (slugify_local($s['nombre'])===slugify_local($subNameIn)) { $sub=$s; break; } }
+              if (!$sub || !$sub['enabled']) { http_response_code(400); echo json_encode(['error'=>'Subcategoría no habilitada']); exit; }
+              $subNameOut = $sub['nombre']; $subSlug = $sub['slug'];
+            }
+
+            $stockTotal = array_sum(array_map(fn($v)=>(int)($v['stock']??0), $variantes));
+            $estado     = (string)($src["estado"] ?? "Activo");
+           $publicable = in_array($estadoCalc, ["Activo","Bajo stock"], true) && ($stockTotal > 0) && !in_array($estadoCalc, ["Pausado", "Eliminado"], true);
+
+            // IDs (opcional, por compatibilidad)
+            $catId = null; $subId = null;
+
+            // Tope 8 (sólo remeras + sub limitada)
+            if ($subSlug && in_array($subSlug, LIMITED_SUBS, true)) {
+              $current = countCarouselItems($db, $catSlug, $subSlug);
+                if ($current >= MAX_SUB_ITEMS) {
+                  http_response_code(409);
+                  echo json_encode([
+                  "error" => "carrusel_lleno",
+                  "message" => "El carrusel de '".$subNameOut."' en '".$catName."' ya tiene el máximo de ".MAX_SUB_ITEMS." productos. Elimina uno para poder agregar otro."
+                  ], JSON_UNESCAPED_UNICODE);
+                exit;
+              }
+            }
+            $newArrival = filter_var(($src['newArrival'] ?? $src['nuevoIngreso'] ?? false), FILTER_VALIDATE_BOOLEAN);
+
+            $nuevo = [
+              "nombre"            => $src["nombre"] ?? "",
+              "descripcion"       => $src["descripcion"] ?? "",
+              "precio"            => (int)($src["precio"] ?? 0),
+              "precioPromo"       => (int)($src["precioPromo"] ?? 0),
+              "costo"             => (int)($src["costo"] ?? 0),
+              "tipoVariante"      => $tipoVariante,
+              "categoria"         => $catName,
+              "subcategoria"      => $subNameOut,
+              "categoriaId"       => $catId,
+              "subcategoriaId"    => $subId,
+              "categoriaSlug"     => $catSlug,
+              "subcategoriaSlug"  => $subSlug,
+              "imagenes"          => $imagenes,
+              "variantes"         => $variantes,
+              "stock"             => $stockTotal,
+              "estado"            => $estado,
+              "publicable"        => $publicable,
+              "eliminado"         => false,
+              "fechaAlta"         => date("c"),
+              "newArrival"        => (bool)$newArrival,
+            ];
+
+            // Obligatorios básicos
+            foreach (['nombre','descripcion','precio','costo','estado'] as $k){
+              if (($nuevo[$k]??'')===''){ http_response_code(400); echo json_encode(['error'=>"Campo obligatorio faltante: $k"]); exit; }
+            }
+            if (empty($variantes)){ http_response_code(400); echo json_encode(['error'=>'Debe agregar al menos 1 variante']); exit; }
+
+            $db->products->insertOne($nuevo);
+            echo json_encode(["message"=>"✅ Producto agregado"]);
+            break;
+
+          /* ===== PUT (editar) ===== */
+          case 'PUT':
+            parse_str($_SERVER["QUERY_STRING"], $params);
+            $id = $params["id"] ?? null;
+            if (!$id) { http_response_code(400); echo json_encode(["error"=>"ID requerido"]); exit; }
+
+            $docEstado = $db->products->findOne(["_id"=>new MongoDB\BSON\ObjectId($id)], ['projection'=>['estado'=>1,'eliminado'=>1]]);
+            if ($docEstado && ((string)($docEstado['estado']??'')==='Eliminado' || ($docEstado['eliminado']??false)===true)){
+              http_response_code(403); echo json_encode(["error"=>"Producto eliminado: no puede editarse"]); exit;
+            }
+
+            $isOverride = !empty($_POST);
+            $data = $isOverride ? $_POST : (json_decode(file_get_contents("php://input"), true) ?? []);
+
+            // imágenes existentes
+            $existing = [];
+            if (isset($data['existingImages'])) {
+              $existing = is_string($data['existingImages']) ? (json_decode($data['existingImages'], true) ?: []) :
+                        (is_array($data['existingImages']) ? $data['existingImages'] : []);
+            }
+
+            // nuevas imágenes
+            $nuevas = [];
+            if ($isOverride && isset($_FILES['formFileMultiple'])) {
+              $uploadDir = __DIR__ . "/../uploads/";
+              if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+              $names = $_FILES['formFileMultiple']['name'];
+              $tmps  = $_FILES['formFileMultiple']['tmp_name'];
+              $errs  = $_FILES['formFileMultiple']['error'];
+              for ($i=0; $i<count($names); $i++) {
+                if ($errs[$i] === UPLOAD_ERR_OK && is_uploaded_file($tmps[$i])) {
+                  $safe = preg_replace('/\s+/', '_', basename($names[$i]));
+                  $fileName = time() . "_$safe";
+                  if (move_uploaded_file($tmps[$i], $uploadDir . $fileName)) $nuevas[] = "uploads/" . $fileName;
+                }
+              }
+            }
+            if (!empty($existing) || !empty($nuevas)) $data['imagenes'] = array_slice(array_merge($existing, $nuevas), 0, 3);
+
+            // Si no vino 'variantes' array, reconstruir desde talle[]/stock[]/peso[]/color[] (igual que en POST)
+            if (!isset($data['variantes']) || !is_array($data['variantes'])) {
+              $norm = function($v){ if ($v===null) return []; if (is_array($v)) return array_values($v); return [$v]; };
+              $talles = $norm($data['talle'] ?? $data['talles'] ?? null);
+              $stocks = $norm($data['stock'] ?? null);
+              $pesos  = $norm($data['peso']  ?? null);
+              $colors = $norm($data['color'] ?? null);
+
+              $variantes = [];
+              $max = max(count($talles), count($stocks), count($pesos), count($colors));
+              for ($i=0; $i<$max; $i++) {
+                $t = $talles[$i] ?? null;
+                if ($t===null || $t==='') continue;
+                $variantes[] = [
+                  'talle'=>$t,
+                  'stock'=> isset($stocks[$i]) ? (int)$stocks[$i] : 0,
+                  'peso' => isset($pesos[$i])  ? (float)$pesos[$i]  : 0.0,
+                  'color'=> $colors[$i] ?? '#000000',
+                ];
+              }
+              if (!empty($variantes)) {
+                $data['variantes'] = $variantes;
+                $data['stock'] = array_sum(array_map(fn($v)=>(int)($v['stock']??0), $variantes));
+              }
+            }
+
+
+            // Derivar slugs/nombres si se cambian ids
+            if (!empty($data['categoriaId'])) {
+              try {
+                $oid = new MongoDB\BSON\ObjectId($data['categoriaId']);
+                if ($doc = $db->categorias->findOne(['_id'=>$oid])) {
+                  $data['categoria']     = $doc['nombre'];
+                  $data['categoriaSlug'] = $doc['slug'];
+                }
+              } catch(Throwable $e){}
+            }
+            if (!empty($data['subcategoriaId'])) {
+              try {
+                $oid = new MongoDB\BSON\ObjectId($data['subcategoriaId']);
+                if ($doc = $db->categorias->findOne(['_id'=>$oid])) {
+                  $data['subcategoria']     = $doc['nombre'];
+                  $data['subcategoriaSlug'] = $doc['slug'];
+                }
+              } catch(Throwable $e){}
+            }
+
+            if (isset($data['estado'])) $data['estado'] = (string)$data['estado'];
+
+            $docActual = $db->products->findOne(["_id" => new MongoDB\BSON\ObjectId($id)]) ?? [];
+
+            // Tope 8 si el cambio mueve a remeras + sub limitada
+            $nuevoCatSlug = $data['categoriaSlug']    ?? ($docActual['categoriaSlug']    ?? null);
+            $nuevoSubSlug = $data['subcategoriaSlug'] ?? ($docActual['subcategoriaSlug'] ?? null);
+
+            $antesCat = $docActual['categoriaSlug']    ?? null;
+            $antesSub = $docActual['subcategoriaSlug'] ?? null;
+
+            $cambiaDeCarrusel = ($nuevoCatSlug !== $antesCat) || ($nuevoSubSlug !== $antesSub);
+
+            if ($cambiaDeCarrusel && $nuevoSubSlug && in_array($nuevoSubSlug, LIMITED_SUBS, true)) {
+              $current = countCarouselItems($db, 'remeras', $nuevoSubSlug);
+              if ($current >= MAX_SUB_ITEMS) {
+                http_response_code(409);
+                echo json_encode([
+                  "error"   => "carrusel_lleno",
+                  "message" => "El carrusel de '".$nuevoSubSlug."' ya tiene el máximo de ".MAX_SUB_ITEMS." productos. Elimina uno para poder agregar otro."
+                ], JSON_UNESCAPED_UNICODE);
+                exit;
+              }
+            }
+
+            $stockTotal = isset($data['stock']) ? (int)$data['stock'] : (int)($docActual['stock'] ?? 0);
+            $estadoCalc = $data['estado'] ?? (string)($docActual['estado'] ?? 'Activo');
+            $publicable = in_array($estadoCalc, ["Activo","Bajo stock"], true) && ($stockTotal > 0);
+
+            unset($data['_id']);
+
+            if (isset($data['newArrival'])) {
+              $data['newArrival'] = filter_var($data['newArrival'], FILTER_VALIDATE_BOOLEAN);
+            }
+            $db->products->updateOne(
+              ["_id" => new MongoDB\BSON\ObjectId($id)],
+              ['$set' => $data]
+            );
+            echo json_encode([
+              "message" => "Producto actualizado",
+              "event" => "producto:actualizado",
+              "productId" => $id // ID del producto afectado
+            ]);
+            break;
+
+        /* ===== DELETE ===== */
+        case 'DELETE':
+          parse_str($_SERVER["QUERY_STRING"], $params);
+          $id = $params["id"] ?? null;
+          if (!$id) { http_response_code(400); echo json_encode(["error"=>"ID requerido"]); exit; }
+
+          $db->products->updateOne(
+            ["_id" => new MongoDB\BSON\ObjectId($id)],
+            ['$set' => [
+              "estado"         => "Eliminado",
+              "eliminado"      => true,
+              "publicable"     => false,
+              "fechaEliminado" => date("c")
+            ]]
+          );
+          echo json_encode([
+            "message" => "Producto eliminado",
+            "event" => "producto:actualizado",
+            "productId" => $id // ID del producto afectado
+          ]);
+
+          break;
+      }
+
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(["error" => "Error en servidor", "detalle" => $e->getMessage()]);
+  http_response_code(500);
+  echo json_encode(["error"=>"Error en servidor","detalle"=>$e->getMessage()]);
 }
