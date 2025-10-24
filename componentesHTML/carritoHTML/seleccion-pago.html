@@ -8,20 +8,11 @@
 
   <h2 id="pago-titulo" class="pago-titulo">Completa tus datos y forma de pago</h2>
 
-  <div class="pago-opciones">
-    <div class="pago-card opcion-pago activo" data-metodo="tarjeta">
-      <i class="fas fa-credit-card"></i>
-      <span>Tarjeta Crédito/Débito</span>
-    </div>
-    <div class="pago-card opcion-pago" data-metodo="mercadopago">
-      <i class="fas fa-wallet"></i>
-      <span>Mercado Pago</span>
-    </div>
-  </div>
-
   <div class="pago-contenido">
-    <!-- Contenido tarjeta -->
-    <div class="contenido-tarjeta">
+    <!-- Contenido Mercado Pago -->
+    <div class="contenido-mercadopago">
+      <p>Serás redirigido a Mercado Pago para completar tu compra de forma segura.</p>
+      
       <form id="payment-form" autocomplete="on">
         <label for="nombre-cliente">Nombre Completo</label>
         <input id="nombre-cliente" type="text" required>
@@ -31,37 +22,12 @@
 
         <hr>
 
-        <label for="titular">Nombre del titular</label>
-        <input id="titular" type="text" required>
-
-        <label for="numero">Número de tarjeta</label>
-        <input id="numero" type="text" maxlength="16" required>
-
-        <label for="vencimiento">Fecha de caducidad</label>
-        <input id="vencimiento" type="text" maxlength="5" required>
-
-        <label for="cvv">Código de seguridad</label>
-        <input id="cvv" type="text" maxlength="4" required>
-
-        <label for="cuotas">Cuotas</label>
-        <select id="cuotas">
-          <option value="1">1 pago</option>
-          <option value="3">3 cuotas</option>
-          <option value="6">6 cuotas</option>
-        </select>
-
-        <div id="detalle-cuotas" class="detalle-cuotas"></div>
         <div id="resumen-envio" class="resumen-envio mb-3"></div>
 
-        <button type="submit" class="btn-pagar finalizar-compra">Finalizar Compra</button>
+        <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
+        
+        <button type="submit" class="btn-pagar pagar-mp">Pagar con Mercado Pago</button>
       </form>
-    </div>
-
-    <!-- Contenido Mercado Pago -->
-    <div class="contenido-mercadopago" style="display:none;">
-      <p>Serás redirigido a Mercado Pago para completar tu compra de forma segura.</p>
-      <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
-      <button type="button" class="btn-pagar finalizar-compra">Pagar con Mercado Pago</button>
     </div>
   </div>
 </div>

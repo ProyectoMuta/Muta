@@ -1,0 +1,31 @@
+/* ==== Hero full-height, cubre todo el alto visible ==== */
+:root{
+  /* Ajustá estos valores si tu barra fija mide distinto */
+  --promo-bar-h: 28px;   /* altura de la barrita superior si existe */
+  --navbar-h:   84px;    /* altura del header/navbar fijo */
+}
+
+/* contenedor hero ocupa el alto de la ventana menos el header fijo */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 75vh;              /* Ocupa 75% del alto de la ventana (ajustá a gusto) */
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;         /* Asegura que se recorte proporcionalmente sin deformar */
+  object-position: center;   /* Centra la imagen (para que no se vea cortada arriba o abajo) */
+  display: block;
+}
+
+/* Opcional: en móviles no ocupar tanto alto (mejor UX) */
+@media (max-width: 768px){
+  .hero{
+    min-height: calc(75vh - (var(--promo-bar-h) + var(--navbar-h)));
+  }
+}

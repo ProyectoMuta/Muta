@@ -1,3 +1,4 @@
+<!-- navbar.html-->
 <header class="fijar">
   <!-- Barra promocional -->
   <div class="promo-bar">
@@ -16,23 +17,13 @@
 
     <!-- Menú principal -->
     <div class="nav-links">
-      <!-- Categorías -->
+     <!-- Categorías -->
       <div class="nav-item">
         <button class="nav-btn" data-menu="categorias">CATEGORÍAS</button>
         <div class="dropdown" id="categorias">
-          <ul>
-            <li><a href="#">BERMUDAS</a></li>
-            <li><a href="#">BUZOS</a></li>
-            <li><a href="#">CAMISAS</a></li>
-            <li><a href="#">CAMPERAS</a></li>
-            <li><a href="#">PANTALONES</a></li>
-            <li><a href="remeras.html">REMERAS</a></li>
-            <li><a href="#">VESTIDOS</a></li>
-            <li><a href="#">ACCESORIOS</a></li>
-          </ul>
+          <ul id="nav-cat-list"><!-- JS inyecta acá --></ul>
         </div>
       </div>
-
       <!-- Novedades -->
       <div class="nav-item">
         <button class="nav-btn" data-menu="novedades">NOVEDADES</button>
@@ -92,7 +83,8 @@
         </button>
 
         <!-- Dropdown del carrito -->
-        <div class="cart-dropdown">
+        <!--  <div class="cart-dropdown"> -->
+          <div class="cart-dropdown">
           <!-- Estado vacío inicial -->
           <div class="empty-cart">
             <p>Tu carrito está vacío</p>
@@ -113,6 +105,5 @@
     </div>
   </nav>
 </header>
-
 
 

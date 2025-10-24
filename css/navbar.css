@@ -11,8 +11,6 @@ html, body { width: 100%; max-width: 100%; overflow-x: hidden; font-family: 'NAT
   width: 100%;
   z-index: 1000;
 }
-
-
 /* PROMO BAR */
 .promo-bar { display: none; }
 .circle {
@@ -53,49 +51,9 @@ body { padding-top: 60px; }
 .logo:hover {
   transform: scale(1.1);
 }
-/* 🔥 === ESTILOS DEL BUSCADOR RESPONSIVE (VERSIÓN REFORZADA) === */
-
-/* Por defecto (móvil): el buscador está oculto y posicionado para desplegarse */
-.search-bar {
-  display: flex !important;
-  position: absolute !important;
-  top: 100% !important; /* Justo debajo de la navbar */
-  left: 0 !important;
-  width: 100% !important;
-  background-color: #fff !important;
-  padding: 10px 15px !important;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.1) !important;
-  
-  /* Lógica de ocultar/mostrar */
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-20px);
-  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
-  z-index: 1000;
-}
-
-/* Regla reforzada para cuando está activo */
-.search-bar.active {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0) !important;
-}
-
-.search-bar input {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
-/* El ícono de la lupa para abrir */
-.icono_lupa {
-    display: block; /* Visible en móvil */
-}
 
 /* ELEMENTOS OCULTOS EN MÓVIL */
-.nav-links { display: none; }
-
+.search-bar, .nav-links { display: none; }
 
 /* ICONS */
 .icons { display:flex; align-items:center; gap:10px; }
@@ -124,54 +82,47 @@ body { padding-top: 60px; }
 /* DROPDOWNS dentro del menú móvil */
 .nav-links .dropdown { position: static; display:none; background:#f8f8f8; padding:0; width:100%; border-top:1px solid #ddd; }
 .nav-links .dropdown.open { display:block; }
+/* ============================================
+   DROPDOWN DE RESULTADOS
+   ============================================ */
 
-/* === DROPDOWN DE RESULTADOS === */
 .search-results {
-  display: none; position: absolute; top: calc(100% + 5px); left: 0; right: 0;
-  background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 12px;
-  max-height: 450px; overflow-y: auto; z-index: 1001;
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  max-height: 450px;
+  overflow-y: auto;
+  z-index: 1001;
 }
-.search-results.active { display: block; }
+
+.search-results.active {
+  display: block;
+}
+
+/* Item de resultado */
 .search-result-item {
-  display: flex; align-items: center; gap: 15px; padding: 12px 15px; cursor: pointer;
-  transition: background 0.3s; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+  border-bottom: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: inherit;
 }
-.search-result-item:hover { background: #f8f8f8; }
 
-/* === DESKTOP >=992px === */
-@media (min-width: 992px) {
-  .promo-bar {
-    display:flex; justify-content:center; align-items:center;
-    background:#222; color:#fff; gap:12px; padding:4px 8px; font-size:12px;
-  }
-  .main-navbar { top:28px; height:70px; padding: 0 36px; justify-content:flex-start; }
-  body { padding-top: calc(28px + 70px); }
-  .logo { font-size:32px; margin-right:36px; -webkit-text-stroke:1.2px #333; }
+.search-result-item:hover {
+  background: #f8f8f8;
+}
 
-  .nav-links { display:flex; gap:18px; align-items:center; }
-  .menu-toggle, .icono_lupa { display:none; } /* Ocultar hamburguesa Y la lupa de móvil */
-
-  /* RESTAURAR ESTILOS DEL BUSCADOR PARA DESKTOP */
-  .search-bar {
-    position: static !important; /* Vuelve al flujo normal */
-    flex-grow: 1;
-    justify-content: center;
-    padding: 0 40px !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    /* Restaurar visibilidad */
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-  }
-  
-  .search-bar input {
-    max-width: 380px;
-    width: 100%;
-    padding: 7px 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-  }
+.search-result-item:last-child {
+  border-bottom: none;
 }
 
 /* Imagen del producto */
@@ -550,6 +501,23 @@ body { padding-top: 60px; }
 .cart-dropdown .btn-ir-comprar:hover {
   background-color: #333; /* Hover más claro */
 }
+/* Botón "Ver mi carrito" */
+.cart-dropdown .view-cart-btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background-color: #000; /* Color principal MUTA */
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.cart-dropdown .view-cart-btn:hover {
+  background-color: #333; /* Hover más claro */
+}
+
 
 /* Animación de aparición */
 @keyframes fadeIn {
@@ -683,6 +651,22 @@ body { padding-top: 60px; }
 .btn-ir-comprar:hover {
   background: #333;
 }
+
+.view-cart-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: black;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.view-cart-btn:hover {
+  background: #333;
+}
+
 
 /* === Ajustes del botón eliminar con ícono === */
 .remove-item {

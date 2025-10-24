@@ -1,153 +1,205 @@
 document.addEventListener('DOMContentLoaded', () => {
-    //subnav
- document.getElementById("nuevoProductoBtn").addEventListener("click", function () {
-    window.location.href = "nuevo_producto_mantenimiento.html"; // Cambiá por tu ruta real
-  });
 
-  document.getElementById("categoriaProductoBtn").addEventListener("click", function () {
-    window.location.href = "categoria_mantenimiento.html"; // Vista de categorías
-  });
+  if (!document.getElementById('categories-list')) {
+    throw new Error('skip-cats-script'); // opcional, para cortar ejecución
+  }
 
-  document.getElementById("inventarioProductoBtn").addEventListener("click", function () {
-    window.location.href = "gestion_producto_mantenimiento.html"; // Vista de inventario
-  });
+  // subnav
+  document.getElementById("nuevoProductoBtn")?.addEventListener("click", () => location.href = "nuevo_producto_mantenimiento.html");
+  document.getElementById("categoriaProductoBtn")?.addEventListener("click", () => location.href = "categoria_mantenimiento.html");
+  document.getElementById("inventarioProductoBtn")?.addEventListener("click", () => location.href = "gestion_producto_mantenimiento.html");
 
+  const catSel  = document.getElementById('category-select');
+  const subSel  = document.getElementById('subcategory-select');
+  const addBtn  = document.getElementById('add-category-btn');
+  const listWrap= document.getElementById('categories-list');
+  const saveBtn = document.getElementById('save-categories-btn'); // puede no existir
 
-    const categoryNameInput = document.getElementById('category-name-input');
-    const addCategoryBtn = document.getElementById('add-category-btn');
-    const categoriesListDiv = document.getElementById('categories-list');
-    const saveCategoriesBtn = document.getElementById('save-categories-btn');
-    const parentCategorySelect = document.getElementById('parent-category-select');
+  // ====== PREDEFINIDAS ======
+  const PRESET_CATEGORIES = ['Remeras','Pantalones','Camperas','Camisas','Buzos','Bermudas','Vestidos','Accesorios'];
+  const PRESET_SUBCATS    = ['CLASICAS','NOVEDADES','ESTILO MUTA','NUEVOS INGRESOS'];
 
-    // Array para almacenar nuestras categorías
-    let categories = [];
+  // Estado que viaja al backend
+  // => por defecto TODO deshabilitado
+  let state = { categories: [] }; // [{name,slug,enabled:false, subcats:[{name,enabled:false}]}]
 
-    // Función para cargar categorías desde localStorage
-    function loadCategories() {
-        const storedCategories = localStorage.getItem('categories');
-        if (storedCategories) {
-            categories = JSON.parse(storedCategories);
-            renderCategories();
-            updateParentCategorySelect();
+  // ====== Helpers ======
+  const slugify = (s)=> String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                        .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+
+  const el = (t,c,h)=>{ const n=document.createElement(t); if(c) n.className=c; if(h!=null) n.innerHTML=h; return n; };
+
+  function ensureDefaults(){
+    if (!state.categories?.length) {
+      state.categories = PRESET_CATEGORIES.map(n=>({
+        name:n, slug:slugify(n), enabled:false,
+        subcats: PRESET_SUBCATS.map(s=>({name:s, enabled:false}))
+      }));
+    } else {
+      // incorporar faltantes y alinear subcats, todo deshabilitado por defecto
+      const map = new Map(state.categories.map(c=>[c.slug,c]));
+      PRESET_CATEGORIES.forEach(n=>{
+        const slug = slugify(n);
+        if (!map.has(slug)) {
+          state.categories.push({name:n, slug, enabled:false, subcats: PRESET_SUBCATS.map(s=>({name:s,enabled:false}))});
         }
+      });
+      state.categories.forEach(c=>{
+        const m = new Map((c.subcats||[]).map(s=>[String(s.name||'').toUpperCase(), !!s.enabled]));
+        c.subcats = PRESET_SUBCATS.map(s=>({name:s, enabled: !!m.get(s)}));
+        if (typeof c.enabled !== 'boolean') c.enabled = false;
+      });
     }
+  }
 
-    // Función para guardar categorías en localStorage
-    function saveCategories() {
-        localStorage.setItem('categories', JSON.stringify(categories));
-        alert('¡Categorías guardadas exitosamente!');
-    }
-
-    // Función para renderizar la lista de categorías y subcategorías
-    function renderCategories() {
-        categoriesListDiv.innerHTML = ''; // Limpiar la lista actual
-
-        function createCategoryElement(category, isSub = false) {
-            const categoryItem = document.createElement('div');
-            categoryItem.classList.add('category-item');
-            if (isSub) {
-                categoryItem.classList.add('subcategory');
-            }
-
-            const categoryName = document.createElement('span');
-            categoryName.classList.add('name');
-            categoryName.textContent = category.name;
-            categoryItem.appendChild(categoryName);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('icon-btn', 'delete-btn');
-            deleteButton.innerHTML = '&times;'; // Símbolo de "x"
-            deleteButton.addEventListener('click', () => deleteCategory(category.id));
-            categoryItem.appendChild(deleteButton);
-
-            return categoryItem;
-        }
-
-        categories.forEach(category => {
-            // Renderizar la categoría principal
-            categoriesListDiv.appendChild(createCategoryElement(category));
-
-            // Renderizar sus subcategorías si las tiene
-            if (category.subcategories && category.subcategories.length > 0) {
-                category.subcategories.forEach(sub => {
-                    categoriesListDiv.appendChild(createCategoryElement(sub, true));
-                });
-            }
-        });
-
-        updateParentCategorySelect(); // Actualizar el select cada vez que se renderizan
-    }
-
-    // Función para actualizar las opciones del select de categoría padre
-    function updateParentCategorySelect() {
-        parentCategorySelect.innerHTML = '<option value="">Selecciona categoría padre (opcional)</option>';
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            parentCategorySelect.appendChild(option);
-        });
-    }
-
-    // Función para agregar una nueva categoría o subcategoría
-    addCategoryBtn.addEventListener('click', () => {
-        const categoryName = categoryNameInput.value.trim();
-        const parentCategoryId = parentCategorySelect.value;
-
-        if (categoryName === '') {
-            alert('Por favor, ingresa un nombre para la categoría.');
-            return;
-        }
-
-        const newCategory = {
-            id: Date.now().toString(), // ID único basado en el timestamp
-            name: categoryName,
-            subcategories: []
-        };
-
-        if (parentCategoryId) {
-            // Es una subcategoría
-            const parentCategory = categories.find(cat => cat.id === parentCategoryId);
-            if (parentCategory) {
-                parentCategory.subcategories.push(newCategory);
-            } else {
-                alert('Categoría padre no encontrada.');
-                return;
-            }
-        } else {
-            // Es una categoría principal
-            categories.push(newCategory);
-        }
-
-        categoryNameInput.value = ''; // Limpiar el input
-        parentCategorySelect.value = ''; // Resetear el select
-        renderCategories(); // Volver a renderizar la lista
+  function renderCatSelect(){
+    if (!catSel) return; // ADDED: guard
+    catSel.innerHTML = '<option value="">Selecciona categoría</option>';
+    state.categories.forEach(c=>{
+      const o = el('option','',c.name); o.value = c.slug; catSel.appendChild(o);
     });
+  }
 
-    // Función para eliminar una categoría o subcategoría
-    function deleteCategory(idToDelete) {
-        // Confirmar la eliminación
-        if (!confirm('¿Estás seguro de que quieres eliminar esta categoría/subcategoría?')) {
-            return;
-        }
+  function renderSubcatSelect(slug){
+    if (!subSel) return; // ADDED: guard
+    subSel.innerHTML = '<option value="">Selecciona subcategoría</option>';
+    const cat = state.categories.find(c=>c.slug===slug);
+    (cat?.subcats || PRESET_SUBCATS.map(n=>({name:n,enabled:false}))).forEach(s=>{
+      const o = el('option','',s.name); o.value = s.name; subSel.appendChild(o);
+    });
+  }
 
-        // Primero intenta eliminar como categoría principal
-        const initialLength = categories.length;
-        categories = categories.filter(category => category.id !== idToDelete);
+  function renderList(){
+    listWrap.innerHTML = '';
+    state.categories
+      .sort((a,b)=>a.name.localeCompare(b.name))
+      .forEach((cat, iCat) => {
+        const card = el('div','cat-card'); // fondo gris claro
+        const head = el('div','cat-head');
+        head.appendChild(el('label','cat-title',`<span>${cat.name.toUpperCase()}</span>`));
+        const sw = el('label','switch');
+        sw.innerHTML = `
+          <input type="checkbox" ${cat.enabled?'checked':''} data-kind="cat" data-idx="${iCat}">
+          <span class="slider"></span>`;
+        head.appendChild(sw);
+        card.appendChild(head);
 
-        // Si no se eliminó como principal, busca en subcategorías
-        if (categories.length === initialLength) {
-            categories.forEach(category => {
-                category.subcategories = category.subcategories.filter(sub => sub.id !== idToDelete);
-            });
-        }
-        
-        renderCategories(); // Volver a renderizar la lista
+        const body = el('div','sub-list'); // fondo blanco
+        (cat.subcats||[]).forEach((s,iSub)=>{
+          const row = el('div','sub-row');
+          row.innerHTML = `
+            <span class="sub-name">${s.name}</span>
+            <label class="switch">
+              <input type="checkbox" ${s.enabled?'checked':''} data-kind="sub" data-idx="${iCat}" data-sub="${iSub}">
+              <span class="slider"></span>
+            </label>`;
+          body.appendChild(row);
+        });
+        card.appendChild(body);
+        listWrap.appendChild(card);
+      });
+  }
+
+  // A. Guardar en backend
+  async function saveToBackend(){
+    const res = await fetch('backend/productController.php?action=catsSave', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    if(!res.ok) throw new Error('Error al guardar en el servidor: ' + await res.text());
+    return res;
+  }
+
+  // B. Cargar del backend
+  async function loadFromBackend(){
+    try{
+      const res = await fetch('backend/productController.php?action=cats', {cache:'no-store'});
+      if(!res.ok) throw new Error('No se cargaron las categorías desde el servidor');
+      const json = await res.json();
+      state = json && Array.isArray(json.categories) ? json : {categories:[]};
+    }catch(e){
+      console.error('Error al cargar categorías. Usando valores predeterminados. Verifica el PHP.', e);
+      state = { categories: [] }; // Fallback
     }
 
-    // Evento para guardar todas las categorías
-    saveCategoriesBtn.addEventListener('click', saveCategories);
+    ensureDefaults();
+    renderCatSelect();
+    renderSubcatSelect(catSel?.value || '');
+    renderList();
+  }
 
-    // Cargar las categorías al iniciar la página
-    loadCategories();
+  // C. Toggles (delegación)
+  function attachToggles(){
+    listWrap.addEventListener('change', async (e)=>{
+      const t = e.target;
+      if(t.tagName!=='INPUT' || t.type!=='checkbox') return;
+      const kind = t.dataset.kind;
+      const iCat = +t.dataset.idx;
+
+      if(kind==='cat'){
+        const enabled = t.checked;
+        state.categories[iCat].enabled = enabled;
+        // Si deshabilito la categoría, deshabilito todas sus subcategorías
+        if (!enabled) {
+          state.categories[iCat].subcats = state.categories[iCat].subcats.map(s=>({ ...s, enabled:false }));
+        }
+      }else if(kind==='sub'){
+        const iSub = +t.dataset.sub;
+        state.categories[iCat].subcats[iSub].enabled = t.checked;
+        // Si activo una subcategoría, activo su categoría
+        if (t.checked) {
+          state.categories[iCat].enabled = true;
+        }
+      }
+
+      try{
+        await saveToBackend();
+        renderList(); // refrescar switches visibles
+      }catch(e){
+        console.error('Error guardando categorías:', e);
+        alert('Hubo un error al guardar las categorías.');
+      }
+    });
+  }
+
+  // (+) habilita SIEMPRE la categoría y SOLO la subcategoría elegida
+  addBtn?.addEventListener('click', ()=>{
+    const catSlug = catSel?.value || '';
+    if (!catSlug){ alert('Seleccioná una categoría.'); return; }
+    const subName = subSel?.value || ''; // opcional
+
+    const cat = state.categories.find(c=>c.slug===catSlug);
+    if (!cat){ alert('Categoría inválida.'); return; }
+
+    // habilitar categoría
+    cat.enabled = true;
+
+    // habilitar solo la subcategoría seleccionada (si hay)
+    if (subName){
+      cat.subcats = cat.subcats.map(s => ({ ...s, enabled: s.name === subName ? true : s.enabled }));
+    }
+
+    renderList();
+    saveToBackend().catch(()=>{});
+  });
+
+  // Select dependiente
+  catSel?.addEventListener('change', ()=> renderSubcatSelect(catSel.value));
+
+  // Guardado manual (si existe el botón en tu HTML)
+  saveBtn?.addEventListener('click', async ()=>{
+    try{
+      const r = await saveToBackend();
+      if(!r.ok) throw new Error(await r.text());
+      alert('✅ Categorías actualizadas');
+    }catch(e){
+      console.error(e);
+      alert('Error guardando categorías');
+    }
+  });
+
+  // INIT
+  loadFromBackend();
+  attachToggles();
 });

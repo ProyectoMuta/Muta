@@ -64,3 +64,99 @@
   display:grid; place-items:center;
 }
 .categoria-carousel .card .btn-like:hover{ transform:translateY(-1px); }
+/* --- NUEVOS INGRESOS (ajuste visual nombre + precio) --- */
+.card .info {
+  padding: 10px 15px;      /* agrega espacio interno */
+  text-align: left;        /* mantiene alineación, o cambia a center si prefieres */
+}
+
+.card .info h4 {
+  margin: 5px 0 3px 0;     /* ajusta separación vertical */
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.card .info p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+.card.is-out .tag-out {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: bold;
+  padding: .4rem .8rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 1.1rem;
+}
+/* --- Tarjeta sin stock --- */
+.card.is-out{
+  position: relative;
+  pointer-events: auto;   /* none si querés bloquear clicks */
+  filter: none;           /*  anula el filtro global */
+  opacity: 1;             /* que no se apague el texto */
+}
+
+.card.is-out img{
+  filter: grayscale(100%) brightness(0.88);
+}
+/* Mascara suave y borde para que se note el estado */
+.card.is-out::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: rgba(255,255,255,.10); /* velo muy suave */
+  border-radius:12px;
+  z-index:1;                    
+}
+
+/* Cinta/badge "SIN STOCK" centrada y roja */
+.card .oos-badge{
+  position: absolute;
+  top: 38%;                /* centrado visual sobre la imagen */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: transparent; /* sin pastilla */
+  color: #b91c1c;          /* rojo */
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: clamp(14px, 2.6vw, 22px);
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6); /* contraste leve sobre gris */
+  z-index: 5;              /* por encima del velo */
+  pointer-events: none;
+  white-space: nowrap;     /* evita el salto “SIN / STOCK” */
+  text-shadow: none;       /* evita bordes grisáceos */
+  mix-blend-mode: normal;  /* no se “ensucia” con el velo */
+}
+
+/* Corazón deshabilitado en tarjetas sin stock */
+.card .btn-like.disabled,
+.card .btn-like[disabled] {
+  pointer-events: none !important;
+  opacity: .35;
+  filter: grayscale(1);
+}
+/* Ocultar bloques hasta que el usuario pida ver más */
+.is-hidden { display: none !important; }
+
+/* Botón VER MÁS centrado, estilo de tu captura */
+.btn-ver-mas{
+  display:block;
+  margin:24px auto 8px;
+  background:#000;
+  color:#fff;
+  border:none;
+  padding:12px 22px;
+  border-radius:2px;
+  font-weight:700;
+  letter-spacing:.04em;
+  cursor:pointer;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.btn-ver-mas i{ margin-right:10px; vertical-align:-1px; }
+.btn-ver-mas:hover{ opacity:.9; transform:translateY(-1px); }

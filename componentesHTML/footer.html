@@ -7,19 +7,14 @@
       <p>Somos una marca que te quiere acompañar en tu evolución y cada una de tus mutaciones</p>
     </div>
 
-    <div class="footer-Categorias">
+    <!-- CATEGORÍAS dinámicas -->
+    <div class="footer-categorias">
       <h4>CATEGORÍAS</h4>
-        <ul>
-            <li><a href="#">Bermudas</a></li>
-            <li><a href="#">Buzos</a></li>
-            <li><a href="#">Camisas</a></li>
-            <li><a href="#">Camperas</a></li>
-            <li><a href="#">Pantalones</a></li>
-            <li><a href="remeras.html">Remeras</a></li>
-            <li><a href="#">Vestidos</a></li>
-            <li><a href="#">Accesorios</a></li>
-        </ul>
+      <ul id="footer-cat-list">
+        <!-- JS inyecta las categorías habilitadas -->
+      </ul>
     </div>
+
 
     <div class="footer-AYUDA">
       <h4>AYUDA</h4>
@@ -55,3 +50,37 @@
   </div>
 
 </footer>
+
+<script>
+(async function loadFooterCats(){
+  try{
+    const res = await fetch('backend/productController.php?action=cats', {cache:'no-store'});
+    const data = await res.json();
+    const cats = Array.isArray(data?.categories) ? data.categories : [];
+    const ul = document.getElementById('footer-cat-list');
+    if(!ul) return;
+
+    const pathFor = (slug)=>{
+      switch(slug){
+        case 'remeras':     return 'remeras.html';
+        case 'bermudas':    return 'bermudas.html';
+        case 'buzos':       return 'buzos.html';
+        case 'camisas':     return 'camisas.html';
+        case 'camperas':    return 'camperas.html';
+        case 'pantalones':  return 'pantalones.html';
+        case 'vestidos':    return 'vestidos.html';
+        case 'accesorios':  return 'accesorios.html';
+        default:            return '#';
+      }
+    };
+
+    ul.innerHTML = cats
+      .filter(c => c.enabled)
+      .sort((a,b)=>a.name.localeCompare(b.name))
+      .map(c => `<li><a href="${pathFor(c.slug)}">${c.name}</a></li>`)
+      .join('');
+  }catch(e){
+    console.error('Footer cats error:', e);
+  }
+})();
+</script>
