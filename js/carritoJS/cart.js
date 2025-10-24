@@ -59,9 +59,30 @@ function setupCart() {
     miniCartDropdown: null // .cart-dropdown
   };
 
-  // Guardar carrito en localStorage
-  function saveCart() {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  // Guardar carrito en localStorage si no hay usuario, o en DB si hay usuario
+  async function saveCart() {
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      try {
+        const res = await fetch("backend/userController.php?action=updateCart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, carrito: cart })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          localStorage.setItem("mutaCart", JSON.stringify(cart)); // 🔑 actualizar localStorage solo cuando DB confirma
+          document.dispatchEvent(new CustomEvent("cart:updated"));
+        } else {
+          console.error("Error guardando carrito:", data);
+        }
+      } catch (err) {
+        console.error("Error guardando carrito en DB:", err);
+      }
+    } else {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      document.dispatchEvent(new CustomEvent("cart:updated"));
+    }
   }
 
   // Formatear número
@@ -128,7 +149,7 @@ function setupCart() {
 
     dropdown.innerHTML = html;
 
-    // 👇 Guardar subtotal para usar en checkout
+    //Guardar subtotal para usar en checkout
     localStorage.setItem("subtotal", total);
 
     if (countEl) {
@@ -183,7 +204,7 @@ function setupCart() {
       totalEl.textContent = 0;
       if (carouselTrack) carouselTrack.innerHTML = "";
 
-      // 👇 Deshabilitar botón de checkout si no hay productos
+      //Deshabilitar botón de checkout si no hay productos
       const checkoutBtn = document.querySelector(".checkout-btn");
       if (checkoutBtn) {
         checkoutBtn.disabled = true;
@@ -234,7 +255,7 @@ function setupCart() {
 
     localStorage.setItem("subtotal", total);
 
-    // 👇 Habilitar botón de checkout si hay productos
+    //Habilitar botón de checkout si hay productos
     const checkoutBtn = document.querySelector(".checkout-btn");
     if (checkoutBtn) {
       checkoutBtn.disabled = false;
@@ -273,28 +294,45 @@ function setupCart() {
       return Number(n||0).toLocaleString('es-AR', { style:'currency', currency:'ARS', maximumFractionDigits:0 });
     }
   }
-
   // ================================
   // Eventos globales
   // ================================
-  document.body.addEventListener("click", (e) => {
+
+  // Refrescar UI de carrito cuando se dispare cart:updated
+  document.addEventListener("cart:updated", () => {
+    // Releer el carrito desde localStorage (ya sincronizado con DB en login)
+    try {
+      if (localStorage.getItem("userId")) {
+        // ya se sincronizó desde DB en login
+        cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+      } else {
+        cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      }
+    } catch {
+      cart = [];
+    }
+    renderMiniCart();
+    renderFixedCart();
+  });
+
+  document.body.addEventListener("click", async (e) => {
     if (e.target.classList.contains("remove-item") || e.target.closest(".remove-item")) {
       const btn = e.target.closest(".remove-item");
       const index = parseInt(btn.dataset.index, 10);
       cart.splice(index, 1);
-      saveCart();
+      await saveCart();
       renderMiniCart();
       renderFixedCart();
     }
   });
 
-  document.body.addEventListener("change", (e) => {
+  document.body.addEventListener("change", async (e) => {
     if (e.target.classList.contains("update-qty")) {
       const index = parseInt(e.target.dataset.index, 10);
       const nueva = parseInt(e.target.value, 10);
       if (nueva > 0) {
         cart[index].quantity = nueva;
-        saveCart();
+        await saveCart();
         renderMiniCart();
         renderFixedCart();
       } else {
@@ -306,20 +344,41 @@ function setupCart() {
   // ================================
   // API pública para agregar productos
   // ================================
+<<<<<<< HEAD
   window.addToCart = (id, name, price, img, size, color, qty = 1) => {
     const existing = cart.find(i => i.id === id && i.size === size && i.color === color);
+=======
+  window.addToCart = async (name, price, img, size, color, qty = 1) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      // Mostrar modal de login
+      const modalLogin = document.getElementById("acceso-usuario-container");
+      if (modalLogin) modalLogin.style.display = "flex";
+      return false; //indicar que NO se agregó
+    }
+
+    const existing = cart.find(i => i.name === name && i.size === size && i.color === color);
+>>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
     if (existing) {
       existing.quantity += qty;
     } else {
       cart.push({ id, name, price, img, size, color, quantity: qty });
     }
-    saveCart();
+    await saveCart();
     renderMiniCart();
     renderFixedCart();
+    return true; //indicar que sí se agregó
   };
+<<<<<<< HEAD
 // ================================
 // Página de producto
 // ================================
+=======
+
+  // ================================
+  // Página de producto
+  // ================================
+>>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
   function wireProductPage() {
     if (document.documentElement.dataset.dynamicProduct === '1') return;
     const btn = document.querySelector(".btn-carrito");
@@ -364,7 +423,7 @@ function setupCart() {
     }
 
     // Botón agregar al carrito
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const cantidad = parseInt((qtyInput && qtyInput.value) || "1", 10);
       const nombre = document.querySelector(".info-producto h1")?.textContent.trim() || "Producto";
       const precioTexto = document.querySelector(".precio")?.textContent || "$0";
@@ -403,6 +462,7 @@ function setupCart() {
       if (!valido) return;
 
       // Agregar al carrito
+<<<<<<< HEAD
       const id = document.querySelector('.info-producto')?.dataset.productId 
            || new URL(location.href).searchParams.get('id') 
            || nombre; // último fallback
@@ -418,6 +478,12 @@ function setupCart() {
           );
       // Mostrar cartel de éxito
       if (successMsg) {
+=======
+      const agregado = await addToCart(nombre, precio, img, selectedTalle, selectedColor, cantidad);
+
+      // Mostrar cartel de éxito SOLO si realmente se agregó
+      if (agregado && successMsg) {
+>>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
         successMsg.textContent = "Agregado con éxito";
         successMsg.style.display = "block";
 
@@ -429,6 +495,7 @@ function setupCart() {
   }
 
   // ================================
+<<<<<<< HEAD
   // Integración: Selección de envíos
   // ================================
   document.addEventListener("componente:cargado", (e) => {
@@ -476,6 +543,8 @@ function setupCart() {
   });
 
   // ================================
+=======
+>>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
   // Inicialización
   // ================================
   onDOMReady(async () => {
@@ -498,7 +567,11 @@ function setupCart() {
       // Render inicial
       renderMiniCart();
       renderFixedCart();
+<<<<<<< HEAD
       await validateCartItems();
+=======
+
+>>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
     } catch (err) {
       wireProductPage(); // fallback
     }

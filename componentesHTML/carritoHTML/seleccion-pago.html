@@ -1,70 +1,33 @@
 <div class="pago-modal">
-  <div class="pago-header">
+  <div class="envio-header">
     <button class="btn-back volver-envios" type="button" aria-label="Volver a selección de envíos">
       <i class="fas fa-arrow-left"></i>
     </button>
+    <button class="btn-close cerrar-modal" type="button" aria-label="Cerrar checkout"></button>
   </div>
-
-  <div class="checkout-pasos">
-      </div>
 
   <h2 id="pago-titulo" class="pago-titulo">Completa tus datos y forma de pago</h2>
 
-  <div class="pago-opciones">
-    <div class="pago-card opcion-pago activo" data-metodo="tarjeta">
-      <i class="fas fa-credit-card"></i>
-      <span>Tarjeta Crédito/Débito</span>
-    </div>
-    <div class="pago-card opcion-pago" data-metodo="mercadopago">
-      <i class="fas fa-wallet"></i>
-      <span>Mercado Pago</span>
-    </div>
-  </div>
-
   <div class="pago-contenido">
-    <div class="contenido-tarjeta">
+    <!-- Contenido Mercado Pago -->
+    <div class="contenido-mercadopago">
+      <p>Serás redirigido a Mercado Pago para completar tu compra de forma segura.</p>
+      
       <form id="payment-form" autocomplete="on">
-        
         <label for="nombre-cliente">Nombre Completo</label>
-        <input id="nombre-cliente" type="text" placeholder="Tu nombre y apellido" required autocomplete="name">
+        <input id="nombre-cliente" type="text" required>
 
         <label for="email-cliente">Email de Contacto</label>
-        <input id="email-cliente" type="email" placeholder="Aquí recibirás la confirmación" required autocomplete="email">
+        <input id="email-cliente" type="email" required>
+
+        <hr>
+
+        <div id="resumen-envio" class="resumen-envio mb-3"></div>
+
+        <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
         
-        <hr style="margin: 20px 0;">
-        
-        <label for="titular">Nombre del titular</label>
-        <input id="titular" type="text" placeholder="Tal como aparece en la tarjeta" required autocomplete="cc-name">
-
-        <label for="numero">Número de tarjeta</label>
-        <input id="numero" type="text" inputmode="numeric" maxlength="16" placeholder="•••• •••• •••• ••••" required autocomplete="cc-number">
-
-        <label for="vencimiento">Fecha de caducidad</label>
-        <input id="vencimiento" type="text" inputmode="numeric" maxlength="5" placeholder="MM/AA" required autocomplete="cc-exp">
-
-        <label for="cvv">Código de seguridad</label>
-        <input id="cvv" type="text" inputmode="numeric" maxlength="4" placeholder="CVV" required autocomplete="cc-csc">
-      <label for="cuotas">Cuotas</label>
-        <select id="cuotas">
-          <option value="1">1 pago</option>
-          <option value="3">3 cuotas</option>
-          <option value="6">6 cuotas</option>
-        </select>
-
-        <div id="detalle-cuotas" class="detalle-cuotas"></div>
-
-      
-        <button type="submit" class="btn-pagar finalizar-compra">Finalizar Compra</button>
-        </form>
-    </div>
-    </div>
-</div>
-    </div>
-
-    <div class="contenido-mercadopago" style="display:none;">
-      <p>Serás redirigido a Mercado Pago para completar tu compra de forma segura.</p>
-      <div class="pago-total">Total a pagar: $<span class="total-pago"></span></div>
-      <button type="button" class="btn-pagar finalizar-compra">Pagar con Mercado Pago</button>
+        <button type="submit" class="btn-pagar pagar-mp">Pagar con Mercado Pago</button>
+      </form>
     </div>
   </div>
 </div>

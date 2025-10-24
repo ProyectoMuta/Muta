@@ -188,72 +188,69 @@
       $cant.value = n;
     });
 
-    // Agregar al carrito con cartelitos de validación
-    const btnCart = document.getElementById('btnAgregarCarrito');
-    if (btnCart) {
-      btnCart.onclick = (e) => {
-        e.preventDefault();
+    
+  // Agregar al carrito con cartelitos de validación
+  const btnCart = document.getElementById('btnAgregarCarrito');
+  if (btnCart && typeof window.addToCart === 'function') {
+    btnCart.onclick = async (e) => {
+      e.preventDefault();
+      // Reset mensajes
+      if ($errColor) $errColor.style.display = 'none';
+      if ($errTalle) $errTalle.style.display = 'none';
+      if ($okMsg) $okMsg.style.display = 'none';
 
-        // reset mensajes
-        if ($errColor) $errColor.style.display = 'none';
-        if ($errTalle) $errTalle.style.display = 'none';
-        if ($okMsg)    $okMsg.style.display    = 'none';
+      const colorSelBtn = $cols?.querySelector('.color-option.active') || null;
+      const talleSelBtn = $sizes?.querySelector('.talle.active') || null;
+      let valido = true;
 
-        const colorSelBtn = $cols?.querySelector('.color-option.active') || null;
-        const talleSelBtn = $sizes?.querySelector('.talle.active') || null;
-
-        let valido = true;
-        if (!colorSelBtn) {
-          if ($errColor) {
-            $errColor.textContent = 'Seleccionar color';
-            $errColor.style.display = 'block';
-          }
-          valido = false;
+      if (!colorSelBtn) {
+        if ($errColor) {
+          $errColor.textContent = 'Seleccionar color';
+          $errColor.style.display = 'block';
         }
-        if (!talleSelBtn) {
-          if ($errTalle) {
-            $errTalle.textContent = 'Seleccionar talle';
-            $errTalle.style.display = 'block';
-          }
-          valido = false;
+        valido = false;
+      }
+
+      if (!talleSelBtn) {
+        if ($errTalle) {
+          $errTalle.textContent = 'Seleccionar talle';
+          $errTalle.style.display = 'block';
         }
+        valido = false;
+      }
 
-        const qty = Number(($cant && $cant.value) || 1);
-        if (!qty || qty < 1) {
-          // Si querés también un cartelito, podrías agregar #error-cantidad
-          alert('Por favor selecciona una cantidad válida.');
-          valido = false;
-        }
+      const qty = Number(($cant && $cant.value) || 1);
+      if (!qty || qty < 1) {
+        alert('Por favor selecciona una cantidad válida.');
+        valido = false;
+      }
 
-        if (!valido) return;
+      if (!valido) return;
 
-        const colorSel = colorSelBtn ? (colorSelBtn.style.getPropertyValue('--color') || '#000000') : '#000000';
-        const talleSel = talleSelBtn ? talleSelBtn.textContent.trim() : '';
-        const imgSel   = document.getElementById('main-image')?.src || imgs[0];
+      const colorSel = colorSelBtn ? (colorSelBtn.style.getPropertyValue('--color') || '#000000') : '#000000';
+      const talleSel = talleSelBtn ? talleSelBtn.textContent.trim() : '';
+      const imgSel = document.getElementById('main-image')?.src || imgs[0];
 
-        if (typeof window.addToCart === 'function') {
-          window.addToCart(
-            p._id,                 // id del producto
-            p.nombre || 'Producto',
-            precioPreferido,       // número
-            imgSel,                // imagen
-            talleSel,              // size
-            colorSel,              // color (hex)
-            Number($cant?.value || 1)
-          );
-        } else {
-          console.warn('addToCart no está definida.');
-        }
+      // Esperar el resultado de addToCart
+      const agregado = await window.addToCart(
+        p._id,                 // id del producto
+        p.nombre || 'Producto',
+        precioPreferido,       // número
+        imgSel,                // imagen
+        talleSel,              // size
+        colorSel,              // color (hex)
+        qty
+      );
 
+      // Mostrar cartel de éxito SOLO si realmente se agregó
+      if ($okMsg && agregado) {
+        $okMsg.textContent = 'Agregado con éxito';
+        $okMsg.style.display = 'block';
+        setTimeout(() => { if ($okMsg) $okMsg.style.display = 'none'; }, 3000);
+      }
+    };
+  }
 
-        // Mostrar cartel de éxito
-        if ($okMsg) {
-          $okMsg.textContent = 'Agregado con éxito';
-          $okMsg.style.display = 'block';
-          setTimeout(() => { if ($okMsg) $okMsg.style.display = 'none'; }, 3000);
-        }
-      };
-    }
 
 // ---------- Favoritos en página de producto ----------
 const favBtn = document.getElementById('btnFavDetail');
@@ -311,4 +308,4 @@ favBtn?.addEventListener('click', (e) => {
   zone.appendChild(n);
   setTimeout(()=>{ n.remove(); }, timeout);
 }
-})();
+});

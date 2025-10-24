@@ -2,11 +2,9 @@
    Archivo: js/componente-loader.js
    Función: Cargar componentes HTML y activar sus interacciones solo si existen en la página
 */
-
 function cargarComponente(id, ruta) {
   const contenedor = document.getElementById(id);
   if (!contenedor) return Promise.resolve(); // No existe → no carga
-
   return fetch(ruta)
     .then(res => {
       if (!res.ok) throw new Error(`Error al cargar ${ruta}`);
@@ -14,7 +12,6 @@ function cargarComponente(id, ruta) {
     })
     .then(html => {
       contenedor.innerHTML = html;
-
       // Evento genérico: cualquier componente inyectado
       const evt = new CustomEvent("componente:cargado", {
         detail: { id, ruta, contenedor }
@@ -26,55 +23,28 @@ function cargarComponente(id, ruta) {
       contenedor.innerHTML = "<p>Error al cargar el componente.</p>";
     });
 }
-
-// === Chatbot (caso especial) ===
-fetch("componentesHTML/chatbot.html")
-  .then(r => r.text())
-  .then(d => { document.getElementById("chatbot").innerHTML = d });
-
-if (!document.getElementById("chatbotCSS")) {
-  const link = document.createElement("link");
-  link.id = "chatbotCSS";
-  link.rel = "stylesheet";
-  link.href = "css/chatbot.css";
-  document.head.appendChild(link);
-}
-if (!document.getElementById("chatbotJS")) {
-  const s = document.createElement("script");
-  s.id = "chatbotJS";
-  s.src = "js/chatbot.js";
-  document.body.appendChild(s);
-}
-
 /* === INTERACCIONES === */
-
 // --- Navbar con dropdowns (funciona para escritorio y móvil) ---
 function setupNavbarDropdowns() {
   const buttons = document.querySelectorAll(".nav-btn");
-
   buttons.forEach(btn => {
     btn.addEventListener("click", e => {
       e.preventDefault();
       e.stopPropagation();
-
       const menuId = btn.getAttribute("data-menu");
       const dropdown = document.getElementById(menuId);
-
       // Cierra otros menús
       document.querySelectorAll(".dropdown").forEach(d => {
         if (d !== dropdown) d.classList.remove("open");
       });
-
       // Alterna el menú actual
       dropdown.classList.toggle("open");
     });
   });
-
   // Evita que clicks dentro del dropdown lo cierren
   document.querySelectorAll(".dropdown").forEach(drop => {
     drop.addEventListener("click", e => e.stopPropagation());
   });
-
   // Cierra menús al hacer click fuera
   document.addEventListener("click", e => {
     if (!e.target.closest(".nav-item")) {
@@ -82,35 +52,46 @@ function setupNavbarDropdowns() {
     }
   });
 }
-
 // --- Menú de Hamburguesa ---
 function setupHamburgerMenu() {
   const menuToggle = document.querySelector(".menu-toggle");
   const navLinks = document.querySelector(".nav-links");
-
   if (menuToggle && navLinks) {
     menuToggle.addEventListener("click", () => {
       navLinks.classList.toggle("active");
     });
   }
 }
-
-
 // --- Modal de acceso de usuario ---
 function setupAccesoUsuario() {
   const openAuth = document.getElementById("open-auth");
   const container = document.getElementById("acceso-usuario-container");
   const loginBox = document.getElementById("acceso-usuario-login");
   const registerBox = document.getElementById("acceso-usuario-register");
+  const perfilBox = document.getElementById("acceso-usuario-perfil");
   const goRegister = document.getElementById("go-register");
   const goLogin = document.getElementById("go-login");
+  const btnLogout = document.getElementById("btn-logout");
 
   if (openAuth && container) {
     openAuth.addEventListener("click", e => {
       e.preventDefault();
+      // Revisa si el usuario está logueado
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        if (typeof mostrarVistaPerfil === "function") {
+          mostrarVistaPerfil();
+        } else {
+          console.warn("mostrarVistaPerfil no está definida todavía");
+        }
+      } else {
+        // Si NO está logueado, muestra la vista de login por defecto
+        loginBox.classList.add("active");
+        registerBox.classList.remove("active");
+        perfilBox.classList.remove("active");
+      }
       container.style.display = "flex";
     });
-
     container.addEventListener("click", e => {
       if (e.target === container) container.style.display = "none";
     });
@@ -122,42 +103,186 @@ function setupAccesoUsuario() {
       loginBox.classList.remove("active");
       registerBox.classList.add("active");
     });
-
     goLogin.addEventListener("click", e => {
       e.preventDefault();
       registerBox.classList.remove("active");
       loginBox.classList.add("active");
     });
   }
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
+        // Persistir carrito en DB antes de limpiar
+        const userId = localStorage.getItem("userId");
+        const cart = JSON.parse(localStorage.getItem("mutaCart") || "[]");
+        if (userId) {
+          try {
+            await fetch("backend/userController.php?action=updateCart", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_usuario: userId, carrito: cart })
+            });
+          } catch (err) {
+            console.error("Error guardando carrito antes de logout:", err);
+          }
+        }
+        // Limpia toda la información de la sesión guardada
+        localStorage.clear();
+        localStorage.removeItem("muta_favoritos");
+        // Resetear modal de acceso
+        const nombreSpan = document.getElementById("perfil-nombre-completo");
+        const emailSpan = document.getElementById("perfil-email");
+        if (nombreSpan) nombreSpan.textContent = "Cargando...";
+        if (emailSpan) emailSpan.textContent = "Cargando...";
+
+        // Volver a vista de login por defecto
+        if (loginBox && registerBox && perfilBox) {
+          loginBox.classList.add("active");
+          registerBox.classList.remove("active");
+          perfilBox.classList.remove("active");
+        }
+        // Actualiza la interfaz para que parezca "no logueado"
+        const icon = document.querySelector("#open-auth i");
+        if (icon) {
+          icon.classList.remove("bi-person-check");
+          icon.classList.add("bi-person");
+        }
+        document.getElementById("open-auth").title = "Mi cuenta";
+        // Oculta el modal de perfil/login
+        document.getElementById("acceso-usuario-container").style.display = "none";
+        // Avisar a toda la app que se reseteó favoritos y carrito
+        document.dispatchEvent(new CustomEvent("favoritos:updated"));
+        document.dispatchEvent(new CustomEvent("cart:updated"));
+        // Confirmación al usuario
+        alert("Has cerrado la sesión.");
+        // Si estoy en cart.html, redirigir a index
+        if (window.location.pathname.endsWith("cart.html")) {
+          window.location.href = "index.html";
+        }
+      }
+    });
+  }
 }
+// ============================================
+// FUNCIÓN DE BÚSQUEDA
+// ============================================
+// --- Buscador de productos ---
+function setupBuscador() {
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
 
+  if (!searchInput || !searchResults) return;
+  let searchTimeout;
+  // Event listener para búsqueda en tiempo real
+  searchInput.addEventListener("input", function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
 
+    // Si la búsqueda tiene menos de 2 caracteres, ocultar resultados
+    if (query.length < 2) {
+      searchResults.classList.remove("active");
+      return;
+    }
+
+    // Mostrar indicador de carga
+    searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
+    searchResults.classList.add("active");
+
+    // Esperar 300ms después de que el usuario deje de escribir
+    searchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+
+    // Función para realizar la búsqueda
+    async function performSearch(query) {
+      try {
+        // 🔥 LLAMADA A TU BACKEND PHP
+        const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (data.success && data.results) {
+          displayResults(data.results);
+        } else {
+          searchResults.innerHTML = `
+            <div class="search-no-results">
+              <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
+              <p>No se encontraron productos</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error("Error en búsqueda:", err);
+        searchResults.innerHTML = `
+          <div class="search-no-results">
+            <p>Error al buscar productos</p>
+          </div>
+        `;
+      }
+    }
+  });
+
+  // Función para mostrar resultados
+  function displayResults(resultados) {
+    if (resultados.length === 0) {
+      searchResults.innerHTML = `
+        <div class="search-no-results">
+          <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
+          <p>No se encontraron productos</p>
+        </div>
+      `;
+      return;
+    }
+    searchResults.innerHTML = resultados.map(producto => `
+      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item">
+        <div class="result-image">
+          <img src="${producto.imagen || 'img/default.jpg'}" alt="${producto.nombre}">
+        </div>
+        <div class="result-info">
+          <div class="result-name">${producto.nombre}</div>
+          <div class="result-category">${producto.categoria}</div>
+        </div>
+        <div class="result-price">$${producto.precio.toLocaleString('es-AR')}</div>
+      </a>
+    `).join('');
+  }
+
+  // Cerrar resultados al hacer click fuera
+  document.addEventListener("click", function(e) {
+    if (!e.target.closest(".search-bar")) {
+      searchResults.classList.remove("active");
+    }
+  });
+
+  // Cerrar con la tecla ESC
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      searchResults.classList.remove("active");
+      searchInput.blur();
+    }
+  });
+}
 // --- Tabs de producto ---
 function setupTabsProducto() {
   const tabTitles = document.querySelectorAll(".tab-title");
   const tabContents = document.querySelectorAll(".tab-content");
-
   if (!tabTitles.length) return;
-
   tabTitles.forEach(title => {
     title.addEventListener("click", () => {
       const target = title.getAttribute("data-tab");
-
       tabTitles.forEach(t => t.classList.remove("active"));
       tabContents.forEach(c => c.classList.remove("active"));
-
       title.classList.add("active");
       document.getElementById(target).classList.add("active");
     });
   });
 }
-
 // --- Calcular envío ---
 function setupCalculoEnvio() {
   const btnEnvio = document.getElementById("btn-calcular-envio");
   const inputCP = document.getElementById("codigo-postal-input");
   const resultadoEnvio = document.getElementById("resultado-envio");
-
   if (btnEnvio && inputCP && resultadoEnvio) {
     btnEnvio.addEventListener("click", (e) => {
       e.preventDefault();
@@ -166,26 +291,15 @@ function setupCalculoEnvio() {
         resultadoEnvio.textContent = "Por favor ingresa un código postal.";
         return;
       }
-
-      // Distancias simuladas por CP
-      const distancias = {
-        "5500": 1,
-        "5501": 7,
-        "5507": 12,
-        "5519": 20,
-      };
-      const km = distancias[codigo] || 25;
-
-      let costo;
-      if (km <= 5) costo = "3.000 pesos";
-      else if (km <= 10) costo = "8.000 pesos";
-      else costo = "16.000 pesos";
-
-      resultadoEnvio.textContent = `El costo aproximado de envío es ${costo}.`;
+      if (typeof window.calcularCostoEnvioPorCP === "function") {
+        const costo = window.calcularCostoEnvioPorCP(codigo);
+        resultadoEnvio.textContent = `El costo aproximado de envío es $${costo.toLocaleString("es-AR")}`;
+      } else {
+        resultadoEnvio.textContent = "No se pudo calcular el costo de envío.";
+      }
     });
   }
 }
-
 // --- Selección de talles ---
 function setupTalles() {
   const talles = document.querySelectorAll(".talle");
@@ -196,7 +310,6 @@ function setupTalles() {
     });
   });
 }
-
 // --- Selección de colores ---
 function setupColores() {
   const colores = document.querySelectorAll(".color-option");
@@ -213,17 +326,14 @@ function setupProductoInteractions() {
   setupTalles();
   setupColores();
 }
-
 // --- Carrusel genérico ---
 function setupCarousel(carouselId) {
   const carousel = document.getElementById(carouselId);
   if (!carousel) return;
-
   const track = carousel.querySelector(".carousel-track");
   const prevBtn = carousel.querySelector(".carousel-prev");
   const nextBtn = carousel.querySelector(".carousel-next");
   if (!track || !prevBtn || !nextBtn) return;
-
   const getGap = () => parseInt(getComputedStyle(track).gap) || 0;
   const getCardWidth = () => {
     const card = track.querySelector(".card");
@@ -238,50 +348,46 @@ function setupCarousel(carouselId) {
     const step = getStep();
     track.scrollTo({ left: idx * step, behavior: "smooth" });
   };
-
   prevBtn.addEventListener("click", () => {
     scrollToIndex(Math.max(0, getCurrentIndex() - 1));
   });
-
   nextBtn.addEventListener("click", () => {
     const totalCards = track.querySelectorAll(".card").length;
     const visibles = Math.max(1, Math.round(track.clientWidth / getStep()));
     const maxIndex = Math.max(0, totalCards - visibles);
     scrollToIndex(Math.min(maxIndex, getCurrentIndex() + 1));
   });
-
   window.addEventListener("resize", () => {
     scrollToIndex(getCurrentIndex());
   });
 }
-
 /* === CARGA DE COMPONENTES SEGÚN LA PÁGINA === */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Comunes ---
   if (document.getElementById("navbar")) {
     cargarComponente("navbar", "componentesHTML/navbar.html")
       .then(() => {
-        // evita re-binds si por error se ejecuta dos veces
+        // Evita re-binds si por error se ejecuta dos veces
         if (!window.__navInited) {
           setupNavbarDropdowns();
           setupHamburgerMenu();
+          setupBuscador(); // 🔥 NUEVA LÍNEA - Activa el buscador
           window.__navInited = true;
         }
-         // cargar categorías habilitadas una vez que el UL ya existe
-        fillNavbarCategories('nav-cat-list');
         document.dispatchEvent(new CustomEvent("navbar:ready"));
       });
   }
 
   if (document.getElementById("footer")) {
     cargarComponente("footer", "componentesHTML/footer.html")
-    .then(() => fillNavbarCategories('footer-cat-list'));
+      .then(() => fillNavbarCategories('footer-cat-list'));
   }
 
   if (document.getElementById("acceso-usuario")) {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
       .then(setupAccesoUsuario);
   }
+
   // --- Home ---
   if (document.getElementById("hero"))
     cargarComponente("hero", "componentesHTML/hero.html");
@@ -295,7 +401,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (document.getElementById("carousel-novedades"))
     cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
-      .then(() => setupCarousel("carousel-novedades"));
+      .then(() => {
+        setupCarousel("carousel-novedades");
+        // 🔔 Avisa a favoritos.js que hay nuevas cards para inyectar corazones
+        document.dispatchEvent(new CustomEvent("nuevos:render"));
+      });
 
   // --- Producto ---
   if (document.getElementById("galeria-producto"))
@@ -308,90 +418,99 @@ document.addEventListener("DOMContentLoaded", () => {
         setupProductoInteractions();
         document.dispatchEvent(new CustomEvent("producto-tabs:ready"));
       });
-});
+
   // --- Carga de categorías habilitadas en el navbar ---
-async function fillNavbarCategories(targetUlId = 'nav-cat-list') { 
-  const ul = document.getElementById(targetUlId); 
-  if (!ul) return;
+  async function fillNavbarCategories(targetUlId = 'nav-cat-list') {
+    const ul = document.getElementById(targetUlId);
+    if (!ul) return;
 
-  // slug -> ruta (remeras fuera de /categoriasHTML/)
-  const pageFor = (slug) => {
-    const PREFIX = location.pathname.split('/').length > 3 ? '../' : '';
-    if (slug === 'remeras') return `${PREFIX}remeras.html`;
-    return `${PREFIX}${slug}.html`
-  };
+    // slug -> ruta (remeras fuera de /categoriasHTML/)
+    const pageFor = (slug) => {
+      const PREFIX = location.pathname.split('/').length > 3 ? '../' : '';
+      if (slug === 'remeras') return `${PREFIX}remeras.html`;
+      return `${PREFIX}${slug}.html`;
+    };
 
-  // fallback por si el fetch falla
-  const FALLBACK = [
-    { name: 'REMERAS', slug: 'remeras', enabled: true },
-    { name: 'PANTALONES', slug: 'pantalones', enabled: true },
-    { name: 'BUZOS', slug: 'buzos', enabled: true },
-    { name: 'CAMPERAS', slug: 'camperas', enabled: true },
-    { name: 'CAMISAS', slug: 'camisas', enabled: true },
-    { name: 'BERMUDAS', slug: 'bermudas', enabled: true },
-    { name: 'VESTIDOS', slug: 'vestidos', enabled: true },
-    { name: 'ACCESORIOS', slug: 'accesorios', enabled: true },
-  ];
+    // fallback por si el fetch falla
+    const FALLBACK = [
+      { name: 'REMERAS', slug: 'remeras', enabled: true },
+      { name: 'PANTALONES', slug: 'pantalones', enabled: true },
+      { name: 'BUZOS', slug: 'buzos', enabled: true },
+      { name: 'CAMPERAS', slug: 'camperas', enabled: true },
+      { name: 'CAMISAS', slug: 'camisas', enabled: true },
+      { name: 'BERMUDAS', slug: 'bermudas', enabled: true },
+      { name: 'VESTIDOS', slug: 'vestidos', enabled: true },
+      { name: 'ACCESORIOS', slug: 'accesorios', enabled: true },
+    ];
 
-  function render(cats) {
-    ul.innerHTML = cats
-      .filter(c => c.enabled)                            // <-- sólo habilitadas
-      .sort((a,b) => (a.name||'').localeCompare(b.name||''))
-      .map(c => `<li><a href="${pageFor(c.slug)}">${(c.name||c.slug).toUpperCase()}</a></li>`)
-      .join('') || '<li><em>Sin categorías</em></li>';
-  }
-
-  try {
-    const res = await fetch('backend/productController.php?action=cats',{cache:'no-store'});
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
-    render(Array.isArray(data?.categories) ? data.categories : FALLBACK);
-  } catch {
-    render(FALLBACK);
-  }
-}
-// Home: filtra/enciende cartas del carrusel de categorías según presets habilitados
-document.addEventListener('DOMContentLoaded', async () => {
-  const track = document.querySelector('#carousel-categorias .carousel-track');
-  if (!track) return;
-
-  // detectá slug de cada card (por data-attr o por nombre en el href/img)
-  const cards = [...track.querySelectorAll('a.card')].map(a => {
-    // intenta por data-slug; si no, deduce por el src/href
-    let slug = a.dataset.slug;
-    if (!slug) {
-      const href = a.getAttribute('href') || '';
-      const m = href.match(/categoriasHTML\/([a-z-]+)\.html|\/?([a-z-]+)\.html/i);
-      slug = (m && (m[1]||m[2])) || '';
-      if (!slug && a.querySelector('img[src*="categorias/categoria-"]')) {
-        const src = a.querySelector('img').src;
-        const m2 = src.match(/categoria-([a-z-]+)\./i);
-        slug = m2 ? m2[1] : '';
-      }
+    function render(cats) {
+      ul.innerHTML = cats
+        .filter(c => c.enabled)                            // <-- sólo habilitadas
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map(c => `<li><a href="${pageFor(c.slug)}">${(c.name || c.slug).toUpperCase()}</a></li>`)
+        .join('') || '<li><em>Sin categorías</em></li>';
     }
-    return { a, slug };
+
+    try {
+      const res = await fetch('backend/productController.php?action=cats', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      render(Array.isArray(data?.categories) ? data.categories : FALLBACK);
+    } catch {
+      render(FALLBACK);
+    }
+  }
+
+  // Home: filtra/enciende cartas del carrusel de categorías según presets habilitados
+  document.addEventListener('DOMContentLoaded', async () => {
+    const track = document.querySelector('#carousel-categorias .carousel-track');
+    if (!track) return;
+
+    // Detectar slug de cada card (por data-attr o por nombre en el href/img)
+    const cards = [...track.querySelectorAll('a.card')].map(a => {
+      // Intenta por data-slug; si no, deduce por el src/href
+      let slug = a.dataset.slug;
+      if (!slug) {
+        const href = a.getAttribute('href') || '';
+        const m = href.match(/categoriasHTML\/([a-z-]+)\.html|\/?([a-z-]+)\.html/i);
+        slug = (m && (m[1] || m[2])) || '';
+        if (!slug && a.querySelector('img[src*="categorias/categoria-"]')) {
+          const src = a.querySelector('img').src;
+          const m2 = src.match(/categoria-([a-z-]+)\./i);
+          slug = m2 ? m2[1] : '';
+        }
+      }
+      return { a, slug };
+    });
+
+    const pageFor = (slug) => {
+      if (slug === 'remeras') return 'remeras.html';
+      return `categoriasHTML/${slug}.html`;
+    };
+
+    try {
+      const res = await fetch('backend/productController.php?action=cats', { cache: 'no-store' });
+      const data = await res.json();
+      const enabled = new Map((data.categories || []).map(c => [c.slug, !!c.enabled]));
+      cards.forEach(({ a, slug }) => {
+        if (!slug || enabled.get(slug) !== true) {
+          a.remove();                      // fuera del DOM si está deshabilitada
+        } else {
+          a.href = pageFor(slug);          // corrige el enlace
+        }
+      });
+    } catch (e) {
+      // Si falla el fetch, dejar todo como estaba
+      console.warn('No se pudo validar categorías del carrusel:', e);
+    }
   });
 
-  const pageFor = (slug) => {
-    if (slug === 'remeras') return 'remeras.html';
-    return `categoriasHTML/${slug}.html`;
-  };
-
-  try {
-    const res = await fetch('backend/productController.php?action=cats',{cache:'no-store'});
-    const data = await res.json();
-    const enabled = new Map((data.categories||[]).map(c => [c.slug, !!c.enabled]));
-
-    cards.forEach(({a, slug}) => {
-      if (!slug || enabled.get(slug) !== true) {
-        a.remove();                      // fuera del DOM si está deshabilitada
-      } else {
-        a.href = pageFor(slug);          // corrige el enlace
-      }
-    });
-  } catch (e) {
-    // si falla el fetch, dejá todo como estaba
-    console.warn('No se pudo validar categorías del carrusel:', e);
-  }
+  // 🔧 Habilitar apertura del carrito en móviles
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".cart-btn");
+    if (!btn) return;
+    e.preventDefault();
+    const dropdown = btn.parentElement.querySelector(".cart-dropdown");
+    dropdown.classList.toggle("active");
+  });
 });
-

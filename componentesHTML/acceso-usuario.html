@@ -42,6 +42,45 @@
         <p>¿Ya tienes cuenta? <a href="#" id="go-login">Inicia Sesión</a></p>
       </div>
 
+<!--Nuevo acceso ya que si esta logueado se abriria el perfil-->
+ <div class="acceso-usuario-form" id="acceso-usuario-perfil">
+     <h2>Mi Cuenta</h2>
+        <div class="perfil-datos-basicos">
+        <p><strong>Nombre:</strong> <span id="perfil-nombre-completo">Cargando...</span></p>
+        <p><strong>Email:</strong> <span id="perfil-email">Cargando...</span></p>
+        </div>
+
+    <hr class="separador-perfil">
+
+    <ul class="perfil-menu">
+        
+        <li>
+            <button class="perfil-btn" data-target="historial-pedidos">
+                <i class="bi bi-card-list"></i> Mi Historial de Pedidos
+            </button>
+            <div id="historial-pedidos-dropdown" class="perfil-dropdown">
+                <p>Contenido del historial de pedidos...</p>
+            </div>
+        </li>
+
+        <li>
+            <button class="perfil-btn" data-target="mis-direcciones">
+                <i class="bi bi-geo-alt"></i> Mis Direcciones
+            </button>
+            <div id="mis-direcciones-dropdown" class="perfil-dropdown">
+                <p>Contenido de la gestión de direcciones...</p>
+            </div>
+        </li>
+
+        <li>
+            <button id="btn-logout" class="btn-logout">
+                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </button>
+        </li>
+    </ul>
+</div>        
+        
+
     </div>
   </div>
 </header>

@@ -1,8 +1,4 @@
-/* === COMPONENTE: CARRUSEL DE NOVEDADES ===
-   Archivo: css/carousel-novedades.css
-   HTML relacionado: componentesHTML/novedades-carousel.html
-   Función: Estilos para el carrusel horizontal de novedades
-*/
+/* === COMPONENTE: CARRUSEL DE NOVEDADES ===*/
 
 /* Contenedor general del carrusel */
 #carousel-novedades.carousel {
@@ -13,7 +9,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: rgb(255, 255, 255); /* color de fondo temporal, quitar luego */
+  background-color: transparent;
 }
 
 /* Variables de espaciado */
@@ -46,6 +42,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   scroll-snap-align: start;
   background: transparent;
+  position: relative;
 }
 
 /* Mantener proporción uniforme y cubrir sin bordes en blanco */
@@ -64,31 +61,53 @@
 
 /* Contenedor de la info dentro de la card */
 #carousel-novedades .card .info {
-  padding: 10px 12px; /* separa el texto de los bordes */
-  background-color: #fff; /* opcional, si querés contraste con la imagen */
+  padding: 10px 12px;
+  background-color: #fff;
+  text-align: left;
 }
 
 /* Nombre del producto */
 #carousel-novedades .card .info h4 {
   font-size: 16px;
   font-weight: 600;
-  color: #111; /* bien visible */
-  margin: 0 0 4px 0; /* espacio inferior */
+  color: #111;
+  margin: 0 0 4px 0;
 }
 
 /* Descripción */
-#carousel-novedades .card .info p:nth-of-type(1) {
+#carousel-novedades .card .info p {
   font-size: 14px;
-  color: #666; /* gris más suave */
-  margin: 0 0 6px 0;
+  color: #666;
+  margin: 0;
 }
 
 /* Precio */
-#carousel-novedades .card .info p:nth-of-type(2) {
-  font-size: 15px;
+#carousel-novedades .card .info p:last-child {
   font-weight: 700;
-  color: #000; /* fuerte y visible */
-  margin: 0;
+  color: #000;
+}
+
+/* Botón corazón en cards */
+#carousel-novedades .card .btn-like {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  font-size: 18px;
+  line-height: 32px;
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s ease;
+}
+
+#carousel-novedades .card .btn-like:hover {
+  transform: translateY(-1px);
 }
 
 /* Botones flotantes */
