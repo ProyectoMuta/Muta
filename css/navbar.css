@@ -82,6 +82,131 @@ body { padding-top: 60px; }
 /* DROPDOWNS dentro del menú móvil */
 .nav-links .dropdown { position: static; display:none; background:#f8f8f8; padding:0; width:100%; border-top:1px solid #ddd; }
 .nav-links .dropdown.open { display:block; }
+/* ============================================
+   DROPDOWN DE RESULTADOS
+   ============================================ */
+
+.search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  max-height: 450px;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.search-results.active {
+  display: block;
+}
+
+/* Item de resultado */
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+  border-bottom: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.search-result-item:hover {
+  background: #f8f8f8;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Imagen del producto */
+.result-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Información del producto */
+.result-info {
+  flex: 1;
+}
+
+.result-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.result-category {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+}
+
+/* Estados: cargando y sin resultados */
+.search-loading,
+.search-no-results {
+  padding: 30px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.search-no-results i {
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .search-bar {
+    max-width: 100%;
+  }
+  
+  .search-results {
+    max-height: 300px;
+  }
+  
+  .result-image {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .result-name {
+    font-size: 13px;
+  }
+  
+  .result-price {
+    font-size: 14px;
+  }
+}
+
+
 /* ESTILOS PARA >=768px */
 @media (min-width: 768px) {
   .main-navbar { padding: 0 20px; }
@@ -376,6 +501,23 @@ body { padding-top: 60px; }
 .cart-dropdown .btn-ir-comprar:hover {
   background-color: #333; /* Hover más claro */
 }
+/* Botón "Ver mi carrito" */
+.cart-dropdown .view-cart-btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background-color: #000; /* Color principal MUTA */
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.cart-dropdown .view-cart-btn:hover {
+  background-color: #333; /* Hover más claro */
+}
+
 
 /* Animación de aparición */
 @keyframes fadeIn {
@@ -510,6 +652,22 @@ body { padding-top: 60px; }
   background: #333;
 }
 
+.view-cart-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: black;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.view-cart-btn:hover {
+  background: #333;
+}
+
+
 /* === Ajustes del botón eliminar con ícono === */
 .remove-item {
   background: none;
@@ -531,4 +689,19 @@ body { padding-top: 60px; }
 /* === Ocultar mini-carrito en cart.html === */
 body.cart-page .cart-dropdown {
   display: none !important;
+}
+/* === CORAZÓN HOVER (agregar al final de navbar.css) === */
+
+.icono_corazon {
+  transition: color 0.3s ease, transform 0.2s ease;
+  position: relative;
+}
+
+.icono_corazon:hover {
+  color: #ff0000 !important;
+  transform: scale(1.15);
+}
+
+.icono_corazon:active {
+  transform: scale(0.95);
 }

@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MUTA - Remeras</title>
-
   <!-- Estilos globales y de componentes -->
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
@@ -12,27 +11,22 @@
   <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="css/carritoCSS/cart.css">
   <link rel="stylesheet" href="css/favoritos.css">
-
   <!-- Estilos específicos -->
   <link rel="stylesheet" href="css/carousel-categorias-ropa.css">
   <link rel="stylesheet" href="css/remeras.css">
-
   <!-- Librerías externas -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
   <link rel="icon" type="image/png" href="img/favicon.jpeg">
 </head>
 <body>
   <!-- Navbar -->
   <div id="navbar"></div>
-
   <main>
     <!-- Hero -->
     <section class="hero">
       <img src="img/fondos/fondo-remeras.png" alt="Hero Remeras">
     </section>
-
     <!-- Carrusel: Clásicas -->
     <h2 class="section-title" id="h2-clasicas">CLÁSICAS</h2>
     <div id="carousel-remeras-clasicas" class="carousel categoria-carousel">
@@ -40,7 +34,6 @@
       <div class="carousel-track"></div>
       <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
     </div>
-
     <!-- Carrusel: Novedades -->
     <h2 class="section-title" id="h2-novedades">NOVEDADES</h2>
     <div id="carousel-remeras-novedades" class="carousel categoria-carousel">
@@ -48,7 +41,6 @@
       <div class="carousel-track"></div>
       <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
     </div>
-
     <!-- Carrusel: Estilo MUTA -->
     <h2 class="section-title" id="h2-estilo">ESTILO MUTA</h2>
     <div id="carousel-remeras-estilo-muta" class="carousel categoria-carousel">
@@ -56,7 +48,6 @@
       <div class="carousel-track"></div>
       <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
     </div>
-
     <!-- Nuevos ingresos (dinámico, puede haber varios bloques de 8) -->
     <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
     <div id="carousel-nuevos" class="carousel categoria-carousel">
@@ -65,19 +56,17 @@
       <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
     </div>
   </main>
-
   <!-- Modales/footers -->
   <div id="acceso-usuario"></div>
   <div id="footer"></div>
   <div id="chatbot"></div>
   <div id="favoritos"></div>
-
   <!-- Carga de componentes y carrito -->
   <script src="js/componente-loader.js"></script>
-  <script defer src="js/favoritos.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
   <script src="js/carritoJS/cart.js"></script>
-  <script>setupCart();</script>
- <!-- Configuración específica de la categoría -->
+  <script defer src="js/favoritos.js"></script>
+  <script src='https://cdn.jotfor.ms/agent/embedjs/0199edc25850752f8dd01a2672b5d39088b4/embed.js'></script>
   <script>
     window.CAT_CONFIG = {
       PAGE_TITLE: 'Remeras',
@@ -92,5 +81,6 @@
   </script>
   <!-- Carga el script común -->
   <script src="js/categorias_dinamicas.js"></script>
+  <script>setupCart();</script>
 </body>
 </html>

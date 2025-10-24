@@ -50,10 +50,13 @@
       </div>
     </div>
 
-    <!-- Buscador -->
-    <div class="search-bar">
-      <input type="text" placeholder="Buscar producto...">
-    </div>
+    <!-- Buscador mejorado -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar producto..." autocomplete="off">
+                
+                <!-- Dropdown de resultados -->
+                <div class="search-results" id="searchResults"></div>
+            </div>
 
     <!-- Iconos -->
     <div class="icons">
@@ -64,7 +67,7 @@
 
       <!-- Favoritos -->
       <button class="icono_corazon" title="Mis me gusta" type="button">
-        <i class="bi bi-suit-heart"></i>
+        <i class="bi bi-heart-fill"></i>
       </button>
 
       <!-- Carrito con contador y dropdown -->
