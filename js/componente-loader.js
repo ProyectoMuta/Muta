@@ -114,6 +114,7 @@ function setupAccesoUsuario() {
     btnLogout.addEventListener("click", async (e) => {
       e.preventDefault();
       if (confirm("¿Estás seguro de que quieres cerrar la sesión?")) {
+
         // Persistir carrito en DB antes de limpiar
         const userId = localStorage.getItem("userId");
         const cart = JSON.parse(localStorage.getItem("mutaCart") || "[]");
@@ -132,6 +133,7 @@ function setupAccesoUsuario() {
         localStorage.clear();
         localStorage.removeItem("muta_favoritos");
         // Resetear modal de acceso
+
         const nombreSpan = document.getElementById("perfil-nombre-completo");
         const emailSpan = document.getElementById("perfil-email");
         if (nombreSpan) nombreSpan.textContent = "Cargando...";
@@ -152,6 +154,7 @@ function setupAccesoUsuario() {
         document.getElementById("open-auth").title = "Mi cuenta";
         // Oculta el modal de perfil/login
         document.getElementById("acceso-usuario-container").style.display = "none";
+
         // Avisar a toda la app que se reseteó favoritos y carrito
         document.dispatchEvent(new CustomEvent("favoritos:updated"));
         document.dispatchEvent(new CustomEvent("cart:updated"));
@@ -161,69 +164,88 @@ function setupAccesoUsuario() {
         if (window.location.pathname.endsWith("cart.html")) {
           window.location.href = "index.html";
         }
+
       }
     });
   }
 }
 // ============================================
-// FUNCIÓN DE BÚSQUEDA
+// FUNCIÓN DE BÚSQUEDA - AÑADIR LÍNEA DE PRUEBA
 // ============================================
-// --- Buscador de productos ---
 function setupBuscador() {
+  // 🔥 LÍNEA DE PRUEBA: Para ver si la función se ejecuta
+  console.log("✅ setupBuscador se está ejecutando");
+
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
+  const searchToggle = document.getElementById("search-toggle");
+  const searchContainer = document.getElementById("search-container");
 
-  if (!searchInput || !searchResults) return;
+  if (!searchToggle || !searchContainer) {
+    // Mensaje de error más específico
+    console.error("❌ No se encontró el botón de la lupa (#search-toggle) o el contenedor (#search-container).");
+    return;
+  }
+
+  // --- Lógica para desplegar/ocultar el buscador en móvil ---
+  searchToggle.addEventListener("click", (e) => {
+    // Otra prueba para ver si el clic funciona
+    console.log("🖱️ ¡Clic en la lupa detectado!"); 
+    e.stopPropagation();
+    searchContainer.classList.toggle("active");
+
+    if (searchContainer.classList.contains("active")) {
+      searchInput.focus();
+    }
+  });
+
+
+
+  // --- Lógica de búsqueda en tiempo real (sin cambios) ---
   let searchTimeout;
-  // Event listener para búsqueda en tiempo real
+
   searchInput.addEventListener("input", function() {
     clearTimeout(searchTimeout);
     const query = this.value.trim();
-
-    // Si la búsqueda tiene menos de 2 caracteres, ocultar resultados
+    
     if (query.length < 2) {
       searchResults.classList.remove("active");
       return;
     }
-
-    // Mostrar indicador de carga
+    
     searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
     searchResults.classList.add("active");
-
-    // Esperar 300ms después de que el usuario deje de escribir
+    
     searchTimeout = setTimeout(() => {
       performSearch(query);
     }, 300);
+  });
 
-    // Función para realizar la búsqueda
-    async function performSearch(query) {
-      try {
-        // 🔥 LLAMADA A TU BACKEND PHP
-        const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-
-        if (data.success && data.results) {
-          displayResults(data.results);
-        } else {
-          searchResults.innerHTML = `
-            <div class="search-no-results">
-              <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
-              <p>No se encontraron productos</p>
-            </div>
-          `;
-        }
-      } catch (err) {
-        console.error("Error en búsqueda:", err);
+  async function performSearch(query) {
+    try {
+      const res = await fetch(`backend/search.php?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      
+      if (data.success && data.results) {
+        displayResults(data.results);
+      } else {
         searchResults.innerHTML = `
           <div class="search-no-results">
-            <p>Error al buscar productos</p>
+            <i class="bi bi-search" style="font-size: 40px; opacity: 0.3;"></i>
+            <p>No se encontraron productos</p>
           </div>
         `;
       }
+    } catch (err) {
+      console.error("Error en búsqueda:", err);
+      searchResults.innerHTML = `
+        <div class="search-no-results">
+          <p>Error al buscar productos</p>
+        </div>
+      `;
     }
-  });
+  }
 
-  // Función para mostrar resultados
   function displayResults(resultados) {
     if (resultados.length === 0) {
       searchResults.innerHTML = `
@@ -234,8 +256,9 @@ function setupBuscador() {
       `;
       return;
     }
+
     searchResults.innerHTML = resultados.map(producto => `
-      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item">
+      <a href="producto_dinamico.html?id=${producto.id}" class="search-result-item"> 
         <div class="result-image">
           <img src="${producto.imagen || 'img/default.jpg'}" alt="${producto.nombre}">
         </div>
@@ -248,21 +271,27 @@ function setupBuscador() {
     `).join('');
   }
 
-  // Cerrar resultados al hacer click fuera
+  // Cerrar resultados y el buscador desplegable al hacer click fuera
   document.addEventListener("click", function(e) {
+    // Si el click no fue ni en el icono ni en la barra, cierra la barra
+    if (!e.target.closest("#search-toggle") && !e.target.closest(".search-bar")) {
+        searchContainer.classList.remove("active");
+    }
+    // Si el click fue fuera de la barra, cierra solo los resultados
     if (!e.target.closest(".search-bar")) {
       searchResults.classList.remove("active");
     }
   });
 
-  // Cerrar con la tecla ESC
   document.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
       searchResults.classList.remove("active");
+      searchContainer.classList.remove("active"); // También cierra el buscador
       searchInput.blur();
     }
   });
 }
+
 // --- Tabs de producto ---
 function setupTabsProducto() {
   const tabTitles = document.querySelectorAll(".tab-title");
