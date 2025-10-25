@@ -250,7 +250,7 @@
       btn.innerHTML = "♡";
 
       // Estado inicial según localStorage
-      const favs = getFavs();
+      const favoritos = getFavs();
       if (favoritos.some(p => String(p._id) === String(producto._id) || String(p.id) === String(producto.id))) {
         btn.innerHTML = "❤";
       }
