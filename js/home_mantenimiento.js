@@ -152,21 +152,5 @@ function actualizarListaNotas() {
     lista.appendChild(item);
   }
 }
-document.getElementById("btnproductos").addEventListener("click", () => {
-  window.location.href = "productos.html";
 
-});
-document.getElementById("btnventas").addEventListener("click", () => {
-  window.location.href = "productos.html";
-
-});
-//vista productos document.querySelectorAll(".nav-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const page = btn.getAttribute("data-page");
-    window.location.href = page;
-  });
-});
-
-document.getElementById("agregarBtn").addEventListener("click", () => {
-  window.location.href = "agregar-productos.html";
 });

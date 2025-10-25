@@ -7,6 +7,9 @@
 
   <!-- CSS base admin (tu hoja general) -->
   <link rel="stylesheet" href="css/admin_base.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+
   <!-- CSS específico de envíos -->
   <link rel="stylesheet" href="css/envios_mantenimiento.css">
 
@@ -36,6 +39,10 @@
           <h1 style="margin:0">Puntos de Retiro</h1>
           <small class="muted">Administra los lugares donde tus clientes pueden retirar pedidos.</small>
         </div>
+         <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
 
       <!-- Estado vacío -->
@@ -92,7 +99,12 @@
     </form>
   </dialog>
 
-  <!-- JS de la vista -->
+  <div id="acceso-usuario"></div>
+
+ 
   <script src="js/envios_mantenimiento.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
+
 </body>
 </html>

@@ -10,32 +10,20 @@
           <button type="submit">Entrar</button>
         </form>
 
-        <p>¿Olvidaste tu contraseña? 
+      <p>¿Olvidaste tu contraseña? 
           <a href="#" id="link-recuperar">Recupérala</a>
         </p>
-
-        <div id="recuperar-container" class="modal-recuperar">
-          <div class="modal-box">
-            <h3>Recuperar contraseña</h3>
-            <input type="email" id="recuperar-email" placeholder="Ingresá tu email" required>
-            <button id="btn-recuperar">Enviar</button>
-            <button id="cerrar-recuperar">Cancelar</button>
-          </div>
-        </div>
-
-
-
+        
         <div class="divider">
           <span>o</span>
         </div>
 
-        
+       
             <div class="acceso-usuario-social">
 
               <div id="g_id_signin"></div>
 
             </div>
-       
 
         <hr class="separador-registro">
         <div class="ir-registro">
@@ -93,11 +81,40 @@
         </li>
     </ul>
 </div>        
+
+<!--Nuevo acceso ya que si esta logueado se abriria el  como ADMIN -->
+ <div class="acceso-usuario-form" id="acceso-admin-perfil">
+     <h2>Mi Cuenta</h2>
+        <div class="perfil-datos-basicos">
+        <p><strong>Nombre:</strong> <span id="perfil-nombre-completo">Cargando...</span></p>
+        <p><strong>Email:</strong> <span id="perfil-email">Cargando...</span></p>
+        </div>
+
+    <hr class="separador-perfil">
+
+    <ul class="perfil-menu">
         
+       
+
+        <li>
+            <button class="perfil-btn" data-target="mis-direcciones">
+                <i class="bi bi-geo-alt"></i> Mis Direcciones
+            </button>
+            <div id="mis-direcciones-dropdown" class="perfil-dropdown">
+                <p>Contenido de la gestión de direcciones...</p>
+            </div>
+        </li>
+
+        <li>
+            <button id="btn-logout" class="btn-logout">
+                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </button>
+        </li>
+    </ul>
+</div>        
 
     </div>
   </div>
-
-  <script src="user-session.js" defer></script>
+   <script src="user-session.js" defer></script>
 
 </header>

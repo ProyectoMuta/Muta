@@ -73,7 +73,7 @@ function setupAccesoUsuario() {
   const goRegister = document.getElementById("go-register");
   const goLogin = document.getElementById("go-login");
   const btnLogout = document.getElementById("btn-logout");
-
+const openAuthUsuario = document.getElementById("open-auth-usuario"); // <-- Usa el nuevo ID
   window.__googleButtonRendered = false;
 
   function renderGoogleButtonIfNeeded() {
@@ -119,7 +119,45 @@ function setupAccesoUsuario() {
       loginBox.classList.add("active");
     });
   }
+if (openAuthUsuario) { // <-- Inicio del IF
+    openAuthUsuario.addEventListener("click", e => {
+      e.preventDefault();
+      const userId = localStorage.getItem("userId");
+      const userRol = localStorage.getItem("userRol"); // <-- Necesario leer el rol aquí también
+      const container = document.getElementById("acceso-usuario-container");
+      const loginBox = document.getElementById("acceso-usuario-login");
+      const perfilBox = document.getElementById("acceso-usuario-perfil");
+      const adminBox = document.getElementById("acceso-usuario-admin");
+      const goToAdminViewBtn = document.getElementById("go-to-admin-view");
 
+      // Ocultar todas las vistas primero
+      [loginBox, registerBox, perfilBox, adminBox].forEach(box => box?.classList.remove("active"));
+
+      if (userId) {
+          if (userRol === 'admin') {
+              // Si es admin, muestra la VISTA ADMIN
+              if(adminBox) adminBox.classList.add("active");
+              // Botón para ir al panel visible en el perfil
+              if (goToAdminViewBtn) goToAdminViewBtn.style.display = 'flex';
+          } else {
+              // Si es usuario normal, muestra el PERFIL
+              if (typeof mostrarVistaPerfil === "function") {
+                  mostrarVistaPerfil();
+              } else {
+                 if(perfilBox) perfilBox.classList.add("active");
+              }
+              // Oculta el botón para ir al panel admin
+              if (goToAdminViewBtn) goToAdminViewBtn.style.display = 'none';
+          }
+      } else {
+          // Si no hay nadie logueado, muestra LOGIN
+          if(loginBox) loginBox.classList.add("active");
+          // Intenta renderizar botón Google (si aplica a este icono)
+          // renderGoogleButtonIfNeeded(); // Descomentar si quieres el botón Google aquí también
+      }
+      if(container) container.style.display = "flex"; // Muestra el modal
+    });
+  } // <-- Fin del IF
   if (btnLogout) {
     btnLogout.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -170,10 +208,7 @@ function setupAccesoUsuario() {
         document.dispatchEvent(new CustomEvent("cart:updated"));
         // Confirmación al usuario
         alert("Has cerrado la sesión.");
-        // Si estoy en cart.html, redirigir a index
-        if (window.location.pathname.endsWith("cart.html")) {
-          window.location.href = "index.html";
-        }
+        window.location.href = "index.html";
 
       }
     });

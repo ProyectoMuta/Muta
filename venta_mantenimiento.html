@@ -6,6 +6,8 @@
   <title>MUTA · Ventas</title>
   <link rel="stylesheet" href="css/admin_base.css" />
   <link rel="stylesheet" href="css/gestion_producto_mantenimiento.css" />
+    <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
 </head>
 <body>
@@ -32,6 +34,10 @@
           <i class="bi bi-search"></i>
           <input id="q" type="search" placeholder="Buscar por venta o cliente…">
         </div>
+           <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
 
       <div class="filters">
@@ -63,7 +69,7 @@
       </section>
     </main>
   </div>
-
+ <div id="acceso-usuario"></div>
   <script>
   const DATA=[
     {id:'VEN-2025-0101',fecha:'02/09/2025',cliente:'Carlos, Gómez',total:43800,prods:'2× Remera negra (L)',pago:'pagado',modo:'Mercado Pago',envio:'enviado'},
@@ -97,5 +103,9 @@
   q.oninput=()=>{Q=q.value.trim().toLowerCase();render();}
   render();
   </script>
+   
+ 
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
 </body>
 </html>

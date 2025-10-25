@@ -88,7 +88,7 @@ document.addEventListener("componente:cargado", (e) => {
               window.location.href = "home_mantenimiento.html";
             } else {
               alert("Bienvenido " + data.nombre);
-              window.location.reload();
+             window.location.href = "index.html";
             }
 
             // ✅ Traer favoritos desde DB

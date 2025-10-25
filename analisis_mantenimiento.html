@@ -7,6 +7,8 @@
 
   <!-- CSS base admin -->
   <link rel="stylesheet" href="css/admin_base.css">
+   <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
   <!-- CSS específico de análisis -->
   <link rel="stylesheet" href="css/analisis_mantenimiento.css">
 
@@ -39,6 +41,10 @@
           <button class="analisis-chip" data-range="14">Últ. 14 días</button>
           <button class="analisis-chip active" data-range="30">Últ. 30 días</button>
         </div>
+        <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
 
       <!-- Card del gráfico -->
@@ -67,6 +73,11 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
   <!-- JS específico de análisis -->
+     <div id="acceso-usuario"></div>
+
+ 
   <script src="js/analisis_mantenimiento.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
 </body>
 </html>
