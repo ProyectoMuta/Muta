@@ -336,17 +336,158 @@ async function getOrderData() {
 
 async function finalizarCompra(finishBtn) {
   const originalText = finishBtn.textContent;
-  const templateParams = await getOrderData();
-
-  if (!templateParams.customer_name || !templateParams.email_cliente || !templateParams.email_cliente.includes('@')) {
+  // Validaciones iniciales
+  const customerName = document.getElementById("nombre-cliente")?.value;
+  const customerEmail = document.getElementById("email-cliente")?.value;
+  
+  if (!customerName || !customerEmail || !customerEmail.includes('@')) {
     alert("Por favor, completa tu nombre y un email válido.");
+    return;
+  }
+
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    alert("Debes iniciar sesión para completar la compra.");
+    return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+  if (cart.length === 0) {
+    alert("Tu carrito está vacío.");
     return;
   }
 
   finishBtn.textContent = "Procesando...";
   finishBtn.disabled = true;
+try {
+    // 1️⃣ OBTENER DATOS DEL USUARIO Y DIRECCIÓN SELECCIONADA
+    const resUser = await fetch(`backend/userController.php?action=getUser&id=${userId}`);
+    const userData = await resUser.json();
+    const mongo = userData.mongo;
+    const metodoEnvio = mongo.envioSeleccionado;
 
-  emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
+    // 2️⃣ CONSTRUIR DIRECCIÓN DE ENVÍO
+    let direccionEnvio = {
+      calle: "No especificado",
+      ciudad: "No especificado",
+      provincia: "No especificado",
+      codigo_postal: "0000",
+      pais: "Argentina",
+      referencia: "",
+      telefono: userData.mysql?.telefono || "No especificado"
+    };
+
+    let costoEnvio = 0;
+
+    if (metodoEnvio === "domicilio") {
+      const domicilio = (mongo.direcciones?.domicilios || []).find(d => d.seleccionada);
+      if (domicilio) {
+        direccionEnvio = {
+          calle: domicilio.calle,
+          ciudad: domicilio.ciudad,
+          provincia: domicilio.provincia,
+          codigo_postal: domicilio.cp,
+          pais: "Argentina",
+          referencia: domicilio.nombre,
+          telefono: userData.mysql?.telefono || "No especificado"
+        };
+        costoEnvio = window.calcularCostoEnvioPorCP(domicilio.cp);
+      }
+    } else if (metodoEnvio === "punto") {
+      const punto = mongo.direcciones?.punto;
+      if (punto && punto.seleccionado) {
+        direccionEnvio = {
+          calle: punto.direccion,
+          ciudad: punto.ciudad || "Mendoza",
+          provincia: "Mendoza",
+          codigo_postal: punto.cp,
+          pais: "Argentina",
+          referencia: `Punto de retiro: ${punto.nombre}`,
+          telefono: userData.mysql?.telefono || "No especificado"
+        };
+        costoEnvio = window.calcularCostoEnvioPorCP(punto.cp);
+      }
+    } else if (metodoEnvio === "tienda") {
+      direccionEnvio = {
+        calle: "Av. Colón 740",
+        ciudad: "Mendoza",
+        provincia: "Mendoza",
+        codigo_postal: "5500",
+        pais: "Argentina",
+        referencia: "Retiro en tienda MUTA",
+        telefono: userData.mysql?.telefono || "No especificado"
+      };
+      costoEnvio = 0;
+    }
+
+    // 3️⃣ FORMATEAR PRODUCTOS DEL CARRITO
+    const productos = cart.map(item => ({
+      producto_id: item.id,
+      nombre: item.name,
+      cantidad: item.quantity,
+      precio_unitario: Number(item.price),
+      talle: item.size || "N/A",
+      color: item.color || "#000",
+      subtotal: Number(item.price) * item.quantity
+    }));
+
+    // 4️⃣ CALCULAR TOTALES
+    const subtotal = productos.reduce((sum, p) => sum + p.subtotal, 0);
+    const descuento = 0; // Puedes agregar lógica de cupones aquí
+    const total = subtotal + costoEnvio - descuento;
+
+    // 5️⃣ DETECTAR MÉTODO DE PAGO
+    let metodoPago = "mercadopago";
+    const tarjetaActiva = document.querySelector('.opcion-pago[data-metodo="tarjeta"].activo');
+    if (tarjetaActiva) {
+      metodoPago = "tarjeta";
+    }
+
+    // 6️⃣ CREAR PEDIDO EN MONGODB
+    const pedidoData = {
+      usuario_id: userId,
+      productos: productos,
+      direccion_envio: direccionEnvio,
+      subtotal: subtotal,
+      costo_envio: costoEnvio,
+      descuento: descuento,
+      metodo_pago: metodoPago,
+      notas_cliente: `Cliente: ${customerName} - Email: ${customerEmail}`
+    };
+
+    console.log("📦 Creando pedido en MongoDB:", pedidoData);
+
+    const resPedido = await fetch('backend/pedidosController.php?action=crear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pedidoData)
+    });
+
+    const pedidoResponse = await resPedido.json();
+
+    if (!pedidoResponse.success) {
+      throw new Error(pedidoResponse.error || "Error al crear el pedido");
+    }
+
+    console.log("✅ Pedido creado:", pedidoResponse.numero_pedido);
+
+    // 7️⃣ PREPARAR DATOS PARA EMAIL
+    const templateParams = {
+      customer_name: customerName,
+      email_cliente: customerEmail,
+      order_id: pedidoResponse.numero_pedido,
+      items_html: productos.map(p => 
+        `<li>${p.cantidad}x ${p.nombre} (Talle: ${p.talle}) - $${p.subtotal.toLocaleString('es-AR')}</li>`
+      ).join(''),
+      subtotal: `$${subtotal.toLocaleString('es-AR')}`,
+      costo_envio: `$${costoEnvio.toLocaleString('es-AR')}`,
+      total_amount: `$${total.toLocaleString('es-AR')}`,
+      detalles_pago: metodoPago === 'tarjeta' ? 'Tarjeta de crédito/débito' : 'Mercado Pago',
+      detalles_envio: metodoEnvio === 'domicilio' ? 'Envío a domicilio' : 
+                       metodoEnvio === 'punto' ? 'Retiro en punto' : 'Retiro en tienda',
+      detalles_direccion: `${direccionEnvio.calle}, ${direccionEnvio.ciudad}, ${direccionEnvio.provincia}`
+    };
+ await emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
     .then(() => {
       alert(`¡Gracias por tu compra, ${templateParams.customer_name}!Se ha enviado un email de confirmación.`);
 
@@ -356,18 +497,119 @@ async function finalizarCompra(finishBtn) {
       localStorage.removeItem("selectedDireccion");      // solo si usabas localStorage antes
       localStorage.removeItem("selectedPunto");          // solo si usabas localStorage antes
 
+     
+     alert(`¡Gracias por tu compra, ${customerName}!\n\nNúmero de pedido: ${pedidoResponse.numero_pedido}\n\nHemos enviado un email de confirmación.`);
+  
       window.location.href = "index.html";
     })
-    .catch((error) => {
-      console.error('ERROR AL ENVIAR EMAIL:', error);
-      alert("Tu compra se completó, pero no pudimos enviar el email de confirmación.");
-    })
-    .finally(() => {
-      finishBtn.textContent = originalText;
-      finishBtn.disabled = false;
+     await fetch("backend/userController.php?action=updateCart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_usuario: userId, carrito: [] })
     });
+     } catch (error) {
+    console.error('❌ ERROR EN CHECKOUT:', error);
+    alert(`Error al procesar tu compra: ${error.message}\n\nPor favor, intenta nuevamente o contacta con soporte.`);
+  } finally {
+    finishBtn.textContent = originalText;
+    finishBtn.disabled = false;
+  }
 }
 
+// === FUNCIÓN AUXILIAR PARA OBTENER DATOS DE LA ORDEN (mantener por compatibilidad) ===
+async function getOrderData() {
+  const cart = JSON.parse(localStorage.getItem("mutaCart")) || [];
+  const subtotal = getSubtotal();
+  const customerName = document.getElementById("nombre-cliente")?.value || "Cliente Muta";
+  const customerEmail = document.getElementById("email-cliente")?.value;
+  const orderId = `MUTA-${Math.floor(Math.random() * 90000) + 10000}`;
+
+  const itemsHtml = cart.map(item =>
+    `<li>${item.quantity}x ${item.name} (Talle: ${item.size}) - $${formatCurrency(item.price * item.quantity)}</li>`
+  ).join('');
+
+  let detallesPago = "No especificado";
+  const metodoActivo = document.querySelector(".pago-card.opcion-pago.activo");
+  if (metodoActivo) {
+    const metodo = metodoActivo.dataset.metodo;
+    if (metodo === 'tarjeta') {
+      const ultimosCuatroDigitos = document.getElementById("numero")?.value.slice(-4) || 'XXXX';
+      detallesPago = `Tarjeta terminada en ${ultimosCuatroDigitos}`;
+    } else if (metodo === 'mercadopago') {
+      detallesPago = "Mercado Pago";
+    }
+  }
+
+  let detallesEnvio = "No especificado";
+  let detallesDireccion = "No especificado";
+  let envioCosto = 0;
+
+  const userId = localStorage.getItem("userId");
+  if (userId) {
+    try {
+      const res = await fetch(`backend/userController.php?action=getUser&id=${userId}`);
+      const data = await res.json();
+      const mongo = data.mongo;
+      const metodo = mongo.envioSeleccionado;
+
+      if (metodo === "domicilio") {
+        const domicilio = (mongo.direcciones?.domicilios || []).find(d => d.seleccionada);
+        if (domicilio) {
+          detallesEnvio = "Envío a domicilio";
+          detallesDireccion = `${domicilio.calle}, ${domicilio.ciudad}, ${domicilio.provincia}`;
+          envioCosto = window.calcularCostoEnvioPorCP(domicilio.cp);
+        }
+      } else if (metodo === "punto") {
+        const punto = mongo.direcciones?.punto;
+        if (punto && punto.seleccionado) {
+          detallesEnvio = "Retiro en punto de entrega";
+          detallesDireccion = `${punto.nombre} — ${punto.direccion}`;
+          envioCosto = window.calcularCostoEnvioPorCP(punto.cp);
+        }
+      } else if (metodo === "tienda") {
+        detallesEnvio = "Retiro en tienda MUTA";
+        detallesDireccion = "Av. Colón 740, Mendoza";
+        envioCosto = 0;
+      }
+    } catch (err) {
+      console.error("Error obteniendo dirección seleccionada:", err);
+    }
+  }
+
+  const total = subtotal + envioCosto;
+
+  return {
+    customer_name: customerName,
+    order_id: orderId,
+    items_html: `<ul>${itemsHtml}</ul>`,
+    subtotal: `$${formatCurrency(subtotal)}`,
+    costo_envio: `$${formatCurrency(envioCosto)}`,
+    total_amount: `$${formatCurrency(total)}`,
+    detalles_pago: detallesPago,
+    detalles_envio: detallesEnvio,
+    detalles_direccion: detallesDireccion,
+    email_cliente: customerEmail
+  };
+}
+
+// === FUNCIÓN PARA INICIALIZAR LÓGICA DE PAGO ===
+async function inicializarLogicaPago() {
+  const totalPagarElements = document.querySelectorAll('.total-pago');
+  
+  function actualizarTotal() {
+    const subtotal = getSubtotal();
+    const costoEnvio = safeParsePrice(localStorage.getItem('selectedEnvio') || 0);
+    const total = subtotal + costoEnvio;
+    totalPagarElements.forEach(el => el.textContent = formatCurrency(total));
+  }
+  
+  actualizarTotal();
+  
+  // Mostrar resumen de envío
+  if (typeof mostrarResumenEnvio === 'function') {
+    await mostrarResumenEnvio();
+  }
+}
 function waitForOverlayElement(selector, timeout = 5000) {
   const container = document.getElementById("checkout-overlay");
   return new Promise((resolve, reject) => {
