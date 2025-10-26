@@ -28,7 +28,6 @@
       <nav class="side-nav">
         <a href="home_mantenimiento.html" class="item active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
-        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
         <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
         <a href="analisis_mantenimiento.html" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
         <a href="envios_mantenimiento.html" class="item"><i class="bi bi-truck"></i> Envíos</a>
@@ -55,9 +54,13 @@
         <!-- Ventas por día -->
         <article class="card span-2" style="padding:16px" id="btnventas">
           <div class="grafico-container">
-            <h2>Ventas por hora y fecha - Agosto 2023</h2>
-            <p>Producto Principal: 546.15</p>
-            <canvas id="graficoVentas"></canvas>
+            <article class="card span-2" style="padding:16px" id="btnventas">
+    <h2 style="margin-bottom: 10px;">Ventas por día</h2> 
+  
+         <section class="card card-analisis">
+        <canvas id="chartMes"></canvas>
+      </section>
+</article>
            </div>
         </article>
 <!-- Top productos -->
