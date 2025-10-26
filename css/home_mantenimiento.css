@@ -189,3 +189,223 @@ margin-left: 160px;
     backdrop-filter: blur(10px);
     z-index: 998;
 }
+
+/* ============================================
+   ESTILOS PARA CALENDARIO Y NOTAS
+   Agregar al final de css/home_mantenimiento.css
+   ============================================ */
+
+/* Día con nota guardada */
+.dia-con-nota {
+    background: #667eea !important;
+    color: white !important;
+    font-weight: 700;
+    position: relative;
+}
+
+.dia-con-nota::after {
+    content: '●';
+    position: absolute;
+    bottom: 2px;
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 6px;
+    color: #ffd700;
+}
+
+/* Día actualmente seleccionado */
+.dia-activo {
+    background: #9d9c9e !important;
+    color: white !important;
+    border: 2px solid #f0de72 !important;
+    font-weight: 700;
+}
+
+/* Lista de notas guardadas */
+.notas-guardadas {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notas-guardadas h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: #333;
+    font-weight: 700;
+}
+
+#lista_notas {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#lista_notas li {
+    margin-bottom: 12px;
+}
+
+/* Item de nota */
+.nota-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #9c9c9c;
+    transition: all 0.3s;
+}
+
+.nota-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.nota-contenido {
+    flex: 1;
+}
+
+.nota-contenido strong {
+    display: block;
+    color: #828282;
+    font-size: 13px;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.nota-contenido p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+/* Botón eliminar */
+.btn-eliminar {
+    background: #dc3545;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-eliminar:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.btn-eliminar i {
+    font-size: 14px;
+}
+
+/* Agenda (área de escribir nota) */
+.agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.agenda h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+    font-weight: 700;
+}
+
+.agenda textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.agenda textarea:focus {
+    outline: none;
+    border-color: #626262;
+}
+
+.agenda textarea::placeholder {
+    color: #999;
+}
+
+.btn-guardar {
+    background: #777777;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    align-self: flex-start;
+}
+
+.btn-guardar:hover {
+    background: #d0d0d0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-guardar:active {
+    transform: translateY(0);
+}
+
+/* Calendario - Días clickeables */
+.dias-mes div {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dias-mes div:hover {
+    background: #e9ecef;
+    transform: scale(1.05);
+}
+
+/* Scrollbar personalizado para lista de notas */
+.notas-guardadas::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notas-guardadas::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.notas-guardadas::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+.notas-guardadas::-webkit-scrollbar-thumb:hover {
+    background: #5568d3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nota-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-eliminar {
+        align-self: flex-end;
+    }
+    
+    .agenda textarea {
+        min-height: 100px;
+    }
+}
