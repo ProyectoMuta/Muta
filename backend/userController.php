@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
 
     // Traer datos dinámicos desde MongoDB
     
-$mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
+    $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
     echo json_encode([
         "ok" => true,
         "id" => $user['id'],
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['action'] === 'getFavoritos') 
         exit;
     }
 
-    // Devolver solo el array de favoritos
+    error_log("DEBUG getFavoritos para usuario $idUsuario: " . json_encode($mongoUser["favoritos"] ?? []));
     echo json_encode($mongoUser["favoritos"] ?? []);
     exit;
 }

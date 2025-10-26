@@ -79,21 +79,22 @@ document.addEventListener("componente:cargado", (e) => {
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
 
-            // 2. Comprobamos el ROL para la redirección
-            if (data.rol === 'admin') {
-              alert("Bienvenido, Administrador. Serás redirigido al panel.");
-              window.location.href = "home_mantenimiento.html";
-            } else {
-              alert("Bienvenido " + data.nombre);
-              window.location.reload();
-            }
-
             // ✅ Traer favoritos desde DB
             try {
               const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
               const favs = await resFav.json();
               localStorage.setItem("muta_favoritos", JSON.stringify(favs));
               document.dispatchEvent(new CustomEvent("favoritos:updated"));
+              // Reinyectar corazones
+              if (typeof window.injectHeartsIntoCategoryCards === "function") {
+                console.log("🔄 Reinserto corazones tras login con favoritos:", favs);
+                window.injectHeartsIntoCategoryCards();
+              }
+              // Refrescar modal
+              if (typeof window.renderFavorites === "function") {
+                console.log("🔄 Refrescando modal de favoritos tras login");
+                window.renderFavorites();
+              }
             } catch (err) {
               console.error("Error cargando favoritos desde DB:", err);
             }
@@ -106,6 +107,16 @@ document.addEventListener("componente:cargado", (e) => {
               document.dispatchEvent(new CustomEvent("cart:updated"));
             } catch (err) {
               console.error("Error cargando carrito desde DB:", err);
+            }
+
+            // 2. Comprobamos el ROL para la redirección
+            if (data.rol === 'admin') {
+              alert("Bienvenido, Administrador. Serás redirigido al panel.");
+              window.location.href = "home_mantenimiento.html";
+            } else {
+              alert("Bienvenido " + data.nombre);
+              // 🔧 Ahora recargamos al final, después de sincronizar favoritos y carrito
+              window.location.reload();
             }
 
           } else {
@@ -169,4 +180,3 @@ window.addEventListener("pageshow", () => {
     actualizarNavbarUsuario(localStorage.getItem("userName"));
   }
 });
-

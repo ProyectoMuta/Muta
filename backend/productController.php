@@ -1,5 +1,8 @@
 <?php
 require 'config.php';
+// DEBUG temporal: inspeccionar estructura de uploads
+error_log("DEBUG \$_FILES: " . print_r($_FILES, true));
+
 header("Content-Type: application/json; charset=UTF-8");
 
 /* ========= Helpers ========= */
@@ -103,6 +106,56 @@ function isSubEnabled(\MongoDB\Collection $cfgCol, string $catSlug, string $subS
   }
   return false;
 }
+
+function procesarImagenes(array $files, string $uploadDir): array {
+  $imagenes = [];
+  $errores  = [];
+
+  if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+
+  $names = $files['name'];
+  $tmps  = $files['tmp_name'];
+  $errs  = $files['error'];
+
+  for ($i = 0; $i < count($names); $i++) {
+    $original = $names[$i];
+    $tmp      = $tmps[$i];
+    $error    = $errs[$i];
+
+    // Validar extensión
+    $ext = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+    $allowedExts = ['jpg','jpeg','png','webp'];
+    if (!in_array($ext, $allowedExts)) {
+      $errores[] = "Archivo '$original' descartado: extensión '$ext' no permitida";
+      continue;
+    }
+
+    // Normalizar nombre
+    $normalizado = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $original);
+    if ($normalizado === false) $normalizado = $original;
+    $normalizado = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $normalizado);
+
+    if (trim($normalizado, '_') === '') {
+      $normalizado = uniqid('img_') . '.' . $ext;
+    }
+
+    // Mover archivo
+    if ($error === UPLOAD_ERR_OK && is_uploaded_file($tmp)) {
+      $safeName = preg_replace('/\s+/', '_', basename($normalizado));
+      $fileName = time() . "_$safeName";
+      if (move_uploaded_file($tmp, $uploadDir . $fileName)) {
+        $imagenes[] = "uploads/" . $fileName;
+      } else {
+        $errores[] = "Archivo '$original' falló al moverlo al destino";
+      }
+    } else {
+      $errores[] = "Archivo '$original' no se pudo subir (error code $error)";
+    }
+  }
+
+  return ['imagenes' => $imagenes, 'errores' => $errores];
+}
+
 try {
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method'])) {
     $_SERVER['REQUEST_METHOD'] = strtoupper($_POST['_method']);
@@ -240,6 +293,41 @@ try {
         else { http_response_code(404); echo json_encode(["error"=>"Producto no encontrado"]); }
         break;
       }
+
+      // === Verificar stock de productos favoritos ===
+      if (isset($_GET['action']) && $_GET['action'] === 'check_stock') {
+          $ids = explode(',', $_GET['ids'] ?? '');
+          $validIds = [];
+          $invalidIds = [];
+
+          foreach ($ids as $id) {
+              try {
+                  $doc = $db->products->findOne(
+                      ["_id" => new MongoDB\BSON\ObjectId(trim($id))],
+                      ['projection' => ['estado' => 1, 'eliminado' => 1]]
+                  );
+                  if ($doc && ($doc['eliminado'] ?? false) !== true) {
+                      $estado = (string)($doc['estado'] ?? 'Activo');
+                      if (in_array($estado, ["Activo", "Bajo stock", "Sin stock"])) {
+                          $validIds[] = (string)$doc['_id'];
+                      } else {
+                          $invalidIds[] = (string)$doc['_id'];
+                      }
+                  } else {
+                      $invalidIds[] = $id;
+                  }
+              } catch (Exception $e) {
+                  $invalidIds[] = $id;
+              }
+          }
+
+          echo json_encode([
+              'validIds' => $validIds,
+              'invalidIds' => $invalidIds
+          ], JSON_UNESCAPED_UNICODE);
+          exit;
+      }
+
       // listados simples
       if (isset($_GET['publicList']) && $_GET['publicList']=='1') {
         $f = ["eliminado"=>['$ne'=>true], "estado"=>['$in'=>["Activo","Bajo stock","Sin stock"]]];
@@ -314,23 +402,34 @@ try {
             }
             // ------- crear producto --------
             $existing  = [];
-            if (isset($_POST['existingImages'])) $existing = json_decode($_POST['existingImages'], true) ?: [];
-            $imagenes  = [];
-            if (!empty($_FILES['formFileMultiple']['name'][0])) {
-              $uploadDir = __DIR__ . "/../uploads/";
-              if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
-              $names = $_FILES['formFileMultiple']['name'];
-              $tmps  = $_FILES['formFileMultiple']['tmp_name'];
-              $errs  = $_FILES['formFileMultiple']['error'];
-              for ($i=0; $i<count($names); $i++) {
-                if ($errs[$i] === UPLOAD_ERR_OK && is_uploaded_file($tmps[$i])) {
-                  $safe = preg_replace('/\s+/', '_', basename($names[$i]));
-                  $fileName = time() . "_$safe";
-                  if (move_uploaded_file($tmps[$i], $uploadDir . $fileName)) $imagenes[] = "uploads/" . $fileName;
-                }
-              }
+            if (isset($_POST['existingImages'])) {
+              $existing = json_decode($_POST['existingImages'], true) ?: [];
             }
+
+            $uploadDir = __DIR__ . "/../uploads/";
+            $imagenes  = [];
+
+            if (!empty($_FILES['formFileMultiple']['name'][0])) {
+              $resultado = procesarImagenes($_FILES['formFileMultiple'], $uploadDir);
+              $imagenes  = $resultado['imagenes'];
+              $errores   = $resultado['errores'];
+            } else {
+              $imagenes = [];
+              $errores  = [];
+            }
+
+            // 🚨 Validación final
+            if (empty($imagenes)) {
+              http_response_code(400);
+              echo json_encode([
+                'error'   => 'Debe subir al menos una imagen válida con nombre seguro y extensión permitida',
+                'detalles'=> $errores
+              ], JSON_UNESCAPED_UNICODE);
+              exit;
+            }
+
             $imagenes = array_slice(array_merge($existing, $imagenes), 0, 3);
+
             $raw = file_get_contents('php://input');
             $maybeJson = json_decode($raw, true);
             $src = is_array($maybeJson) ? $maybeJson : $_POST;
@@ -428,27 +527,21 @@ try {
             $isOverride = !empty($_POST);
             $data = $isOverride ? $_POST : (json_decode(file_get_contents("php://input"), true) ?? []);
             // imágenes existentes
-            $existing = [];
-            if (isset($data['existingImages'])) {
-              $existing = is_string($data['existingImages']) ? (json_decode($data['existingImages'], true) ?: []) :
-                        (is_array($data['existingImages']) ? $data['existingImages'] : []);
-            }
-            // nuevas imágenes
             $nuevas = [];
+
             if ($isOverride && isset($_FILES['formFileMultiple'])) {
               $uploadDir = __DIR__ . "/../uploads/";
-              if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
-              $names = $_FILES['formFileMultiple']['name'];
-              $tmps  = $_FILES['formFileMultiple']['tmp_name'];
-              $errs  = $_FILES['formFileMultiple']['error'];
-              for ($i=0; $i<count($names); $i++) {
-                if ($errs[$i] === UPLOAD_ERR_OK && is_uploaded_file($tmps[$i])) {
-                  $safe = preg_replace('/\s+/', '_', basename($names[$i]));
-                  $fileName = time() . "_$safe";
-                  if (move_uploaded_file($tmps[$i], $uploadDir . $fileName)) $nuevas[] = "uploads/" . $fileName;
-                }
-              }
+              $nuevas = procesarImagenes($_FILES['formFileMultiple'], $uploadDir);
             }
+
+            $existing = is_array($data['existingImages'] ?? null) ? $data['existingImages'] : [];
+
+            if (empty($existing) && empty($nuevas)) {
+              http_response_code(400);
+              echo json_encode(['error' => 'Debe mantener al menos una imagen existente o subir una nueva válida']);
+              exit;
+            }
+
             if (!empty($existing) || !empty($nuevas)) $data['imagenes'] = array_slice(array_merge($existing, $nuevas), 0, 3);
             // Si no vino 'variantes' array, reconstruir desde talle[]/stock[]/peso[]/color[] (igual que en POST)
             if (!isset($data['variantes']) || !is_array($data['variantes'])) {

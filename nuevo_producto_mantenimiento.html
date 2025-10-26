@@ -8,14 +8,11 @@
   <link rel="stylesheet" href="css/nuevo_producto_mantenimiento.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  
-  <!-- Favicon -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="icon" type="image/png" href="img/favicon.jpeg">
 </head>
 <body>
   <div class="wrap">
-    <!-- SIDEBAR -->
     <aside class="side">
       <div class="brand">MUTA</div>
       <nav class="side-nav">
@@ -29,70 +26,61 @@
       </nav>
     </aside>
 
-    <!-- MAIN -->
     <main class="main">
-       <div class="fixed-top-bars"> 
+      <div class="fixed-top-bars"> 
         <header class="topbar">
-        <h1>Productos</h1>
-        <div class="search">
-          <i class="bi bi-search"></i>
-          <input id="q" type="search" placeholder="Buscar por nombre, SKU o categoría…">
-        </div>
-      </header>
-
+          <h1>Productos</h1>
+          <div class="search">
+            <i class="bi bi-search"></i>
+            <input id="q" type="search" placeholder="Buscar por nombre, SKU o categoría…">
+          </div>
+        </header>
         <div id="subnav" class="topbarsubnav">
-      <button id="nuevoProductoBtn" class="chip active">Producto nuevo</button>
-        <button id="categoriaProductoBtn" class="chip">Categorías</button>
-        <button id="inventarioProductoBtn" class="chip">Inventario</button>
-
-    </div>
-    </div>
-        <div class="titulo-nuevo">
-          <h3 class="titulo-nuevo-producto">NUEVO PRODUCTO</h3>
-          <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+          <button id="nuevoProductoBtn" class="chip active">Producto nuevo</button>
+          <button id="categoriaProductoBtn" class="chip">Categorías</button>
+          <button id="inventarioProductoBtn" class="chip">Inventario</button>
         </div>
-        <!-- GRID principal -->
+      </div>
+
+      <div class="titulo-nuevo">
+        <h3 class="titulo-nuevo-producto">NUEVO PRODUCTO</h3>
+        <button id="guardarBtn" class="guardar-btn">GUARDAR PRODUCTO</button>
+      </div>
+
       <section class="grid">
         <article id="formulario" class="card span-2">
-          <!-- FORMULARIO DE PRODUCTO -->
           <form id="formProducto" class="row g-2" enctype="multipart/form-data">
-            <!-- Nombre -->
             <div class="col-md-12">
               <label class="form-label">Nombre del producto</label>
               <input class="form-control" id="inputNombre" name="nombre" required>
             </div>
 
-            <!-- Descripción -->
             <div class="col-md-12">
               <label class="form-label">Descripción</label>
-              <textarea class="form-control" id="exampleFormControlTextarea1" name="descripcion" rows="3" required>Descripción del producto </textarea>
+              <textarea class="form-control" name="descripcion" rows="3" required></textarea>
             </div>
 
-            <!-- Imágenes -->
             <div class="col-md-12">
               <label for="formFileMultiple" class="form-label">Agregar imágenes</label>
               <input type="file" id="formFileMultiple" name="formFileMultiple[]" multiple>
-              <!-- Contenedor de previews -->
+              <span id="fileStatus" class="error-msg">No se ha seleccionado ninguna imagen</span>
               <div id="preview" class="preview-grid"></div>
             </div>
 
-            <!-- Precios -->
             <div class="col-12 col-md-6">
               <label class="form-label">Precio de venta</label>
-              <input placeholder="$0000" class="form-control" id="input-precio-venta" name="precio" required>
+              <input placeholder="$0000" class="form-control" name="precio" required>
             </div>
             <div class="col-12 col-md-6">
               <label class="form-label">Precio promocional</label>
-              <input placeholder="$0000" class="form-control" id="input-precio-promocional" name="precioPromo">
+              <input placeholder="$0000" class="form-control" name="precioPromo">
             </div>
 
-            <!-- Costo -->
             <div class="col-12 col-md-6">
               <label class="form-label">Costo</label>
-              <input placeholder="$0000" class="form-control" id="input-costo" name="costo" required>
+              <input placeholder="$0000" class="form-control" name="costo" required>
             </div>
 
-            <!-- Estado -->
             <div class="col-12 col-md-6">
               <label class="form-label" for="estado">Estado</label>
               <select id="estado" class="form-select" name="estado" required>
@@ -104,29 +92,18 @@
               </select>
             </div>
 
-            <!-- Inventario / variantes -->
-            <label class="form-label3">Inventario</label>
+            <!-- Tipo de talle -->
             <div class="col-12 col-md-6">
-              <label class="form-label">Tipo de talle   (Remeras S-XXXL / Pantalones 38-58)</label>
+              <label class="form-label">Tipo de talle</label>
               <select id="tipoVariante" class="form-select" name="tipoVariante" required>
-                <option value="remera">Remera</option>
-                <option value="pantalon">Pantalón</option>
+                <option value="remera">Remera (S–XXXL)</option>
+                <option value="pantalon">Pantalón (38–58)</option>
               </select>
             </div>
 
-<<<<<<< HEAD
-            <div class="add-product-variant-section">
-              <label class="form-label1">
-                Agregar variante
-                <!-- Botón (+) controlado por JS: sólo 1 fila -->
-                <i id="agregar1" class="icon-btn add-btn" role="button" title="Agregar">+</i>
-              </label>
-            </div>
+            <!-- Contenedor de variante (se llena según tipoVariante) -->
+            <div id="contenedor-variantes" class="row g-2 grupo-variante mb-3"></div>
 
-            <!-- CONTENEDOR DE VARIANTES (filas dinámicas) -->
-            <div id="contenedor-variantes"><!-- Las filas se agregan aquí con JS --></div>
-
-            <!-- Categoría / Subcategoría (dinámicas desde backend /cats) -->
             <div class="col-md-6">
               <label for="inputState" class="form-label">Categoría</label>
               <select id="inputState" class="form-select" name="categoria"></select>
@@ -136,7 +113,9 @@
               <select id="subcategoriaSelect" class="form-select" name="subcategoria"></select>
             </div>
 
-            <!-- Acciones -->
+            <div id="errorMensaje" class="error-msg"></div>
+            <div class="success-msg"></div>
+
             <div class="col-12 d-flex justify-content-end gap-3">
               <button id="volverBtn" type="button" class="guardar-btn23">Volver</button>
               <button id="guardarBtnTop" class="guardar-btn">GUARDAR PRODUCTO</button>
@@ -144,42 +123,6 @@
           </form>
         </article>
       </section>
-=======
-  <label class="form-label3">Inventario</label> 
-  <div class="col-12 col-md-6">
-  <label class="form-label">Tipo de talle   (Remeras S-XXXL / Pantalones 38-58)</label>
-  <select id="tipoVariante" class="form-select">
-    <option value="remera">Remera</option>
-    <option value="pantalon">Pantalón</option>
-  </select>
-</div>
-<div class="add-product-variant-section"> 
-   <label class="form-label1">Agregar Producto <i id="agregar1" class="icon-btn add-btn">+</i></label> 
-</div>
- 
-<div id="contenedor-variantes">
-<div class="grupo-variante row g-2">
-  
-</div>
-</div> 
- <div class="col-md-6">
-    <label for="inputState" class="form-label">Categoría</label>
-    <select id="inputState" class="form-select"></select>
-</div>
-<div class="col-md-6">
-    <label for="inputState" class="form-label">Subcategoría</label>
-    <select id="subcategoriaSelect" class="form-select"></select>
-</div>
-  
-  
-   <div class="col-12 d-flex justify-content-end gap-3">
-       <button id="volverBtn" class="guardar-btn23">Volver</button>
-       <button id="guardarBtn" class="guardar-btn2">GUARDAR PRODUCTO</button>
-  </div>
-
-</form>
-        </article>
->>>>>>> bb7c1036e813ee3f4539080e23ce6a226167281a
     </main>
   </div>
 
