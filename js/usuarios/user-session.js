@@ -1,7 +1,4 @@
 // user-session.js
-// Variable global para evitar múltiples listeners
-let recuperacionListenerAdded = false;
-
 document.addEventListener("componente:cargado", (e) => {
   // === Cuando se carga el componente de acceso de usuario ===
   if (e.detail.id === "acceso-usuario") {
@@ -82,21 +79,22 @@ document.addEventListener("componente:cargado", (e) => {
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
 
-            // 2. Comprobamos el ROL para la redirección
-            if (data.rol === 'admin') {
-              alert("Bienvenido, Administrador. Serás redirigido al panel.");
-              window.location.href = "home_mantenimiento.html";
-            } else {
-              alert("Bienvenido " + data.nombre);
-             window.location.href = "index.html";
-            }
-
             // ✅ Traer favoritos desde DB
             try {
               const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
               const favs = await resFav.json();
               localStorage.setItem("muta_favoritos", JSON.stringify(favs));
               document.dispatchEvent(new CustomEvent("favoritos:updated"));
+              // Reinyectar corazones
+              if (typeof window.injectHeartsIntoCategoryCards === "function") {
+                console.log("🔄 Reinserto corazones tras login con favoritos:", favs);
+                window.injectHeartsIntoCategoryCards();
+              }
+              // Refrescar modal
+              if (typeof window.renderFavorites === "function") {
+                console.log("🔄 Refrescando modal de favoritos tras login");
+                window.renderFavorites();
+              }
             } catch (err) {
               console.error("Error cargando favoritos desde DB:", err);
             }
@@ -111,6 +109,16 @@ document.addEventListener("componente:cargado", (e) => {
               console.error("Error cargando carrito desde DB:", err);
             }
 
+            // 2. Comprobamos el ROL para la redirección
+            if (data.rol === 'admin') {
+              alert("Bienvenido, Administrador. Serás redirigido al panel.");
+              window.location.href = "home_mantenimiento.html";
+            } else {
+              alert("Bienvenido " + data.nombre);
+              // 🔧 Ahora recargamos al final, después de sincronizar favoritos y carrito
+              window.location.reload();
+            }
+
           } else {
             alert("Error: " + (data.error || "Credenciales inválidas"));
           }
@@ -120,12 +128,6 @@ document.addEventListener("componente:cargado", (e) => {
         }
       });
     }
-
-     // === Configurar recuperación de contraseña (SOLO UNA VEZ) ===
-    if (!recuperacionListenerAdded) {
-      setupRecuperacionPassword();
-      recuperacionListenerAdded = true;
-    } 
   }
 
   // === Cuando se carga el navbar ===
@@ -143,83 +145,6 @@ document.addEventListener("componente:cargado", (e) => {
     }
   }
 });
-
-
-// === FUNCIÓN PARA CONFIGURAR RECUPERACIÓN DE CONTRASEÑA (FUERA DEL EVENTO) ===
-function setupRecuperacionPassword() {
-  const btnRecuperar = document.getElementById("btn-recuperar");
-  const linkRecuperar = document.getElementById("link-recuperar");
-  const cerrarRecuperar = document.getElementById("cerrar-recuperar");
-  const recuperarContainer = document.getElementById("recuperar-container");
-  const recuperarEmail = document.getElementById("recuperar-email");
-
-  // Mostrar modal
-  if (linkRecuperar && !linkRecuperar.dataset.listenerAdded) {
-    linkRecuperar.dataset.listenerAdded = "true";
-    linkRecuperar.addEventListener("click", function(e) {
-      e.preventDefault();
-      recuperarContainer.style.display = "flex";
-    });
-  }
-
-  // Cerrar modal
-  if (cerrarRecuperar && !cerrarRecuperar.dataset.listenerAdded) {
-    cerrarRecuperar.dataset.listenerAdded = "true";
-    cerrarRecuperar.addEventListener("click", function(e) {
-      e.preventDefault();
-      recuperarContainer.style.display = "none";
-    });
-  }
-
-  // Enviar email de recuperación
-  if (btnRecuperar && !btnRecuperar.dataset.listenerAdded) {
-    btnRecuperar.dataset.listenerAdded = "true";
-    
-    btnRecuperar.addEventListener("click", async function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Verificar si ya está procesando
-      if (this.disabled) return;
-
-      const email = recuperarEmail.value.trim();
-      if (!email) {
-        alert("Ingresá un email válido");
-        return;
-      }
-
-      // Deshabilitar botón para evitar múltiples clicks
-      this.disabled = true;
-      const textoOriginal = this.textContent;
-      this.textContent = "Enviando...";
-
-      try {
-        const res = await fetch("backend/userController.php?action=forgot-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await res.json();
-        alert(data.message || data.error);
-
-        if (data.ok) {
-          recuperarContainer.style.display = "none";
-          recuperarEmail.value = "";
-        }
-      } catch (error) {
-        console.error("Error al enviar email de recuperación:", error);
-        alert("Error de conexión. Intentá de nuevo.");
-      } finally {
-        // Rehabilitar botón después de 2 segundos (para evitar spam)
-        setTimeout(() => {
-          this.disabled = false;
-          this.textContent = textoOriginal;
-        }, 2000);
-      }
-    }, { once: false }); // No usar once:true porque queremos reutilizar el botón
-  }
-}
 
 // === Función auxiliar para actualizar navbar ===
 function actualizarNavbarUsuario(nombre) {
@@ -255,4 +180,3 @@ window.addEventListener("pageshow", () => {
     actualizarNavbarUsuario(localStorage.getItem("userName"));
   }
 });
-

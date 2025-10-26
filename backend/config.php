@@ -15,8 +15,8 @@ try {
 // Conexión a MySQL (XAMPP)
 // --------------------
 $servername = "localhost";
-$username   = "muta_dev";   // el usuario que creaste
-$password   = "muta123";    // la contraseña que definiste
+$username   = "root";   // el usuario que creaste
+$password   = "";    // la contraseña que definiste
 $dbname     = "mutaDB";     // la base de datos
 $conn = new mysqli($servername, $username, $password, $dbname);
 // Verificar conexión
