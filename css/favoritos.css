@@ -62,6 +62,7 @@
   background: #fff;
   display:flex; flex-direction:column;
   box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  position: relative;
 }
 .fav-card img{ width:100%; height:170px; object-fit:cover; background:#f3f3f3; }
 .fav-card .fav-info{ padding:10px 12px; display:grid; gap:4px; }
@@ -69,16 +70,48 @@
 .fav-card .fav-sub{ font-size:12px; color:#666; }
 .fav-card .fav-price{ margin-top:4px; font-weight:700; }
 
+/* Botón quitar flotante */
+.fav-card .fav-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(240,240,240,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fav-card .fav-remove:hover {
+  background: #ddd;
+}
+
 /* Acciones */
 .fav-actions{
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 8px 12px; border-top: var(--fav-border);
+  display:flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: var(--fav-border);
 }
-.fav-remove, .fav-view{
-  border:none; cursor:pointer; padding:6px 10px; border-radius:10px;
+.fav-view,
+.fav-add-cart{
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
-.fav-remove{ background:#f0f0f0; }
 .fav-view{ background:#111; color:#fff; }
+.fav-add-cart{ background:#f0f0f0; color:#333; }
+.fav-add-cart:hover{ background:#e0e0e0; }
 
 /* Estado vacío */
 .fav-empty{
@@ -86,3 +119,43 @@
   height: 220px; color:#666; font-size:14px;
 }
 .fav-empty span{ font-size:16px; }
+
+/* === Estados inválidos === */
+/* En cards inválidas, no bloquear interacción del botón */
+.fav-card.invalido {
+  opacity: 0.7;
+  filter: grayscale(100%);
+  pointer-events: auto;    /* mantiene interacción en hijos */
+}
+
+.fav-card.invalido img {
+  opacity: 0.5;
+}
+.fav-card.invalido .fav-sub {
+  color: #b00;
+  font-weight: 600;
+}
+.fav-card.invalido::after {
+  content: "Producto no disponible";
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(176,0,0,0.85);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* Asegurar que el botón Quitar siempre sea clickeable */
+.fav-card .fav-remove {
+  z-index: 5;              /* lo pone por encima */
+  pointer-events: auto;    /* asegura que reciba clics */
+}
+
+.fav-card.invalido * {
+  pointer-events: none;    /* desactiva clics en todo... */
+}
+.fav-card.invalido .fav-remove {
+  pointer-events: auto;    /* ...excepto en el botón quitar */
+}
