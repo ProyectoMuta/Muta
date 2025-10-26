@@ -1,0 +1,108 @@
+/* OPCIÓN 2: Estilo Minimalista Blanco */
+
+.user-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+#brandsContainer {
+    width: 100%;
+}
+
+.brand-card {
+    background: white;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 80px;
+    max-width: 900px;
+    margin: 0 auto;
+    border-left: 6px solid #000;
+    position: relative;
+}
+
+.brand-header {
+    display: block;
+    margin-bottom: 50px;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.brand-header i {
+    display: none;
+}
+
+.brand-header h2 {
+    font-size: 72px;
+    font-weight: 900;
+    color: #000;
+    margin: 0;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+.brand-description p {
+    font-size: 22px;
+    line-height: 1.8;
+    color: #333;
+    margin: 0;
+    font-weight: 300;
+    text-align: left;
+}
+
+.brand-footer {
+    padding-top: 40px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 40px;
+}
+
+.brand-footer small {
+    color: #999;
+    font-size: 13px;
+}
+
+.no-brands {
+    background: white;
+    padding: 100px 60px;
+    border-left: 6px solid #000;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.no-brands i {
+    color: #000;
+    font-size: 48px;
+    opacity: 0.2;
+}
+
+.no-brands h4 {
+    font-size: 36px;
+    font-weight: 900;
+    color: #000;
+    letter-spacing: -1px;
+}
+
+.no-brands p {
+    font-size: 18px;
+    color: #666;
+    font-weight: 300;
+}
+
+@media (max-width: 768px) {
+    .brand-card, .no-brands {
+        padding: 40px 30px;
+    }
+    
+    .brand-header h2 {
+        font-size: 48px;
+    }
+    
+    .brand-description p {
+        font-size: 18px;
+    }
+}
