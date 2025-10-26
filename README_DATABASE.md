@@ -4,6 +4,8 @@ agregrar el proyecto a la carpeta C:\xampp\htdocs
 
 Tener instalado composer y agregado al path.
 En D:\Muta\backend (cambiar a direcciond e tu proyecto), abrir cmd y hacer:
+
+rmdir /s /q vendor
 composer install
 
 Descargar la extensión MongoDB para PHP
@@ -17,28 +19,17 @@ x64 si tu PHP es de 64 bits (lo más común en XAMPP moderno).
 Thread Safe (TS) si tu PHP es TS (lo podés ver ejecutando php -i | find "Thread").
 Ejemplo: php_mongodb-1.16.2-8.2-ts-x64.zip.
 
-1. MySQL/MariaDB (desde XAMPP)
+1. MySQL/MariaDB (desde XAMPP) / PHPMYADMIN
 1.1 Crear base de datos y usuario
-Ejecutar en phpMyAdmin (pestaña SQL) o en consola:
+Ejecutar en phpMyAdmin pestaña SQL
 
 sql
 -- Crear base de datos
 CREATE DATABASE mutaDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
--- Crear usuario muta_dev con contraseña muta123
-CREATE USER 'muta_dev'@'localhost' IDENTIFIED BY 'muta123';
-
--- Darle todos los permisos sobre la base mutaDB
-GRANT ALL PRIVILEGES ON mutaDB.* TO 'muta_dev'@'localhost';
-
--- Aplicar cambios
+-- borrar usuario si lo tienen por las dudas poner:
+DROP USER 'muta_dev'@'localhost';
 FLUSH PRIVILEGES;
-1.2 Probar conexión
-En consola:
-
-mysql -u muta_dev -p mutaDB
-
-Ingresar la contraseña muta123. Si entra sin problemas, la base y el usuario están listos.
 
 1.3 Crear tabla de usuarios
 Ejecutar en mutaDB:
@@ -52,6 +43,22 @@ CREATE TABLE usuarios (
     rol ENUM('admin','cliente') DEFAULT 'cliente', 
     estado ENUM('Activo','Inactivo') DEFAULT 'Activo' 
     );
+
+IMPORTANTE
+-- Si ya tienen las db limpien los registros por las dudas antes de probar:
+En phpMyADMIN
+en mutaDB
+TRUNCATE TABLE usuarios;
+
+con mongod
+cmd: mongosh
+
+use mutaDB
+db.usuarios_datos.deleteMany({});
+db.products.deleteMany({});
+
+borren el contenido de la carpeta "uploads" del proyecto o muevan el contenido fuera del proyecto para su uso
+
 
 2. MongoDB
 2.1 Instalación
@@ -108,7 +115,7 @@ composer install
 
 
 3. Resumen
-MySQL: crear mutaDB, usuario muta_dev/muta123, tabla usuarios.
+MySQL: crear mutaDB
 
 MongoDB: instalar Community Server, no requiere configuración inicial, se autogenera al insertar.
 
