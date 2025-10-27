@@ -1,16 +1,19 @@
 <?php
 
+ini_set('display_errors', 0); // No mostrar errores en pantalla
+ini_set('log_errors', 1);     // Guardar errores en log
+error_reporting(E_ALL);       // Reportar todos los errores al log
+require_once __DIR__ . '/../vendor/autoload.php';
+
 require_once __DIR__ . '/config.php';
 
-header("Content-Type: application/json; charset=UTF-8");
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
-require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/enviar_email.php';
 
 require __DIR__ . "/configUsuarios/dbUsMySQL.php";
 require __DIR__ . "/configUsuarios/mongoUS.php";
 
+header("Content-Type: application/json; charset=UTF-8");
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'register') {
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -96,24 +99,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
 // ============================================
 // GOOGLE LOGIN ✅ COMPLETO
 // ============================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'google-login') {
-    $data = json_decode(file_get_contents("php://input"), true);
-    $token = $data['token'] ?? null;
-
-    if (!$token) {
-        echo json_encode(["error" => "Token no recibido"]);
-        exit;
-    }
-
-    $CLIENT_ID = "342902827600-gafqbggc11nsh2uqeue9t2v7gvb2s5ra.apps.googleusercontent.com";
-    $client = new Google\Client();
-    $client->setClientId($CLIENT_ID);
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'google-login') {
     try {
+        $rawData = file_get_contents("php://input");
+        $data = json_decode($rawData, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON inválido recibido");
+        }
+        
+        $token = $data['token'] ?? null;
+
+        if (!$token) {
+            throw new Exception("Token no recibido");
+        }
+
+        $CLIENT_ID = "342902827600-gafqbggc11nsh2uqeue9t2v7gvb2s5ra.apps.googleusercontent.com";
+        $client = new Google\Client();
+        $client->setClientId($CLIENT_ID);
+
         $payload = $client->verifyIdToken($token);
+        
         if (!$payload) {
-            echo json_encode(["error" => "Token inválido"]);
-            exit;
+            throw new Exception("Token inválido o expirado");
         }
 
         $email = $payload['email'];
@@ -121,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'google-login')
         $foto = $payload['picture'] ?? null;
         $google_id = $payload['sub'];
 
+        // Buscar usuario existente
         $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ? OR google_id = ?");
         $stmt->execute([$email, $google_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -133,16 +142,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'google-login')
             $stmt->execute([$nombre, $email, $google_id]);
             $idUsuario = $pdo->lastInsertId();
 
+            // Crear documento en MongoDB
             $mongoDB->usuarios_datos->insertOne([
                 "id_usuario" => intval($idUsuario),
                 "favoritos" => [],
                 "carrito" => [],
-                "direcciones" => [],
+                "direcciones" => [
+                    "domicilios" => [],
+                    "punto" => null
+                ],
                 "envioSeleccionado" => null,
-                "pago" => null
+                "pago" => [
+                    "metodo" => null,
+                    "titular" => null,
+                    "ultimos4" => null,
+                    "vencimiento" => null
+                ]
             ]);
 
-            enviarMailBienvenida($email, $nombre);
+            // Enviar email de bienvenida
+            try {
+                enviarMailBienvenida($email, $nombre);
+            } catch (Exception $e) {
+                error_log("Error enviando email de bienvenida: " . $e->getMessage());
+            }
+
             $nuevoUsuario = true;
 
             $user = [
@@ -153,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'google-login')
             ];
         }
 
+        // Traer datos de MongoDB
         $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
 
         echo json_encode([
@@ -161,14 +186,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'google-login')
             "id" => $user['id'],
             "nombre" => $user['nombre'],
             "email" => $user['email'],
-            "rol" => $user['rol'],
+            "rol" => $user['rol'] ?? 'cliente',
             "foto" => $foto,
             "mongo" => $mongoUser
         ]);
         exit;
 
     } catch (Exception $e) {
-        echo json_encode(["error" => "Fallo Google Login: " . $e->getMessage()]);
+        http_response_code(400);
+        error_log("Error en google-login: " . $e->getMessage());
+        echo json_encode([
+            "ok" => false,
+            "error" => "Error al iniciar sesión con Google: " . $e->getMessage()
+        ]);
         exit;
     }
 }

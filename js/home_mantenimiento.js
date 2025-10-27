@@ -305,6 +305,71 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+
+async function cargarProductosRecientes() {
+    try {
+        // 🔥 Esta línea obtiene los 3 últimos productos
+        const response = await fetch('backend/productController.php?action=list&limit=3&skip=0');
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+            renderizarProductos(data.items);
+        } else {
+            mostrarMensajeVacio();
+        }
+    } catch (error) {
+        console.error('Error cargando productos:', error);
+        mostrarMensajeError();
+    }
+}
+
+function renderizarProductos(productos) {
+    const lista = document.getElementById('top');
+    if (!lista) return;
+
+    lista.innerHTML = productos.map(producto => `
+        <li>
+            <div class="producto">
+                <img src="${producto.imagenes && producto.imagenes[0] ? producto.imagenes[0] : 'img/default.jpg'}" 
+                     alt="${producto.nombre}"
+                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">${producto.nombre}</h3>
+                    <p style="margin: 0; font-size: 13px; color: #666;">
+                        ${producto.descripcion ? producto.descripcion.substring(0, 50) + '...' : 'Sin descripción'}
+                    </p>
+                    <p style="margin: 5px 0 0 0; font-size: 15px; font-weight: 700; color: #4B6BFE;">
+                        $${producto.precio.toLocaleString('es-AR')}
+                    </p>
+                </div>
+            </div>
+        </li>
+    `).join('');
+}
+
+function mostrarMensajeVacio() {
+    const lista = document.getElementById('top');
+    if (!lista) return;
+
+    lista.innerHTML = `
+        <li style="text-align: center; padding: 20px; color: #999;">
+            <i class="bi bi-box" style="font-size: 40px; opacity: 0.3;"></i>
+            <p>No hay productos registrados</p>
+        </li>
+    `;
+}
+
+function mostrarMensajeError() {
+    const lista = document.getElementById('top');
+    if (!lista) return;
+
+    lista.innerHTML = `
+        <li style="text-align: center; padding: 20px; color: #e74c3c;">
+            <i class="bi bi-exclamation-triangle" style="font-size: 40px; opacity: 0.5;"></i>
+            <p>Error al cargar productos</p>
+        </li>
+    `;
+}
     // Renderizar calendario
     function renderizarCalendario(fecha) {
         const año = fecha.getFullYear();

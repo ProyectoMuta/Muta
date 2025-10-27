@@ -242,34 +242,55 @@ async function handleGoogleSignIn(response) {
   try {
     const res = await fetch('backend/userController.php?action=google-login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ token: response.credential }),
     });
 
-    if (!res.ok) { // Captura respuestas de error del servidor (ej. 401, 400)
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Error del servidor: ${res.status}`);
+    // Lee la respuesta como texto primero
+    const textResponse = await res.text();
+    
+    // Intenta parsear como JSON
+    let data;
+    try {
+      data = JSON.parse(textResponse);
+    } catch (parseError) {
+      console.error('❌ Respuesta no es JSON:', textResponse);
+      throw new Error('El servidor devolvió HTML en lugar de JSON. Revisa la consola del navegador y los logs de PHP.');
     }
 
-    const data = await res.json();
-
-    if (data.ok) {
-      localStorage.setItem('userId', data.id);
-      localStorage.setItem('userName', data.nombre);
-      localStorage.setItem('userEmail', data.email);
-      if (data.foto) localStorage.setItem('userFoto', data.foto);
-      alert('¡Bienvenido, ' + data.nombre + '!');
-      window.location.reload();
-    } else {
-      // Este bloque es por si el servidor responde con ok:false
-      alert('Error al iniciar sesión con Google: ' + (data.error || 'Error desconocido.'));
+    // Verifica errores del servidor
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Error desconocido del servidor');
     }
+
+    // Login exitoso
+    localStorage.setItem('userId', data.id);
+    localStorage.setItem('userName', data.nombre);
+    localStorage.setItem('userEmail', data.email);
+    localStorage.setItem('userRol', data.rol || 'cliente');
+    if (data.foto) localStorage.setItem('userFoto', data.foto);
+    
+    // Sincronizar datos de MongoDB si existen
+    if (data.mongo) {
+      if (data.mongo.favoritos) {
+        localStorage.setItem('muta_favoritos', JSON.stringify(data.mongo.favoritos));
+      }
+      if (data.mongo.carrito) {
+        localStorage.setItem('mutaCart', JSON.stringify(data.mongo.carrito));
+      }
+    }
+
+    alert('¡Bienvenido, ' + data.nombre + '!');
+    window.location.reload();
+
   } catch (error) {
-    console.error('Error en la petición a google-login:', error);
-    alert('Hubo un problema de conexión al intentar iniciar sesión con Google: ' + error.message);
+    console.error('❌ Error en google-login:', error);
+    alert('Error al iniciar sesión con Google:\n' + error.message);
   }
 }
-
 
 // ============================================
 // FUNCIÓN DE BÚSQUEDA - AÑADIR LÍNEA DE PRUEBA
@@ -513,7 +534,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (document.getElementById("acceso-usuario")) {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
-      .then(setupAccesoUsuario);
+      .then(() => { // <--- 1. Añade la función anónima
+        setupAccesoUsuario();
+        setupGoogleButton(); // <--- 2. Añade esta línea que faltaba
+      });
   }
 
   // --- Home ---
