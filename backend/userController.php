@@ -1,9 +1,19 @@
 <?php
-header("Content-Type: application/json; charset=UTF-8");
+
+ini_set('display_errors', 0); // No mostrar errores en pantalla
+ini_set('log_errors', 1);     // Guardar errores en log
+error_reporting(E_ALL);       // Reportar todos los errores al log
+require_once __DIR__ . '/../vendor/autoload.php';
+
+require_once __DIR__ . '/config.php';
+
+require_once __DIR__ . '/enviar_email.php';
 
 require __DIR__ . "/configUsuarios/dbUsMySQL.php";
 require __DIR__ . "/configUsuarios/mongoUS.php";
 
+header("Content-Type: application/json; charset=UTF-8");
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'register') {
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -50,7 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         ]
     ]);
 
+    enviarMailBienvenida($email, $nombre);
+    error_log("Se debería enviar mail de bienvenida a $email");
+
     echo json_encode(["ok" => true, "id" => $idUsuario]);
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
@@ -80,6 +94,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'login') {
     ]);
     exit;
 }
+
+
+// ============================================
+// GOOGLE LOGIN ✅ COMPLETO
+// ============================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'google-login') {
+    try {
+        $rawData = file_get_contents("php://input");
+        $data = json_decode($rawData, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("JSON inválido recibido");
+        }
+        
+        $token = $data['token'] ?? null;
+
+        if (!$token) {
+            throw new Exception("Token no recibido");
+        }
+
+        $CLIENT_ID = "342902827600-gafqbggc11nsh2uqeue9t2v7gvb2s5ra.apps.googleusercontent.com";
+        $client = new Google\Client();
+        $client->setClientId($CLIENT_ID);
+
+        $payload = $client->verifyIdToken($token);
+        
+        if (!$payload) {
+            throw new Exception("Token inválido o expirado");
+        }
+
+        $email = $payload['email'];
+        $nombre = $payload['name'];
+        $foto = $payload['picture'] ?? null;
+        $google_id = $payload['sub'];
+
+        // Buscar usuario existente
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ? OR google_id = ?");
+        $stmt->execute([$email, $google_id]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $nuevoUsuario = false;
+
+        if (!$user) {
+            // Crear usuario nuevo con Google
+            $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, google_id, rol, estado) VALUES (?, ?, ?, 'cliente', 1)");
+            $stmt->execute([$nombre, $email, $google_id]);
+            $idUsuario = $pdo->lastInsertId();
+
+            // Crear documento en MongoDB
+            $mongoDB->usuarios_datos->insertOne([
+                "id_usuario" => intval($idUsuario),
+                "favoritos" => [],
+                "carrito" => [],
+                "direcciones" => [
+                    "domicilios" => [],
+                    "punto" => null
+                ],
+                "envioSeleccionado" => null,
+                "pago" => [
+                    "metodo" => null,
+                    "titular" => null,
+                    "ultimos4" => null,
+                    "vencimiento" => null
+                ]
+            ]);
+
+            // Enviar email de bienvenida
+            try {
+                enviarMailBienvenida($email, $nombre);
+            } catch (Exception $e) {
+                error_log("Error enviando email de bienvenida: " . $e->getMessage());
+            }
+
+            $nuevoUsuario = true;
+
+            $user = [
+                "id" => $idUsuario,
+                "nombre" => $nombre,
+                "email" => $email,
+                "rol" => "cliente"
+            ];
+        }
+
+        // Traer datos de MongoDB
+        $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => intval($user['id'])]);
+
+        echo json_encode([
+            "ok" => true,
+            "nuevo" => $nuevoUsuario,
+            "id" => $user['id'],
+            "nombre" => $user['nombre'],
+            "email" => $user['email'],
+            "rol" => $user['rol'] ?? 'cliente',
+            "foto" => $foto,
+            "mongo" => $mongoUser
+        ]);
+        exit;
+
+    } catch (Exception $e) {
+        http_response_code(400);
+        error_log("Error en google-login: " . $e->getMessage());
+        echo json_encode([
+            "ok" => false,
+            "error" => "Error al iniciar sesión con Google: " . $e->getMessage()
+        ]);
+        exit;
+    }
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['action'] === 'getUser') {
     $id = intval($_GET['id'] ?? 0);
@@ -368,3 +491,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'savePago') {
     echo json_encode(["ok" => true]);
     exit;
 }
+
+
+// ============================================
+// --- RECUPERAR CONTRASEÑA
+// ============================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'forgot-password') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $email = trim($data['email'] ?? '');
+
+    if (!$email) {
+        echo json_encode(["error" => "Email requerido"]);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("SELECT id, nombre FROM usuarios WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        echo json_encode(["error" => "No existe un usuario con ese email"]);
+        exit;
+    }
+
+    $token = bin2hex(random_bytes(32));
+    $expires = date("Y-m-d H:i:s", strtotime("+1 hour"));
+
+    $stmt = $pdo->prepare("UPDATE usuarios SET reset_token = ?, reset_token_expires_at = ? WHERE id = ?");
+    $stmt->execute([$token, $expires, $user['id']]);
+
+    $link = "http://localhost/Muta/reset_password.html?token=".$token;
+
+    enviarMailRecuperar($email, $user['nombre'], $link);
+
+    echo json_encode(["ok" => true, "message" => "Te enviamos un email con instrucciones"]);
+    exit;
+}
+
+
+// ============================================
+// RESET PASSWORD (cambiar la contraseña con el token)
+// ============================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'reset-password') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $token = trim($data['token'] ?? '');
+    $password = trim($data['password'] ?? '');
+
+    if (!$token || !$password) {
+        echo json_encode(["error" => "Faltan datos"]);
+        exit;
+    }
+
+    // Buscar el token en la base de datos
+    $stmt = $pdo->prepare("SELECT id, reset_token_expires_at FROM usuarios WHERE reset_token = ?");
+    $stmt->execute([$token]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        echo json_encode(["error" => "Token inválido"]);
+        exit;
+    }
+
+    // Verificar que el token no haya expirado
+    $now = date('Y-m-d H:i:s');
+    if ($now > $user['reset_token_expires_at']) {
+        echo json_encode(["error" => "El token ha expirado. Solicitá uno nuevo."]);
+        exit;
+    }
+
+    // Hashear la nueva contraseña
+    $hash = password_hash($password, PASSWORD_BCRYPT);
+
+    // Actualizar la contraseña y limpiar el token
+    $stmt = $pdo->prepare("UPDATE usuarios SET password_hash = ?, reset_token = NULL, reset_token_expires_at = NULL WHERE id = ?");
+    $stmt->execute([$hash, $user['id']]);
+
+    echo json_encode(["ok" => true, "message" => "Contraseña actualizada correctamente"]);
+    exit;
+}
+
+
+

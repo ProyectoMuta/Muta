@@ -1,232 +1,216 @@
-        // Sistema de gestión de marcas
-        class BrandManager {
-            constructor() {
-                this.brands = this.loadBrands();
-                this.initializeEventListeners();
-                this.renderBrands();
+// js/nosotros.js
+// Maneja tanto el formulario del admin como la visualización pública
+
+/* ========================================
+   PANEL DE ADMINISTRADOR (soporte_mantenimiento.html)
+   ======================================== */
+
+// Guardar marca
+document.addEventListener('DOMContentLoaded', () => {
+    const brandForm = document.getElementById('brandForm');
+    const successAlert = document.getElementById('successAlert');
+    const clearFormBtn = document.getElementById('clearForm');
+    
+    // Si estamos en el panel de admin
+    if (brandForm) {
+        // Cargar datos existentes al abrir la página
+        cargarMarcaExistente();
+        
+        // Manejar envío del formulario
+        brandForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('inputNombre').value.trim();
+            const descripcion = document.getElementById('inputDescripcion').value.trim();
+            
+            if (!nombre || !descripcion) {
+                alert('Por favor, completa todos los campos');
+                return;
             }
-
-            // Cargar marcas desde memoria (en un proyecto real sería desde una base de datos)
-            loadBrands() {
-                // En un entorno real, esto vendría de tu base de datos
-                // Por ahora usamos un array en memoria
-                return [];
-            }
-
-            // Inicializar eventos
-            initializeEventListeners() {
-                const form = document.getElementById('brandForm');
-                const clearButton = document.getElementById('clearForm');
-
-                form.addEventListener('submit', (e) => this.handleSubmit(e));
-                clearButton.addEventListener('click', () => this.clearForm());
-            }
-
-            // Manejar envío del formulario
-            handleSubmit(e) {
-                e.preventDefault();
-                
-                const form = e.target;
-                const nombre = document.getElementById('inputNombre').value.trim();
-                const descripcion = document.getElementById('inputDescripcion').value.trim();
-
-                // Limpiar mensajes de error previos
-                this.clearErrorMessages();
-
-                // Validar formulario
-                if (!this.validateForm(nombre, descripcion)) {
-                    this.showErrorMessages(nombre, descripcion);
-                    return;
-                }
-
-                // Crear nueva marca
-                const newBrand = {
-                    id: Date.now(), // En un proyecto real, esto sería generado por la base de datos
-                    nombre: nombre,
-                    descripcion: descripcion,
-                    fechaCreacion: new Date().toISOString()
-                };
-
-                // Guardar marca
-                this.saveBrand(newBrand);
-                
-                // Limpiar formulario y mostrar éxito
-                this.clearForm();
-                this.showSuccessMessage();
-                
-                // Actualizar vista de usuario
-                this.renderBrands();
-            }
-
-            // Mostrar mensajes de error específicos
-            showErrorMessages(nombre, descripcion) {
-                const nombreInput = document.getElementById('inputNombre');
-                const descripcionInput = document.getElementById('inputDescripcion');
-
-                if (!nombre) {
-                    nombreInput.classList.add('is-invalid');
-                    this.showErrorMessage(nombreInput, 'Por favor, ingresa el nombre de la marca.');
-                }
-
-                if (!descripcion) {
-                    descripcionInput.classList.add('is-invalid');
-                    this.showErrorMessage(descripcionInput, 'Por favor, ingresa la descripción de la marca.');
-                }
-            }
-
-            // Mostrar un mensaje de error específico
-            showErrorMessage(input, message) {
-                // Eliminar mensaje de error previo si existe
-                const existingError = input.parentNode.querySelector('.error-message');
-                if (existingError) {
-                    existingError.remove();
-                }
-
-                // Crear y mostrar nuevo mensaje de error
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message text-danger small mt-1';
-                errorDiv.textContent = message;
-                input.parentNode.appendChild(errorDiv);
-            }
-
-            // Limpiar mensajes de error
-            clearErrorMessages() {
-                // Remover clases de error
-                document.getElementById('inputNombre').classList.remove('is-invalid');
-                document.getElementById('inputDescripcion').classList.remove('is-invalid');
-
-                // Remover mensajes de error
-                const errorMessages = document.querySelectorAll('.error-message');
-                errorMessages.forEach(msg => msg.remove());
-            }
-
-            // Validar formulario
-            validateForm(nombre, descripcion) {
-                return nombre.length > 0 && descripcion.length > 0;
-            }
-
-            // Guardar marca
-            saveBrand(brand) {
-                this.brands.push(brand);
-                
-                // En un proyecto real, aquí harías una llamada AJAX a tu backend
-                // Ejemplo:
-                /*
-                fetch('/api/brands', {
+            
+            try {
+                const response = await fetch('backend/marcaController.php?action=guardar', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(brand)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Marca guardada:', data);
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        descripcion: descripcion
+                    })
                 });
-                */
                 
-                console.log('Marca guardada:', brand);
-            }
-
-            // Limpiar formulario
-            clearForm() {
-                document.getElementById('inputNombre').value = '';
-                document.getElementById('inputDescripcion').value = '';
-                this.clearErrorMessages();
-            }
-
-            // Mostrar mensaje de éxito
-            showSuccessMessage() {
-                const alert = document.getElementById('successAlert');
-                alert.style.display = 'block';
+                const data = await response.json();
                 
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                }, 3000);
-            }
-
-            // Renderizar marcas en la vista de usuario
-            renderBrands() {
-                const container = document.getElementById('brandsContainer');
-                
-                if (this.brands.length === 0) {
-                    container.innerHTML = `
-                        <div class="no-brands">
-                            <i class="fas fa-box-open fa-3x mb-3"></i>
-                            <h4>No hay marcas registradas</h4>
-                            <p>Las marcas aparecerán aquí una vez que se agreguen desde el panel de administrador.</p>
-                        </div>
-                    `;
-                    return;
+                if (data.success) {
+                    // Mostrar alerta de éxito
+                    mostrarAlertaExito();
+                    
+                    console.log('✅ Marca guardada:', data.marca);
+                } else {
+                    alert('❌ Error: ' + data.error);
                 }
+            } catch (error) {
+                console.error('Error guardando marca:', error);
+                alert('❌ Error al guardar. Intenta nuevamente.');
+            }
+        });
+        
+        // Botón limpiar
+        if (clearFormBtn) {
+            clearFormBtn.addEventListener('click', () => {
+                brandForm.reset();
+                ocultarAlertaExito();
+            });
+        }
+    }
+    
+    // Si estamos en la página pública (nosotros.html)
+    const brandsContainer = document.getElementById('brandsContainer');
+    if (brandsContainer) {
+        cargarMarcaPublica();
+    }
+});
 
-                const brandsHTML = this.brands.map(brand => `
+/* ========================================
+   FUNCIONES DEL ADMIN
+   ======================================== */
+
+// Cargar marca existente en el formulario
+async function cargarMarcaExistente() {
+    try {
+        const response = await fetch('backend/marcaController.php?action=obtener');
+        const data = await response.json();
+        
+        if (data.success && data.marca) {
+            const inputNombre = document.getElementById('inputNombre');
+            const inputDescripcion = document.getElementById('inputDescripcion');
+            
+            if (inputNombre && data.marca.nombre) {
+                inputNombre.value = data.marca.nombre;
+            }
+            
+            if (inputDescripcion && data.marca.descripcion) {
+                inputDescripcion.value = data.marca.descripcion;
+            }
+            
+            console.log('📄 Marca cargada:', data.marca);
+        }
+    } catch (error) {
+        console.error('Error cargando marca:', error);
+    }
+}
+
+// Mostrar alerta de éxito
+function mostrarAlertaExito() {
+    const successAlert = document.getElementById('successAlert');
+    if (successAlert) {
+        successAlert.style.display = 'flex';
+        
+        // Ocultar después de 3 segundos
+        setTimeout(() => {
+            ocultarAlertaExito();
+        }, 3000);
+    }
+}
+
+// Ocultar alerta de éxito
+function ocultarAlertaExito() {
+    const successAlert = document.getElementById('successAlert');
+    if (successAlert) {
+        successAlert.style.display = 'none';
+    }
+}
+
+/* ========================================
+   FUNCIONES PÚBLICAS (nosotros.html)
+   ======================================== */
+
+// Cargar y mostrar marca en la página pública
+async function cargarMarcaPublica() {
+    const brandsContainer = document.getElementById('brandsContainer');
+    
+    if (!brandsContainer) return;
+    
+    try {
+        const response = await fetch('backend/marcaController.php?action=obtener');
+        const data = await response.json();
+        
+        if (data.success && data.marca) {
+            const marca = data.marca;
+            
+            // Si hay nombre y descripción, mostrar la marca
+            if (marca.nombre && marca.descripcion) {
+                brandsContainer.innerHTML = `
                     <div class="brand-card">
-                        <div class="brand-name">
-                            <i class="fas fa-star"></i> ${this.escapeHtml(brand.nombre)}
+                        <div class="brand-header">
+                            <i class="bi bi-shop"></i>
+                            <h2>${escapeHtml(marca.nombre)}</h2>
                         </div>
                         <div class="brand-description">
-                            ${this.escapeHtml(brand.descripcion)}
+                            <p>${escapeHtml(marca.descripcion)}</p>
                         </div>
-                        <small class="d-block mt-3" style="opacity: 0.7;">
-                            <i class="fas fa-calendar"></i> 
-                            Registrada el ${new Date(brand.fechaCreacion).toLocaleDateString('es-ES')}
-                        </small>
+                        <div class="brand-footer">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> 
+                                ${marca.actualizado_en ? 'Actualizado: ' + new Date(marca.actualizado_en).toLocaleDateString('es-AR') : ''}
+                            </small>
+                        </div>
                     </div>
-                `).join('');
-
-                container.innerHTML = brandsHTML;
+                `;
+            } else {
+                // Mostrar mensaje por defecto
+                brandsContainer.innerHTML = `
+                    <div class="no-brands">
+                        <i class="bi bi-box-open" style="font-size: 48px; opacity: 0.3;"></i>
+                        <h4>Quiénes Somos</h4>
+                        <p>La información de la marca aparecerá aquí una vez que se configure desde el panel de administración.</p>
+                    </div>
+                `;
             }
-
-            // Escapar HTML para prevenir XSS
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
+        } else {
+            mostrarMensajeVacio();
         }
+    } catch (error) {
+        console.error('Error cargando marca:', error);
+        mostrarMensajeError();
+    }
+}
 
-        // Inicializar el sistema cuando se carga la página
-        document.addEventListener('DOMContentLoaded', () => {
-            new BrandManager();
-        });
+// Mostrar mensaje cuando no hay datos
+function mostrarMensajeVacio() {
+    const brandsContainer = document.getElementById('brandsContainer');
+    if (brandsContainer) {
+        brandsContainer.innerHTML = `
+            <div class="no-brands">
+                <i class="bi bi-box-open" style="font-size: 48px; opacity: 0.3;"></i>
+                <h4>Quiénes Somos</h4>
+                <p>La información de la marca aún no ha sido configurada.</p>
+            </div>
+        `;
+    }
+}
 
-        // Ejemplo de cómo integrar con un backend real
-        /*
-        class BrandManagerWithAPI extends BrandManager {
-            // Cargar marcas desde la API
-            async loadBrands() {
-                try {
-                    const response = await fetch('/api/brands');
-                    return await response.json();
-                } catch (error) {
-                    console.error('Error cargando marcas:', error);
-                    return [];
-                }
-            }
+// Mostrar mensaje de error
+function mostrarMensajeError() {
+    const brandsContainer = document.getElementById('brandsContainer');
+    if (brandsContainer) {
+        brandsContainer.innerHTML = `
+            <div class="no-brands">
+                <i class="bi bi-exclamation-triangle" style="font-size: 48px; opacity: 0.3; color: #e74c3c;"></i>
+                <h4>Error al cargar</h4>
+                <p>No se pudo cargar la información de la marca. Intenta recargar la página.</p>
+            </div>
+        `;
+    }
+}
 
-            // Guardar marca en la API
-            async saveBrand(brand) {
-                try {
-                    const response = await fetch('/api/brands', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(brand)
-                    });
-                    
-                    if (response.ok) {
-                        const savedBrand = await response.json();
-                        this.brands.push(savedBrand);
-                        return savedBrand;
-                    } else {
-                        throw new Error('Error al guardar la marca');
-                    }
-                } catch (error) {
-                    console.error('Error guardando marca:', error);
-                    alert('Error al guardar la marca. Por favor, intenta de nuevo.');
-                }
-            }
-        }
-        */
+// Escapar HTML para prevenir XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
