@@ -147,6 +147,12 @@
 .talle:hover   { background: #f6f6f6; }
 .talle.active  { background: #111; color: #fff; }
 
+/* Ocultar bloques cuando JS les agrega la clase hidden */
+.bloque-colores.hidden,
+.bloque-talles.hidden {
+  display: none !important;
+}
+
 /* ---------- Cantidad (+/-) ---------- */
 .cantidad {
   gap: 6px;
@@ -177,7 +183,7 @@
   font-weight: 600;
 }
 
-/* ---------- Botón “Agregar al carrito” (igual que producto.css) ---------- */
+/* ---------- Botón “Agregar al carrito” ---------- */
 .btn-carrito {
   padding: 12px 20px;
   background: #111;
@@ -366,4 +372,16 @@
   border-radius:999px;
   margin-bottom:.5rem;
 }
+
+.talle.fijo {
+  border: none;
+  background: transparent;
+  color: #111;
+  font-weight: 600;
+  cursor: default;
+}
+.color-option {
+  pointer-events: none; /* ya no es clickeable */
+}
+
 

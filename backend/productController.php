@@ -285,6 +285,55 @@ try {
         echo json_encode(['items'=>$items,'total'=>$total], JSON_UNESCAPED_UNICODE);
         exit;
       }
+
+      // === Feed global para carrusel de novedades ===
+      if (isset($_GET['action']) && $_GET['action'] === 'global_feed') {
+          $q = [
+              'eliminado'   => ['$ne' => true],
+              'estado'      => ['$in' => ['Activo','Bajo stock','Sin stock']],
+              'publicable'  => true
+          ];
+
+          // Traer últimos productos (ordenados por _id desc = más recientes primero)
+          $cur = $db->products->find($q, ['sort' => ['_id' => -1], 'limit' => 500]);
+
+          // Agrupar por categoría → subcategoría
+          $byCat = [];
+          foreach ($cur as $doc) {
+              $arr = bsonToArray($doc);
+              $cat = $arr['categoriaSlug'] ?? '';
+              $sub = $arr['subcategoriaSlug'] ?? '';
+              if (!$cat || !$sub) continue;
+              if (!isCatEnabled($cfgCol, $cat)) continue;
+              if (!isSubEnabled($cfgCol, $cat, $sub)) continue;
+
+              if (!isset($byCat[$cat])) $byCat[$cat] = [];
+              if (!isset($byCat[$cat][$sub])) $byCat[$cat][$sub] = [];
+              $byCat[$cat][$sub][] = $arr;
+          }
+
+          // Seleccionar 2 subcategorías distintas por categoría, y 2 productos por cada una
+          $out = [];
+          foreach ($byCat as $catSlug => $subMap) {
+              // Ordenar subcategorías por recencia (último _id)
+              $subEntries = [];
+              foreach ($subMap as $subSlug => $items) {
+                  $lastId = $items[0]['_id']; // ya vienen ordenados desc
+                  $subEntries[] = ['sub' => $subSlug, 'items' => $items, 'lastId' => $lastId];
+              }
+              usort($subEntries, fn($a,$b) => strcmp($b['lastId'], $a['lastId']));
+              $pickedSubs = array_slice($subEntries, 0, 2);
+
+              foreach ($pickedSubs as $entry) {
+                  $take = array_slice($entry['items'], 0, 2);
+                  foreach ($take as $it) $out[] = $it;
+              }
+          }
+
+          echo json_encode(['items' => $out], JSON_UNESCAPED_UNICODE);
+          exit;
+      }
+
       // Get por id
       if (!empty($_GET['id'])) {
         $id = $_GET['id'];

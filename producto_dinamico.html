@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MUTA - Producto</title>
 
-  <!-- estilos globales que ya usas -->
+  <!-- estilos globales -->
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/footer.css">
@@ -19,20 +19,19 @@
 </head>
 <body>
 
-  <!-- Navbar dinámico (sí usamos componente-loader para esto) -->
+  <!-- Navbar dinámico -->
   <div id="navbar"></div>
 
-    <main class="producto-detalle">
+  <main class="producto-detalle">
     <section class="container-producto">
-        <!-- Galería -->
-        <div class="galeria">
+      <!-- Galería -->
+      <div class="galeria">
         <div id="thumbs" class="thumbs"><!-- thumbs por JS --></div>
         <img id="main-image" class="main-image" src="img/default.jpg" alt="Producto principal">
-        </div>
+      </div>
 
-        <!-- Info -->
-        <div class="info-producto">
-          
+      <!-- Info -->
+      <div class="info-producto">
         <div class="title-row">
           <h1 id="nombreProducto">Producto</h1>
           <div class="fav-inline">
@@ -42,41 +41,34 @@
         </div>
         
         <p id="precioProducto" class="precio">$0</p>
-        <p id="descripcionProducto" class="descripcion"></p>
 
         <div class="opciones">
-            <div class="bloque-colores">
-            <p class="label">Elige color:</p>
-            <div id="coloresWrap" class="colores"></div>
-            <div id="error-color" class="error-msg" style="display:none"></div>
-            </div>
+          <div class="bloque-color-unico" id="colorUnico"></div>
+          <div class="bloque-talle-unico" id="talleUnico"></div>
 
-            <div class="bloque-talles">
-            <p class="label">Elige talle:</p>
-            <div id="tallesWrap" class="talles"></div>
-            <div id="error-talle" class="error-msg" style="display:none"></div>
-            </div>
-
-            <div class="cantidad">
+          <div class="cantidad">
             <button id="menos" class="btn-qty" type="button">-</button>
             <input id="cantidad" type="number" min="1" value="1" />
             <button id="mas" class="btn-qty" type="button">+</button>
-            </div>
+          </div>
 
-            <button id="btnAgregarCarrito" class="btn-carrito">Agregar al carrito</button>
-            <div id="success-msg" class="success-msg" style="display:none"></div>
+          <button id="btnAgregarCarrito" class="btn-carrito">Agregar al carrito</button>
+          <div id="success-msg" class="success-msg" style="display:none"></div>
         </div>
-        </div>
+      </div>
     </section>
+
     <!-- Pestañas de información -->
     <div id="producto-tabs"></div>
-    </main>
+  </main>
 
   <!-- Acceso de usuario -->
   <div id="acceso-usuario"></div>
   <!-- Footer dinámico -->
   <div id="footer"></div>
   <div id="chatbot"></div> <!--se carga el chatbot-->
+
+  <!-- FAVORITOS -->
   <div id="favoritos"></div>
 
   <!-- JS (orden importa) -->
@@ -89,6 +81,5 @@
   <script src='https://cdn.jotfor.ms/agent/embedjs/0199edc25850752f8dd01a2672b5d39088b4/embed.js'></script>
 
   <script>setupCart();</script>
-
 </body>
 </html>

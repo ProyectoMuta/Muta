@@ -429,12 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarComponente("hero-sale", "componentesHTML/hero-sale.html");
 
   if (document.getElementById("carousel-novedades"))
-    cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html")
-      .then(() => {
-        setupCarousel("carousel-novedades");
-        // 🔔 Avisa a favoritos.js que hay nuevas cards para inyectar corazones
-        document.dispatchEvent(new CustomEvent("nuevos:render"));
-      });
+    cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html");
 
   // --- Producto ---
   if (document.getElementById("galeria-producto"))

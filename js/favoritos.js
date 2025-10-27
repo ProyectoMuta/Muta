@@ -58,30 +58,33 @@
   }
 
   // ---------- Abrir / Cerrar ----------
-  function openFavorites() {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      const modalLogin = document.getElementById("acceso-usuario-container");
-      if (modalLogin) modalLogin.style.display = "flex";
-      return;
-    }
-    const modal   = document.getElementById("favModal");
-    const overlay = document.getElementById("favOverlay");
-    if (!modal || !overlay) return;
-    renderFavorites();
-    modal.classList.add("is-open");
-    overlay.hidden = false;
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-  }
   function closeFavorites() {
     const modal   = document.getElementById("favModal");
     const overlay = document.getElementById("favOverlay");
     if (!modal || !overlay) return;
+
     modal.classList.remove("is-open");
+    modal.style.display = "none";   // 🔑 asegura que desaparezca
     overlay.hidden = true;
+    overlay.style.display = "none";
+
     document.documentElement.style.overflow = "";
     document.body.style.overflow = "";
+  }
+
+  function openFavorites() {
+    const modal   = document.getElementById("favModal");
+    const overlay = document.getElementById("favOverlay");
+    if (!modal || !overlay) return;
+
+    renderFavorites();
+    modal.style.display = "grid";   // 🔑 vuelve a mostrarlo
+    modal.classList.add("is-open");
+    overlay.hidden = false;
+    overlay.style.display = "block";
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
   }
 
   // ---------- Filtrar favoritos vendibles ----------
