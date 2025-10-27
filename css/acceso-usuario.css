@@ -3,6 +3,29 @@
    HTML relacionado: componentesHTML/inicio-sesion.html
 */
 
+.modal-recuperar {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 18px;
+  max-width: 340px;
+  border-radius: 10px;
+  text-align: center;
+}
+.modal-box input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px;
+}
+
 /* Fondo oscuro del modal */
 .acceso-usuario-container {
   display: none;
@@ -221,6 +244,135 @@
 
 .btn-logout:hover {
   background: #c00;
+}
+/* ========================================
+   ESTILOS PARA MODAL DE RECUPERACIÓN
+======================================== */
+
+.modal-recuperar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-recuperar .modal-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-recuperar h3 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.modal-recuperar input[type="email"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  margin: 20px 0;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal-recuperar input[type="email"]:focus {
+  outline: none;
+  border-color: #8A2BE2;
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+}
+
+.modal-recuperar input[type="email"]::placeholder {
+  color: #999;
+}
+
+.modal-recuperar button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+#btn-recuperar {
+  background: #000;
+  color: white;
+}
+
+#btn-recuperar:hover {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#btn-recuperar:active {
+  transform: translateY(0);
+}
+
+#btn-recuperar:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#cerrar-recuperar {
+  background: transparent;
+  color: #666;
+  border: 2px solid #e0e0e0;
+}
+
+#cerrar-recuperar:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+/* Centrar botón de Google en el login */
+.acceso-usuario-social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+#g_id_signin {
+  display: flex;
+  justify-content: center;
+}
+
+/* Ajuste del link "Recuperála" */
+#acceso-usuario-login p {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+#link-recuperar {
+  color: #030303;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+#link-recuperar:hover {
+  text-decoration: underline;
 }
 
 

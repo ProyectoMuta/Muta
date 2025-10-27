@@ -7,6 +7,8 @@
 
   <!-- CSS base admin -->
   <link rel="stylesheet" href="css/admin_base.css">
+   <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
   <!-- CSS específico de análisis -->
   <link rel="stylesheet" href="css/analisis_mantenimiento.css">
 
@@ -24,7 +26,6 @@
       <nav class="side-nav">
         <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
-        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
         <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
         <a href="analisis_mantenimiento.html" class="item active"><i class="bi bi-graph-up"></i> Análisis</a>
         <a href="envios_mantenimiento.html" class="item"><i class="bi bi-truck"></i> Envíos</a>
@@ -42,6 +43,10 @@
           <button class="analisis-chip" data-range="14">Últ. 14 días</button>
           <button class="analisis-chip active" data-range="30">Últ. 30 días</button>
         </div>
+        <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
 
       <!-- Card del gráfico -->
@@ -70,6 +75,11 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
   <!-- JS específico de análisis -->
+     <div id="acceso-usuario"></div>
+
+ 
   <script src="js/analisis_mantenimiento.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
 </body>
 </html>

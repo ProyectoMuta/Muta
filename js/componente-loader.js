@@ -63,6 +63,7 @@ function setupHamburgerMenu() {
   }
 }
 // --- Modal de acceso de usuario ---
+
 function setupAccesoUsuario() {
   const openAuth = document.getElementById("open-auth");
   const container = document.getElementById("acceso-usuario-container");
@@ -72,7 +73,16 @@ function setupAccesoUsuario() {
   const goRegister = document.getElementById("go-register");
   const goLogin = document.getElementById("go-login");
   const btnLogout = document.getElementById("btn-logout");
+const openAuthUsuario = document.getElementById("open-auth-usuario"); // <-- Usa el nuevo ID
+  window.__googleButtonRendered = false;
 
+  function renderGoogleButtonIfNeeded() {
+      if (!window.__googleButtonRendered && typeof setupGoogleButton === 'function') {
+          setupGoogleButton();
+          window.__googleButtonRendered = true; // Marcar como renderizado
+      }
+  }
+  
   if (openAuth && container) {
     openAuth.addEventListener("click", e => {
       e.preventDefault();
@@ -109,7 +119,45 @@ function setupAccesoUsuario() {
       loginBox.classList.add("active");
     });
   }
+if (openAuthUsuario) { // <-- Inicio del IF
+    openAuthUsuario.addEventListener("click", e => {
+      e.preventDefault();
+      const userId = localStorage.getItem("userId");
+      const userRol = localStorage.getItem("userRol"); // <-- Necesario leer el rol aquí también
+      const container = document.getElementById("acceso-usuario-container");
+      const loginBox = document.getElementById("acceso-usuario-login");
+      const perfilBox = document.getElementById("acceso-usuario-perfil");
+      const adminBox = document.getElementById("acceso-usuario-admin");
+      const goToAdminViewBtn = document.getElementById("go-to-admin-view");
 
+      // Ocultar todas las vistas primero
+      [loginBox, registerBox, perfilBox, adminBox].forEach(box => box?.classList.remove("active"));
+
+      if (userId) {
+          if (userRol === 'admin') {
+              // Si es admin, muestra la VISTA ADMIN
+              if(adminBox) adminBox.classList.add("active");
+              // Botón para ir al panel visible en el perfil
+              if (goToAdminViewBtn) goToAdminViewBtn.style.display = 'flex';
+          } else {
+              // Si es usuario normal, muestra el PERFIL
+              if (typeof mostrarVistaPerfil === "function") {
+                  mostrarVistaPerfil();
+              } else {
+                 if(perfilBox) perfilBox.classList.add("active");
+              }
+              // Oculta el botón para ir al panel admin
+              if (goToAdminViewBtn) goToAdminViewBtn.style.display = 'none';
+          }
+      } else {
+          // Si no hay nadie logueado, muestra LOGIN
+          if(loginBox) loginBox.classList.add("active");
+          // Intenta renderizar botón Google (si aplica a este icono)
+          // renderGoogleButtonIfNeeded(); // Descomentar si quieres el botón Google aquí también
+      }
+      if(container) container.style.display = "flex"; // Muestra el modal
+    });
+  } // <-- Fin del IF
   if (btnLogout) {
     btnLogout.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -160,15 +208,90 @@ function setupAccesoUsuario() {
         document.dispatchEvent(new CustomEvent("cart:updated"));
         // Confirmación al usuario
         alert("Has cerrado la sesión.");
-        // Si estoy en cart.html, redirigir a index
-        if (window.location.pathname.endsWith("cart.html")) {
-          window.location.href = "index.html";
-        }
+        window.location.href = "index.html";
 
       }
     });
   }
 }
+// ============================================
+// ✅ FUNCIONES INTEGRADAS PARA GOOGLE SIGN-IN
+// ============================================
+
+function setupGoogleButton() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.error("La librería de Google (GSI) no se ha cargado. Revisa que el script esté en el <head> de tu HTML.");
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: "342902827600-gafqbggc11nsh2uqeue9t2v7gvb2s5ra.apps.googleusercontent.com",
+    callback: handleGoogleSignIn
+  });
+  const googleButtonContainer = document.getElementById("g_id_signin");
+  if (googleButtonContainer) {
+    google.accounts.id.renderButton(
+      googleButtonContainer,
+      { theme: "outline", size: "large", text: "continue_with", shape: "rectangular" }
+    );
+  } else {
+    console.error("No se encontró el contenedor '#g_id_signin' para el botón de Google.");
+  }
+}
+
+async function handleGoogleSignIn(response) {
+  try {
+    const res = await fetch('backend/userController.php?action=google-login', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ token: response.credential }),
+    });
+
+    // Lee la respuesta como texto primero
+    const textResponse = await res.text();
+    
+    // Intenta parsear como JSON
+    let data;
+    try {
+      data = JSON.parse(textResponse);
+    } catch (parseError) {
+      console.error('❌ Respuesta no es JSON:', textResponse);
+      throw new Error('El servidor devolvió HTML en lugar de JSON. Revisa la consola del navegador y los logs de PHP.');
+    }
+
+    // Verifica errores del servidor
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Error desconocido del servidor');
+    }
+
+    // Login exitoso
+    localStorage.setItem('userId', data.id);
+    localStorage.setItem('userName', data.nombre);
+    localStorage.setItem('userEmail', data.email);
+    localStorage.setItem('userRol', data.rol || 'cliente');
+    if (data.foto) localStorage.setItem('userFoto', data.foto);
+    
+    // Sincronizar datos de MongoDB si existen
+    if (data.mongo) {
+      if (data.mongo.favoritos) {
+        localStorage.setItem('muta_favoritos', JSON.stringify(data.mongo.favoritos));
+      }
+      if (data.mongo.carrito) {
+        localStorage.setItem('mutaCart', JSON.stringify(data.mongo.carrito));
+      }
+    }
+
+    alert('¡Bienvenido, ' + data.nombre + '!');
+    window.location.reload();
+
+  } catch (error) {
+    console.error('❌ Error en google-login:', error);
+    alert('Error al iniciar sesión con Google:\n' + error.message);
+  }
+}
+
 // ============================================
 // FUNCIÓN DE BÚSQUEDA - AÑADIR LÍNEA DE PRUEBA
 // ============================================
@@ -199,9 +322,6 @@ function setupBuscador() {
     }
   });
 
-
-
-  // --- Lógica de búsqueda en tiempo real (sin cambios) ---
   let searchTimeout;
 
   searchInput.addEventListener("input", function() {
@@ -414,7 +534,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (document.getElementById("acceso-usuario")) {
     cargarComponente("acceso-usuario", "componentesHTML/acceso-usuario.html")
-      .then(setupAccesoUsuario);
+      .then(() => { // <--- 1. Añade la función anónima
+        setupAccesoUsuario();
+        setupGoogleButton(); // <--- 2. Añade esta línea que faltaba
+      });
   }
 
   // --- Home ---

@@ -6,6 +6,8 @@
   <title>MUTA · Ventas</title>
   <link rel="stylesheet" href="css/admin_base.css" />
   <link rel="stylesheet" href="css/gestion_producto_mantenimiento.css" />
+    <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
 
   <!-- Favicon -->
@@ -19,7 +21,6 @@
       <nav class="side-nav">
         <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a href="venta_mantenimiento.html" class="item active"><i class="bi bi-cash-coin"></i> Ventas</a>
-        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
         <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
         <a href="analisis_mantenimiento.html" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
         <a href="envios_mantenimiento.html" class="item"><i class="bi bi-truck"></i> Envíos</a>
@@ -35,14 +36,34 @@
           <i class="bi bi-search"></i>
           <input id="q" type="search" placeholder="Buscar por venta o cliente…">
         </div>
+           <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-label">TOTAL VENTAS</div>
+        <div class="stat-value" id="totalVentas">$0</div> 
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">PEDIDOS</div>
+        <div class="stat-value" id="totalPedidos">0</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">PENDIENTES</div>
+        <div class="stat-value" id="pedidosPendientes">0</div>
+    </div>
+</div>
+
 
       <div class="filters">
-        <button class="chip active" data-f="todos">Todos</button>
+          <button class="chip active" data-f="todos">Todos</button>
+        <button class="chip" data-f="en_espera">En Espera</button>
         <button class="chip" data-f="pagado">Pagado</button>
-        <button class="chip" data-f="pend">Pendiente</button>
-        <button class="chip" data-f="reemb">Reembolsado</button>
-        <button class="chip" data-f="cancel">Cancelado</button>
+        <button class="chip" data-f="enviado">Enviado</button>
+        <button class="chip" data-f="recibido">Recibido</button>
+        <button class="chip" data-f="cancelado">Cancelado</button>
       </div>
 
       <section class="card">
@@ -50,9 +71,9 @@
           <table class="table" id="tbl">
             <thead>
               <tr>
-                <th>Venta</th>
+                <th>N° Pedido</th>
                 <th>Fecha</th>
-                <th>Cliente</th>
+                <th>Usuario ID</th>
                 <th>Total</th>
                 <th>Productos</th>
                 <th>Estado de pago</th>
@@ -60,45 +81,301 @@
                 <th>Estado de envío</th>
               </tr>
             </thead>
-            <tbody><!-- JS --></tbody>
+            <tbody   id="tbody">
+               
+            </tbody>
           </table>
         </div>
       </section>
     </main>
   </div>
 
-  <script>
-  const DATA=[
-    {id:'VEN-2025-0101',fecha:'02/09/2025',cliente:'Carlos, Gómez',total:43800,prods:'2× Remera negra (L)',pago:'pagado',modo:'Mercado Pago',envio:'enviado'},
-    {id:'VEN-2025-0102',fecha:'03/09/2025',cliente:'Ana, Martínez',total:12800,prods:'1× Camisa blanca (M)',pago:'pagado',modo:'Tarjeta',envio:'prep'},
-    {id:'VEN-2025-0103',fecha:'04/09/2025',cliente:'Luis, Rodríguez',total:24800,prods:'2× Pantalón negro (L)',pago:'pend',modo:'Transferencia',envio:'pend'},
-    {id:'VEN-2025-0104',fecha:'05/09/2025',cliente:'Valeria, Sánchez',total:17800,prods:'1× Remera blanca (S)',pago:'reemb',modo:'Mercado Pago',envio:'cancel'},
-  ];
-  const PAY={pagado:'<span class="badge pay-ok">Pagado</span>',pend:'<span class="badge pay-pend">Pendiente</span>',reemb:'<span class="badge pay-refund">Reembolsado</span>',cancel:'<span class="badge danger">Cancelado</span>'};
-  const SHIP={enviado:'<span class="badge ship-ok">Enviado</span>',prep:'<span class="badge ship-warn">En preparación</span>',pend:'<span class="badge ship-pend">Pendiente</span>',cancel:'<span class="badge ship-cancel">Cancelado</span>'};
-  let F='todos', Q='';
+  <!-- Modal de detalles -->
+  <div class="modal-overlay" id="modalDetalles">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalles del Pedido</h3>
+        <button class="modal-close" onclick="cerrarModal()">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 
-  const tb=document.querySelector('#tbl tbody'), chips=document.querySelectorAll('.chip'), q=document.getElementById('q');
-  function pass(d){ return F==='todos' ? true : d.pago===F; }
-  function passQ(d){ return (d.id+d.cliente).toLowerCase().includes(Q); }
-  function fmt(n){ return '$'+n.toLocaleString('es-AR'); }
-  function render(){
-    const rows=DATA.filter(d=>pass(d)&&passQ(d)).map(d=>`
-      <tr>
-        <td>${d.id}</td>
-        <td>${d.fecha}</td>
-        <td>${d.cliente}</td>
-        <td>${fmt(d.total)}</td>
-        <td>${d.prods}</td>
-        <td>${PAY[d.pago]}</td>
-        <td>${d.modo}</td>
-        <td>${SHIP[d.envio]}</td>
-      </tr>`).join('');
-    tb.innerHTML=rows||'<tr><td colspan="8">Sin resultados</td></tr>';
-  }
-  chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('active'));c.classList.add('active');F=c.dataset.f;render();});
-  q.oninput=()=>{Q=q.value.trim().toLowerCase();render();}
-  render();
+ <div id="acceso-usuario"></div>
+  <script>
+  let pedidosData = [];
+    let filtroActual = 'todos';
+    let busqueda = '';
+
+    // Mapeo de estados
+    const ESTADO_BADGES = {
+      'en_espera': '<span class="badge pay-pend">En Espera</span>',
+      'pagado': '<span class="badge pay-ok">Pagado</span>',
+      'enviado': '<span class="badge ship-ok">Enviado</span>',
+      'recibido': '<span class="badge ship-ok">Recibido</span>',
+      'cancelado': '<span class="badge danger">Cancelado</span>'
+    };
+
+    const METODO_PAGO = {
+      'tarjeta': 'Tarjeta',
+      'mercadopago': 'Mercado Pago',
+      'transferencia': 'Transferencia',
+      'efectivo': 'Efectivo'
+    };
+
+    // Formatear moneda
+    function fmt(num) {
+      return '$' + Number(num || 0).toLocaleString('es-AR');
+    }
+
+    // Formatear fecha
+    function formatearFecha(fecha) {
+      const d = new Date(fecha);
+      return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Cargar pedidos desde MongoDB
+    async function cargarPedidos() {
+      try {
+        let url = 'backend/pedidosController.php?action=listar';
+        
+        if (filtroActual !== 'todos') {
+          url += `&estado=${filtroActual}`;
+        }
+        
+        if (busqueda) {
+          url += `&buscar=${encodeURIComponent(busqueda)}`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.success) {
+          pedidosData = data.pedidos;
+          renderizarTabla(data.pedidos);
+          actualizarEstadisticas(data.pedidos);
+        } else {
+          mostrarError('Error al cargar pedidos');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        mostrarError('Error de conexión');
+      }
+    }
+
+    // Renderizar tabla
+    function renderizarTabla(pedidos) {
+      const tbody = document.getElementById('tbody');
+
+      if (pedidos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:#999;">No hay pedidos para mostrar</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = pedidos.map(pedido => `
+        <tr>
+          <td><strong>${pedido.numero_pedido}</strong></td>
+          <td>${formatearFecha(pedido.fecha_compra)}</td>
+          <td>${pedido.usuario_id}</td>
+          <td><strong>${fmt(pedido.total)}</strong></td>
+          <td>${pedido.productos.length} producto(s)</td>
+          <td>${ESTADO_BADGES[pedido.estado] || pedido.estado}</td>
+          <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
+          <td>
+            <button class="btn-action" onclick="verDetalles('${pedido.id}')">
+              <i class="bi bi-eye"></i> Ver
+            </button>
+            <button class="btn-action" onclick="cambiarEstado('${pedido.id}', '${pedido.estado}')">
+              <i class="bi bi-arrow-repeat"></i> Estado
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Actualizar estadísticas
+    function actualizarEstadisticas(pedidos) {
+      const totalVentas = pedidos.reduce((sum, p) => sum + Number(p.total), 0);
+      const pendientes = pedidos.filter(p => p.estado === 'en_espera').length;
+
+      document.getElementById('totalVentas').textContent = fmt(totalVentas);
+      document.getElementById('totalPedidos').textContent = pedidos.length;
+      document.getElementById('pedidosPendientes').textContent = pendientes;
+    }
+
+    // Ver detalles del pedido
+    async function verDetalles(id) {
+      try {
+        const response = await fetch(`backend/pedidosController.php?action=obtener&id=${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const pedido = data.pedido;
+          const modal = document.getElementById('modalDetalles');
+          const modalBody = document.getElementById('modalBody');
+
+          modalBody.innerHTML = `
+            <div class="detail-group">
+              <div class="detail-label">Número de Pedido</div>
+              <div class="detail-value"><strong>${pedido.numero_pedido}</strong></div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Usuario ID</div>
+              <div class="detail-value">${pedido.usuario_id}</div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Fecha de Compra</div>
+              <div class="detail-value">${formatearFecha(pedido.fecha_compra)}</div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Estado</div>
+              <div class="detail-value">${ESTADO_BADGES[pedido.estado]}</div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Productos</div>
+              <div class="productos-list">
+                ${pedido.productos.map(prod => `
+                  <div class="producto-item">
+                    <div>
+                      <strong>${prod.nombre}</strong><br>
+                      <small>Talle: ${prod.talle} | Color: ${prod.color} | Cant: ${prod.cantidad}</small>
+                    </div>
+                    <div><strong>${fmt(prod.subtotal)}</strong></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Dirección de Envío</div>
+              <div class="detail-value">
+                ${pedido.direccion_envio.calle}<br>
+                ${pedido.direccion_envio.ciudad}, ${pedido.direccion_envio.provincia}<br>
+                CP: ${pedido.direccion_envio.codigo_postal}<br>
+                Tel: ${pedido.direccion_envio.telefono}
+                ${pedido.direccion_envio.referencia ? `<br>Ref: ${pedido.direccion_envio.referencia}` : ''}
+              </div>
+            </div>
+
+            <div class="detail-group">
+              <div class="detail-label">Totales</div>
+              <div class="detail-value">
+                Subtotal: ${fmt(pedido.subtotal)}<br>
+                Envío: ${fmt(pedido.costo_envio)}<br>
+                ${pedido.descuento > 0 ? `Descuento: ${fmt(pedido.descuento)}<br>` : ''}
+                <strong>Total: ${fmt(pedido.total)}</strong>
+              </div>
+            </div>
+
+            ${pedido.numero_tracking ? `
+              <div class="detail-group">
+                <div class="detail-label">Número de Tracking</div>
+                <div class="detail-value">${pedido.numero_tracking}</div>
+              </div>
+            ` : ''}
+
+            ${pedido.notas_cliente ? `
+              <div class="detail-group">
+                <div class="detail-label">Notas del Cliente</div>
+                <div class="detail-value">${pedido.notas_cliente}</div>
+              </div>
+            ` : ''}
+          `;
+
+          modal.classList.add('active');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cargar detalles');
+      }
+    }
+
+    // Cambiar estado del pedido
+    async function cambiarEstado(id, estadoActual) {
+      const estados = ['en_espera', 'pagado', 'enviado', 'recibido', 'cancelado'];
+      const estadosNombres = ['En Espera', 'Pagado', 'Enviado', 'Recibido', 'Cancelado'];
+
+      const nuevoEstado = prompt(`Cambiar estado del pedido:\n\n${estados.map((e, i) => `${i + 1}. ${estadosNombres[i]}`).join('\n')}\n\nIngrese el número (1-5):`);
+
+      if (nuevoEstado && nuevoEstado >= 1 && nuevoEstado <= 5) {
+        const estadoSeleccionado = estados[nuevoEstado - 1];
+        
+        let tracking = null;
+        if (estadoSeleccionado === 'enviado') {
+          tracking = prompt('Ingrese número de tracking (opcional):');
+        }
+
+        try {
+          const response = await fetch('backend/pedidosController.php?action=actualizar_estado', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: id,
+              estado: estadoSeleccionado,
+              numero_tracking: tracking,
+              nota: `Estado actualizado por administrador`
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert('✅ Estado actualizado correctamente');
+            cargarPedidos();
+          } else {
+            alert('❌ Error: ' + data.error);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('❌ Error al actualizar estado');
+        }
+      }
+    }
+
+    // Cerrar modal
+    function cerrarModal() {
+      document.getElementById('modalDetalles').classList.remove('active');
+    }
+
+    // Mostrar error
+    function mostrarError(mensaje) {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:#e74c3c;">${mensaje}</td></tr>`;
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarPedidos();
+
+      // Filtros
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          filtroActual = chip.dataset.f;
+          cargarPedidos();
+        });
+      });
+
+      // Búsqueda
+      document.getElementById('q').addEventListener('input', (e) => {
+        busqueda = e.target.value.trim();
+        cargarPedidos();
+      });
+
+      // Cerrar modal al hacer clic fuera
+      document.getElementById('modalDetalles').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+      });
+    });
   </script>
+   
+ 
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
 </body>
 </html>

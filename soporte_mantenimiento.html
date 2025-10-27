@@ -6,6 +6,8 @@
   <title>MUTA · Soporte</title>
   <link rel="stylesheet" href="css/admin_base.css">
   <link rel="stylesheet" href="css/soporte_mantenimiento.css">
+    <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
@@ -21,7 +23,6 @@
       <nav class="side-nav">
         <a href="home_mantenimiento.html" class="item"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a href="venta_mantenimiento.html" class="item"><i class="bi bi-cash-coin"></i> Ventas</a>
-        <a href="orden_mantenimiento.html" class="item"><i class="bi bi-card-checklist"></i> Órdenes</a>
         <a href="gestion_producto_mantenimiento.html" class="item"><i class="bi bi-bag"></i> Productos</a>
         <a href="analisis_mantenimiento.html" class="item"><i class="bi bi-graph-up"></i> Análisis</a>
         <a href="envios_mantenimiento.html" class="item"><i class="bi bi-truck"></i> Envíos</a>
@@ -33,12 +34,16 @@
     <main class="main">
       <header class="topbar">
         <h1>Soporte</h1>
+        <div class="icons">
+         <button id="open-auth" class="icono_usuario" title="Mi cuenta" type="button">
+        <i class="bi bi-person"></i>
+      </button></div>
       </header>
 
       <!-- Card: Información de contacto -->
       <section class="card soporte-info">
         <h2>Contacto directo</h2>
-        <p><i class="bi bi-envelope-fill"></i> Correo: <a href="mailto:muta@gmail.com">muta@gmail.com</a></p>
+        <p><i class="bi bi-envelope-fill"></i> Correo: <a href="mailto:nosotros.somos.muta@gmail.com">nosotros.somos.muta@gmail.com</a></p>
         <p><i class="bi bi-telephone-fill"></i> Teléfono: <a href="tel:+5492615325678">+54 9 261 532 5678</a></p>
         <p><i class="bi bi-clock-fill"></i> Horario: Lunes a Viernes, 9:00 - 18:00</p>
 
@@ -50,21 +55,7 @@
       <h1>Quienes somos</h1>  
       <section >
         <article id= "formulario" class="card span-2" >
-         
-     
-
- <!-- <div class="row g-2">
-          <div class="col-md-12">
-
-    <label class="form-label">Nombre de la marca</label>
-    <input class="form-control" id="inputNombre">
-  </div>
-  <div class="col-md-12">
-  <label class="form-label">Descripción</label>
-  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" placeholder="Escribí tu descripción..."></textarea>
-</div>
--->
-
+        
  <div class="container-fluid my-5 px-4">
         <h1 class="text-center mb-5">
             <i class="fas fa-tags"></i>Descripción de tu Marca
@@ -124,6 +115,10 @@
   </div>
   <!-- Script que carga componentes -->
 
-   <script src="js/nosotros.js"></script>
+  <div id="acceso-usuario"></div>
+ 
+  <script src="js/nosotros.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/componente-loader.js"></script>
 </body>
 </html>
