@@ -9,11 +9,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // --- Paginación (10 por página) ---
   let currentPage = 1;
-  const pageSize = 10;
+  const pageSize = 15;
 
   function paginar(arr) {
     const start = (currentPage - 1) * pageSize;
     return arr.slice(start, start + pageSize);
+  }
+  function windowPages(totalPages, current) {
+    if (totalPages <= 1) return [1];
+    // inicio de ventana: current, salvo que estemos al final
+    let start = Math.min(current, Math.max(1, totalPages - 1));
+    let end = Math.min(totalPages, start + 1);
+    // si current=1 y total=2 → [1,2]; si total=1 → [1]
+    return start === end ? [start] : [start, end];
   }
 
   function renderPager(totalFiltrados) {
@@ -33,10 +41,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       wrap.style.display = '';
     }
+    const win = windowPages(pages, currentPage);
     let html = '<div class="pager-inner">';
     html += `<button class="page nav" data-p="${Math.max(1, currentPage - 1)}" ${currentPage === 1 ? 'disabled' : ''} aria-label="Anterior">«</button>`;
-    for (let i = 1; i <= pages; i++) {
-      html += `<button class="page ${i === currentPage ? 'active' : ''}" data-p="${i}">${i}</button>`;
+    for (const p of win) {
+      html += `<button class="page ${p === currentPage ? 'active' : ''}" data-p="${p}">${p}</button>`;
     }
     html += `<button class="page nav" data-p="${Math.min(pages, currentPage + 1)}" ${currentPage === pages ? 'disabled' : ''} aria-label="Siguiente">»</button>`;
     html += '</div>';
