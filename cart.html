@@ -80,7 +80,11 @@
     <div class="section-title mt-5">
       <h2>También te puede interesar</h2>
     </div>
-    <div id="carousel-novedades"></div>
+        <div id="carousel-novedades" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"><!-- JS --></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
   </main>
 
   <!-- Modal de acceso -->
@@ -96,29 +100,42 @@
   <div id="favoritos"></div>
 
   <!-- Scripts -->
-   
+  <!-- EmailJS (para notificaciones de checkout) -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function() {
-      
       emailjs.init("c6rFoEWtP7zw8Eqi2"); 
     })();
   </script>
+
+  <!-- Checkout y pasos del proceso de compra -->
   <script src="js/carritoJS/checkout.js"></script>
+
+  <!-- Loader de componentes (navbar, footer, carruseles, etc.) -->
   <script src="js/componente-loader.js"></script>
+
+  <!-- Manejo de sesión de usuario -->
   <script src="js/usuarios/user-session.js"></script>
+
+  <!-- Carrito -->
   <script src="js/carritoJS/cart.js"></script>
+
+  <!-- Favoritos -->
   <script defer src="js/favoritos.js"></script>
 
+  <!-- Novedades dinámicas (nuevo feed global) -->
+  <script src="js/home_novedades.js"></script>
+
+  <!-- Selección de dirección y pago -->
   <script src="js/carritoJS/seleccion-direccion.js"></script>
   <script src="js/carritoJS/seleccion-pago.js"></script>
 
+  <!-- Inicialización -->
   <script>
     setupCart();
-    
     // Activa los listeners para todo el proceso de compra
     inicializarProcesoDeCompra();
-
   </script>
+
 </body>
 </html>

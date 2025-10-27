@@ -285,6 +285,30 @@ try {
         echo json_encode(['items'=>$items,'total'=>$total], JSON_UNESCAPED_UNICODE);
         exit;
       }
+
+      // === Feed global para carrusel de novedades ===
+      if (isset($_GET['action']) && $_GET['action'] === 'global_feed') {
+          $q = [
+              'eliminado'   => ['$ne' => true],
+              'estado'      => ['$in' => ['Activo','Bajo stock','Sin stock']],
+              'publicable'  => true
+          ];
+
+          // Traer hasta 10 productos más recientes
+          $cur = $db->products->find($q, [
+              'sort'  => ['_id' => -1],
+              'limit' => 10
+          ]);
+
+          $items = [];
+          foreach ($cur as $doc) {
+              $items[] = bsonToArray($doc);
+          }
+
+          echo json_encode(['items' => $items], JSON_UNESCAPED_UNICODE);
+          exit;
+      }
+
       // Get por id
       if (!empty($_GET['id'])) {
         $id = $_GET['id'];

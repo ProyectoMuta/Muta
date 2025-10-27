@@ -1,4 +1,4 @@
-/* === COMPONENTE: CARRUSEL DE NOVEDADES ===*/
+/* === COMPONENTE: CARRUSEL DE NOVEDADES === */
 
 /* Contenedor general del carrusel */
 #carousel-novedades.carousel {
@@ -28,9 +28,11 @@
   scroll-padding-inline: 0;
 }
 
-#carousel-novedades .carousel-track::-webkit-scrollbar { display: none; }
+#carousel-novedades .carousel-track::-webkit-scrollbar {
+  display: none;
+}
 
-/* 6 cards exactas por vista, descontando gaps */
+/* Cards: base en desktop (6 visibles) */
 #carousel-novedades .card {
   flex: 0 0 calc((100% - 5 * var(--gap)) / 6);
   box-sizing: border-box;
@@ -41,8 +43,9 @@
   color: inherit;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   scroll-snap-align: start;
-  background: transparent;
+  background: #fff;
   position: relative;
+  min-width: 180px; /* asegura tamaño legible si hay pocos ítems */
 }
 
 /* Mantener proporción uniforme y cubrir sin bordes en blanco */
