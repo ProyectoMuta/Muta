@@ -8,7 +8,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // Cargar el autoloader de Composer para que las clases de PHPMailer estén disponibles.
 // La ruta sube un nivel ('..') desde 'backend' a la raíz del proyecto para encontrar 'vendor'.
-require_once __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
 /**
  * Envía un correo electrónico de bienvenida a un nuevo usuario.
