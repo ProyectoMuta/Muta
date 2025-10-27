@@ -306,8 +306,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const talle = document.querySelector('select[name="talle[]"]')?.value || "";
         const stock = document.querySelector('input[name="stock[]"]')?.value || 0;
         const peso = document.querySelector('input[name="peso[]"]')?.value || 0;
-        const color = document.querySelector('input[name="color[]"]')?.value || "#000000";
-
+        const colorInput = document.querySelector('input[name="color[]"]');
+        const color = colorInput ? colorInput.value : "#000000";
         if (!talle) {
           alert('Debes seleccionar un talle.');
           enable(); isSubmitting = false; return;
@@ -328,6 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fd.append('talle[]', talle);
         fd.append('stock[]', stock);
         fd.append('peso[]', peso);
+        
         fd.append('color[]', color);
 
         // Adjuntar imágenes
