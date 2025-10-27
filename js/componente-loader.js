@@ -428,8 +428,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("hero-sale"))
     cargarComponente("hero-sale", "componentesHTML/hero-sale.html");
 
-  if (document.getElementById("carousel-novedades"))
-    cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html");
+  // DESACTIVADO: ya lo definís en index, no lo sobreescribas
+  // if (document.getElementById("carousel-novedades"))
+  //   cargarComponente("carousel-novedades", "componentesHTML/novedades-carousel.html");
 
   // --- Producto ---
   if (document.getElementById("galeria-producto"))

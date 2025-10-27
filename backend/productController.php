@@ -294,43 +294,18 @@ try {
               'publicable'  => true
           ];
 
-          // Traer últimos productos (ordenados por _id desc = más recientes primero)
-          $cur = $db->products->find($q, ['sort' => ['_id' => -1], 'limit' => 500]);
+          // Traer hasta 10 productos más recientes
+          $cur = $db->products->find($q, [
+              'sort'  => ['_id' => -1],
+              'limit' => 10
+          ]);
 
-          // Agrupar por categoría → subcategoría
-          $byCat = [];
+          $items = [];
           foreach ($cur as $doc) {
-              $arr = bsonToArray($doc);
-              $cat = $arr['categoriaSlug'] ?? '';
-              $sub = $arr['subcategoriaSlug'] ?? '';
-              if (!$cat || !$sub) continue;
-              if (!isCatEnabled($cfgCol, $cat)) continue;
-              if (!isSubEnabled($cfgCol, $cat, $sub)) continue;
-
-              if (!isset($byCat[$cat])) $byCat[$cat] = [];
-              if (!isset($byCat[$cat][$sub])) $byCat[$cat][$sub] = [];
-              $byCat[$cat][$sub][] = $arr;
+              $items[] = bsonToArray($doc);
           }
 
-          // Seleccionar 2 subcategorías distintas por categoría, y 2 productos por cada una
-          $out = [];
-          foreach ($byCat as $catSlug => $subMap) {
-              // Ordenar subcategorías por recencia (último _id)
-              $subEntries = [];
-              foreach ($subMap as $subSlug => $items) {
-                  $lastId = $items[0]['_id']; // ya vienen ordenados desc
-                  $subEntries[] = ['sub' => $subSlug, 'items' => $items, 'lastId' => $lastId];
-              }
-              usort($subEntries, fn($a,$b) => strcmp($b['lastId'], $a['lastId']));
-              $pickedSubs = array_slice($subEntries, 0, 2);
-
-              foreach ($pickedSubs as $entry) {
-                  $take = array_slice($entry['items'], 0, 2);
-                  foreach ($take as $it) $out[] = $it;
-              }
-          }
-
-          echo json_encode(['items' => $out], JSON_UNESCAPED_UNICODE);
+          echo json_encode(['items' => $items], JSON_UNESCAPED_UNICODE);
           exit;
       }
 

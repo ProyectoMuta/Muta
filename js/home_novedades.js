@@ -32,7 +32,7 @@
     if (!track) return;
 
     try {
-      const res = await fetch(`backend/productController.php?action=global_feed`, { cache: 'no-store' });
+      const res = await fetch("backend/productController.php?action=global_feed", { cache: 'no-store' });
       const data = await res.json();
       const items = Array.isArray(data?.items) ? data.items : [];
       if (!items.length) {
