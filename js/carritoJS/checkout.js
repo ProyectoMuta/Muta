@@ -504,6 +504,9 @@ try {
           numero_pedido: pedidoResponse.numero_pedido
         };
 
+        console.log("📤 Datos enviando a MP:", mpData);
+        console.log("📦 Items específicamente:", mpData.items);
+
         // Crear preferencia en Mercado Pago
         const mpResponse = await fetch('backend/pagosController.php?action=crear_preferencia', {
           method: 'POST',
