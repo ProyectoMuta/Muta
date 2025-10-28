@@ -34,7 +34,7 @@ class PagosController {
     private $preferenceClient;
     private $db;
 
-    public function __construct() {
+    public function __construct($requireMongo = true) {
         try {
             // Verificar que las credenciales estén configuradas
             if (!verificarCredencialesMP()) {
@@ -48,12 +48,14 @@ class PagosController {
             // Crear cliente de preferencias
             $this->preferenceClient = new PreferenceClient();
 
-            // Conexión a MongoDB
-            global $mongoClient;
-            if (!isset($mongoClient)) {
-                throw new Exception('No hay conexión a MongoDB');
+            // Conexión a MongoDB (solo si es requerida)
+            if ($requireMongo) {
+                global $mongoClient;
+                if (!isset($mongoClient)) {
+                    throw new Exception('No hay conexión a MongoDB');
+                }
+                $this->db = $mongoClient->mutaDB;
             }
-            $this->db = $mongoClient->mutaDB;
 
         } catch (Exception $e) {
             $this->responderError($e->getMessage(), 500);
@@ -306,19 +308,10 @@ class PagosController {
 
 try {
     $action = $_GET['action'] ?? '';
-    $controller = new PagosController();
 
     switch ($action) {
-        case 'crear_preferencia':
-            $controller->crearPreferencia();
-            break;
-
-        case 'consultar_pago':
-            $controller->consultarPago();
-            break;
-
         case 'test_config':
-            // Endpoint para verificar que la configuración está correcta
+            // Endpoint para verificar que la configuración está correcta (NO requiere MongoDB)
             if (verificarCredencialesMP()) {
                 echo json_encode([
                     'success' => true,
@@ -328,13 +321,23 @@ try {
                         'public_key' => MP_PUBLIC_KEY,
                         'access_token_configurado' => !empty(MP_ACCESS_TOKEN)
                     ]
-                ]);
+                ], JSON_UNESCAPED_UNICODE);
             } else {
                 echo json_encode([
                     'success' => false,
                     'error' => 'Credenciales de Mercado Pago no configuradas'
-                ]);
+                ], JSON_UNESCAPED_UNICODE);
             }
+            break;
+
+        case 'crear_preferencia':
+            $controller = new PagosController(true); // Requiere MongoDB
+            $controller->crearPreferencia();
+            break;
+
+        case 'consultar_pago':
+            $controller = new PagosController(false); // NO requiere MongoDB
+            $controller->consultarPago();
             break;
 
         default:
@@ -342,7 +345,7 @@ try {
             echo json_encode([
                 'success' => false,
                 'error' => 'Acción no válida. Usa: crear_preferencia, consultar_pago, test_config'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             break;
     }
 
