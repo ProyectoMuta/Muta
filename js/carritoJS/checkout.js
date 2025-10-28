@@ -253,7 +253,11 @@ function inicializarProcesoDeCompra() {
     document.addEventListener("submit", (e) => {
         if (e.target.id === 'payment-form') {
             e.preventDefault();
-            finalizarCompra(e.target.querySelector('.finalizar-compra'));
+            // Buscar el botón de submit dentro del formulario
+            const submitButton = e.target.querySelector('button[type="submit"]') ||
+                                 e.target.querySelector('.btn-pagar') ||
+                                 e.target.querySelector('.pagar-mp');
+            finalizarCompra(submitButton);
         }
     });
 }
