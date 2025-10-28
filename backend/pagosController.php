@@ -68,7 +68,13 @@ class PagosController {
     public function crearPreferencia() {
         try {
             // Obtener datos del POST
-            $input = json_decode(file_get_contents('php://input'), true);
+            $rawInput = file_get_contents('php://input');
+            error_log("MP DEBUG - Raw input: " . $rawInput);
+
+            $input = json_decode($rawInput, true);
+            error_log("MP DEBUG - Parsed input: " . print_r($input, true));
+            error_log("MP DEBUG - Items isset: " . (isset($input['items']) ? 'YES' : 'NO'));
+            error_log("MP DEBUG - Items empty: " . (empty($input['items']) ? 'YES' : 'NO'));
 
             // Validar datos requeridos
             if (!isset($input['items']) || empty($input['items'])) {
