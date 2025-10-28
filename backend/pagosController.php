@@ -139,7 +139,8 @@ class PagosController {
                     'failure' => MP_FAILURE_URL,
                     'pending' => MP_PENDING_URL
                 ],
-                'auto_return' => 'approved',
+                // Nota: auto_return se quita porque causa error 400 en algunas versiones del SDK
+                // El usuario deberá hacer click en "Volver al sitio" después de pagar
                 'statement_descriptor' => MP_STATEMENT_DESCRIPTOR,
                 'external_reference' => $input['numero_pedido'] ?? uniqid('MUTA-'),
                 'notification_url' => MP_NOTIFICATION_URL,
