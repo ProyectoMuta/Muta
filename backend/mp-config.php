@@ -18,13 +18,12 @@
 
 // Credenciales de PRUEBA (Sandbox)
 // Reemplaza estos valores con tus propias credenciales de prueba
-define('MP_ACCESS_TOKEN', 'TEST-TU_ACCESS_TOKEN_AQUI');
-define('MP_PUBLIC_KEY', 'TEST-TU_PUBLIC_KEY_AQUI');
+define('MP_ACCESS_TOKEN', 'APP_USR-3893971663823189-102814-dd7369f60a747e73101e614bc616f5db-2942643227');
+define('MP_PUBLIC_KEY', 'APP_USR-73f42220-0bc3-4c56-b54e-62d538bed367');
 
 // Cuando vayas a producción, cambia estas credenciales por las de producción
 // define('MP_ACCESS_TOKEN', 'APP-TU_ACCESS_TOKEN_PRODUCCION');
-// define('MP_PUBLIC_KEY', 'APP-TU_PUBLIC_KEY_PRODUCCION');
-
+// define('MP_PUBLIC_KEY', 'APP-TU_PUBLIC_KEY_PRODUCCION')
 // ========================================
 // CONFIGURACIÓN DEL ENTORNO
 // ========================================
@@ -39,7 +38,7 @@ define('MP_SANDBOX_MODE', true);
 // URL base de tu aplicación (ajusta según tu entorno)
 // En desarrollo local podría ser: http://localhost/Muta
 // En producción: https://tudominio.com
-define('BASE_URL', 'http://localhost/Muta');
+define('BASE_URL', 'https://bethany-unpouched-explicitly.ngrok-free.dev/Muta');
 
 // URLs de redirección después del pago
 define('MP_SUCCESS_URL', BASE_URL . '/payment-success.html');
