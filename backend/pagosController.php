@@ -151,8 +151,19 @@ class PagosController {
                 $preferenceData['shipments'] = $shipments;
             }
 
+            error_log("MP DEBUG - Preference data to send: " . print_r($preferenceData, true));
+
             // Crear la preferencia en Mercado Pago
-            $preference = $this->preferenceClient->create($preferenceData);
+            try {
+                $preference = $this->preferenceClient->create($preferenceData);
+                error_log("MP DEBUG - Preference created successfully: " . $preference->id);
+            } catch (MPApiException $mpError) {
+                error_log("MP DEBUG - MPApiException occurred");
+                error_log("MP DEBUG - Error message: " . $mpError->getMessage());
+                error_log("MP DEBUG - Status code: " . $mpError->getStatusCode());
+                error_log("MP DEBUG - API Response: " . print_r($mpError->getApiResponse(), true));
+                throw $mpError;
+            }
 
             // Guardar información de la preferencia en la base de datos
             if (isset($input['pedido_id']) && !empty($input['pedido_id'])) {
