@@ -514,6 +514,7 @@ try {
         const mpResult = await mpResponse.json();
 
         if (!mpResult.success) {
+          console.error('❌ Respuesta completa de MP:', mpResult);
           throw new Error(mpResult.error || "Error al crear preferencia de Mercado Pago");
         }
 
