@@ -66,15 +66,22 @@
 <!-- Top productos -->
        
           <article class="card" style="padding:16px">
-    <h2 style="margin:0 0 10px; font-size:18px">Productos Recientes</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="margin:0; font-size:18px">Productos Recientes</h2>
+        <a href="gestion_producto_mantenimiento.html" class="btn-link" title="Ver todos">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
     
     <ul id="top" style="list-style:none; padding:0; margin:0; display:grid; gap:12px">
         <li style="text-align: center; padding: 20px; color: #999;">
-            <p>Cargando productos...</p>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p style="margin-top: 10px;">Cargando productos...</p>
         </li>
     </ul>
-
-        </article>
+</article>
      
 <div class="calendario-agenda">
 

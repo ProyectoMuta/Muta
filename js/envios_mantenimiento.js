@@ -1,149 +1,288 @@
-/* Puntos de Retiro - demo con localStorage */
+/* ============================================
+   GESTIÓN DE PUNTOS DE RETIRO - CON BASE DE DATOS
+   ============================================ */
 
-(() => {
-  const LS_KEY = 'pickup_points';
-  const $ = s => document.querySelector(s);
-  const $$ = s => document.querySelectorAll(s);
+let puntosRetiro = [];
+let editingId = null;
 
-  const listWrap = $('#listWrap');
-  const emptyState = $('#emptyState');
-  const btnAdd = $('#btnAdd');
-  const btnAddEmpty = $('#btnAddEmpty');
-  const modal = $('#pickupModal');
-  const form = $('#pickupForm');
+// Elementos del DOM
+const emptyState = document.getElementById('emptyState');
+const listWrap = document.getElementById('listWrap');
+const modal = document.getElementById('pickupModal');
+const form = document.getElementById('pickupForm');
+const modalTitle = document.getElementById('modalTitle');
+const btnAddEmpty = document.getElementById('btnAddEmpty');
+const btnCancel = document.getElementById('btnCancel');
+const btnSave = document.getElementById('btnSave');
 
-  const fId = $('#f_id');
-  const fNombre = $('#f_nombre');
-  const fDireccion = $('#f_direccion');
-  const fCiudad = $('#f_ciudad');
-  const fHorario = $('#f_horario');
-  const fNotas = $('#f_notas');
-  const modalTitle = $('#modalTitle');
-
-  const btnCancel = $('#btnCancel'); // <-- nuevo
-  const btnSave = $('#btnSave');     // <-- nuevo
-
-  // ---------- storage helpers ----------
-  const load = () => JSON.parse(localStorage.getItem(LS_KEY) || '[]');
-  const save = (arr) => localStorage.setItem(LS_KEY, JSON.stringify(arr));
-
-  // ---------- UI ----------
-  function render() {
-    const items = load();
-    const hasItems = items.length > 0;
-
-    listWrap.innerHTML = '';
-    listWrap.hidden = !hasItems;
-    emptyState.hidden = hasItems;
-
-    if (!hasItems) return;
-
-    items.forEach(item => {
-      const card = document.createElement('article');
-      card.className = 'pickup-card';
-
-      const info = document.createElement('div');
-      info.className = 'pickup-info';
-      info.innerHTML = `
-        <h3>${escapeHtml(item.nombre)}</h3>
-        <p class="pickup-sub">${escapeHtml(item.direccion)} ${item.ciudad ? ' · ' + escapeHtml(item.ciudad) : ''}</p>
-        ${item.horario ? `<p class="pickup-sub">Horario: ${escapeHtml(item.horario)}</p>` : ''}
-        ${item.notas ? `<p class="pickup-sub">${escapeHtml(item.notas)}</p>` : ''}
-      `;
-
-      const actions = document.createElement('div');
-      actions.className = 'pickup-actions';
-      actions.innerHTML = `
-        <button class="btn" data-edit="${item.id}"><i class="bi bi-pencil"></i> Editar</button>
-        <button class="btn btn-ghost" data-del="${item.id}"><i class="bi bi-trash"></i> Eliminar</button>
-      `;
-
-      card.append(info, actions);
-      listWrap.append(card);
-    });
-
-    // Bind acciones
-    $$('[data-edit]').forEach(b => b.addEventListener('click', onEdit));
-    $$('[data-del]').forEach(b => b.addEventListener('click', onDelete));
+// ============================================
+// CARGAR PUNTOS DE RETIRO DESDE LA BD
+// ============================================
+async function loadPuntos() {
+  try {
+    const res = await fetch('backend/pickupController.php');
+    const data = await res.json();
+    
+    if (data.ok) {
+      puntosRetiro = data.puntos || [];
+      renderPuntos();
+    } else {
+      console.error('Error al cargar puntos:', data.error);
+      showNotification('Error al cargar puntos de retiro', 'error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification('Error de conexión al cargar puntos', 'error');
   }
+}
 
-  function openCreate() {
-    modalTitle.textContent = 'Nuevo punto de retiro';
-    form.reset();
-    fId.value = '';
-    modal.showModal();
-  }
-
-  function openEdit(item) {
-    modalTitle.textContent = 'Editar punto de retiro';
-    fId.value = item.id;
-    fNombre.value = item.nombre || '';
-    fDireccion.value = item.direccion || '';
-    fCiudad.value = item.ciudad || '';
-    fHorario.value = item.horario || '';
-    fNotas.value = item.notas || '';
-    modal.showModal();
-  }
-
-  // ---------- eventos ----------
-  btnAdd?.addEventListener('click', openCreate);
-  btnAddEmpty?.addEventListener('click', openCreate);
-
-  // Cancelar → cierra modal sin guardar
-  btnCancel?.addEventListener('click', () => {
-    form.reset();
-    fId.value = '';
-    modal.close();
-  });
-
-  // Guardar → solo si el submitter es btnSave
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (e.submitter && e.submitter.id === 'btnCancel') {
-    modal.close();
+// ============================================
+// RENDERIZAR LISTA DE PUNTOS
+// ============================================
+function renderPuntos() {
+  if (puntosRetiro.length === 0) {
+    emptyState.hidden = false;
+    listWrap.hidden = true;
     return;
   }
+  
+  emptyState.hidden = true;
+  listWrap.hidden = false;
+  
+  listWrap.innerHTML = puntosRetiro.map(punto => `
+    <article class="pickup-card">
+      <div class="pickup-info">
+        <h3>${escapeHtml(punto.nombre)}</h3>
+        <p class="pickup-address">
+          <i class="bi bi-geo-alt"></i>
+          ${escapeHtml(punto.direccion)}${punto.ciudad ? ', ' + escapeHtml(punto.ciudad) : ''}
+        </p>
+        ${punto.horario ? `
+          <p class="pickup-horario">
+            <i class="bi bi-clock"></i>
+            ${escapeHtml(punto.horario)}
+          </p>
+        ` : ''}
+        ${punto.notas ? `
+          <p class="pickup-notas">
+            <i class="bi bi-info-circle"></i>
+            ${escapeHtml(punto.notas)}
+          </p>
+        ` : ''}
+      </div>
+      <div class="pickup-actions">
+        <button class="btn btn-edit" onclick="editPunto(${punto.id})" title="Editar">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+        <button class="btn btn-delete" onclick="deletePunto(${punto.id})" title="Eliminar">
+          <i class="bi bi-trash"></i> Eliminar
+        </button>
+      </div>
+    </article>
+  `).join('');
+}
 
-    const id = fId.value.trim();
-    const data = {
-      id: id || String(Date.now()),
-      nombre: fNombre.value.trim(),
-      direccion: fDireccion.value.trim(),
-      ciudad: fCiudad.value.trim(),
-      horario: fHorario.value.trim(),
-      notas: fNotas.value.trim()
-    };
+// ============================================
+// ABRIR MODAL NUEVO
+// ============================================
+function openModalNew() {
+  editingId = null;
+  modalTitle.textContent = 'Nuevo punto de retiro';
+  form.reset();
+  document.getElementById('f_id').value = '';
+  modal.showModal();
+}
 
-    const items = load();
-    const idx = items.findIndex(x => x.id === data.id);
-    if (idx >= 0) items[idx] = data; else items.push(data);
-    save(items);
+// ============================================
+// EDITAR PUNTO
+// ============================================
+function editPunto(id) {
+  const punto = puntosRetiro.find(p => p.id === id);
+  if (!punto) return;
+  
+  editingId = id;
+  modalTitle.textContent = 'Editar punto de retiro';
+  
+  document.getElementById('f_id').value = punto.id;
+  document.getElementById('f_nombre').value = punto.nombre;
+  document.getElementById('f_direccion').value = punto.direccion;
+  document.getElementById('f_ciudad').value = punto.ciudad || '';
+  document.getElementById('f_horario').value = punto.horario || '';
+  document.getElementById('f_notas').value = punto.notas || '';
+  
+  modal.showModal();
+}
 
+// ============================================
+// ELIMINAR PUNTO
+// ============================================
+async function deletePunto(id) {
+  if (!confirm('¿Estás seguro de que deseas eliminar este punto de retiro?')) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(`backend/pickupController.php?id=${id}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    
+    if (data.ok) {
+      showNotification('Punto de retiro eliminado exitosamente', 'success');
+      loadPuntos();
+    } else {
+      showNotification('Error: ' + data.error, 'error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification('Error al eliminar punto de retiro', 'error');
+  }
+}
+
+// ============================================
+// GUARDAR PUNTO (crear o actualizar)
+// ============================================
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // Si el botón que hizo submit es "Cancelar", solo cierra
+  if (e.submitter && e.submitter.id === 'btnCancel') {
     modal.close();
-    render();
+    form.reset();
+    return;
+  }
+  
+  const formData = {
+    nombre: document.getElementById('f_nombre').value.trim(),
+    direccion: document.getElementById('f_direccion').value.trim(),
+    ciudad: document.getElementById('f_ciudad').value.trim(),
+    horario: document.getElementById('f_horario').value.trim(),
+    notas: document.getElementById('f_notas').value.trim()
+  };
+  
+  // Validación básica
+  if (!formData.nombre || !formData.direccion) {
+    showNotification('Por favor completa nombre y dirección', 'error');
+    return;
+  }
+  
+  // Deshabilitar botón mientras se guarda
+  btnSave.disabled = true;
+  btnSave.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+  
+  try {
+    let res;
+    
+    if (editingId) {
+      // Actualizar
+      formData.id = editingId;
+      res = await fetch('backend/pickupController.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+    } else {
+      // Crear
+      res = await fetch('backend/pickupController.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+    }
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      showNotification(
+        editingId ? 'Punto actualizado exitosamente' : 'Punto creado exitosamente',
+        'success'
+      );
+      modal.close();
+      form.reset();
+      loadPuntos();
+    } else {
+      showNotification('Error: ' + data.error, 'error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification('Error al guardar punto de retiro', 'error');
+  } finally {
+    // Restaurar botón
+    btnSave.disabled = false;
+    btnSave.innerHTML = '<i class="bi bi-check-circle"></i> Guardar';
+  }
+});
+
+// ============================================
+// EVENTOS DE BOTONES
+// ============================================
+if (btnAddEmpty) {
+  btnAddEmpty.addEventListener('click', openModalNew);
+}
+
+if (btnCancel) {
+  btnCancel.addEventListener('click', () => {
+    modal.close();
+    form.reset();
   });
+}
 
-  function onEdit(ev) {
-    const id = ev.currentTarget.dataset.edit;
-    const item = load().find(x => x.id === id);
-    if (item) openEdit(item);
+// Cerrar modal al hacer clic fuera
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.close();
+    form.reset();
   }
+});
 
-  function onDelete(ev) {
-    const id = ev.currentTarget.dataset.del;
-    if (!confirm('¿Eliminar el punto de retiro?')) return;
-    const items = load().filter(x => x.id !== id);
-    save(items);
-    render();
+// ============================================
+// NOTIFICACIONES
+// ============================================
+function showNotification(message, type = 'info') {
+  // Crear elemento de notificación
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+    <span>${message}</span>
+  `;
+  
+  // Agregar al body
+  document.body.appendChild(notification);
+  
+  // Animar entrada
+  setTimeout(() => notification.classList.add('show'), 10);
+  
+  // Remover después de 3 segundos
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// ============================================
+// UTILIDAD: ESCAPAR HTML
+// ============================================
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// ============================================
+// INICIALIZAR
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadPuntos();
+  
+  // Verificar autenticación
+  const userRol = localStorage.getItem('userRol');
+  if (userRol !== 'admin') {
+    window.location.href = 'index.html';
   }
-
-  // Util: simple escape para evitar inyecciones en los textos
-  function escapeHtml(s='') {
-    return s.replace(/[&<>"']/g, m => (
-      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
-    ));
-  }
-
-  // ---------- init ----------
-  document.addEventListener('DOMContentLoaded', render);
-})();
+});

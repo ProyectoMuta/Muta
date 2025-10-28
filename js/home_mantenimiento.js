@@ -265,7 +265,7 @@
   });
 })();
 document.addEventListener("DOMContentLoaded", async function () {
-    
+   
     // ============================================
     // CALENDARIO CON MONGODB
     // ============================================
@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     let notasGuardadas = {}; // { "2025-1-15": { id: "abc123", texto: "..." } }
     let diaActivo = null;
     const userId = 'admin'; // Puedes cambiarlo por el ID del usuario logueado
-
+ await cargarProductosRecientes();
     // Cargar notas desde MongoDB
     async function cargarNotas() {
         try {
@@ -329,20 +329,26 @@ function renderizarProductos(productos) {
 
     lista.innerHTML = productos.map(producto => `
         <li>
-            <div class="producto">
-                <img src="${producto.imagenes && producto.imagenes[0] ? producto.imagenes[0] : 'img/default.jpg'}" 
-                     alt="${producto.nombre}"
-                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
-                <div>
-                    <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 600;">${producto.nombre}</h3>
-                    <p style="margin: 0; font-size: 13px; color: #666;">
-                        ${producto.descripcion ? producto.descripcion.substring(0, 50) + '...' : 'Sin descripción'}
-                    </p>
-                    <p style="margin: 5px 0 0 0; font-size: 15px; font-weight: 700; color: #4B6BFE;">
-                        $${producto.precio.toLocaleString('es-AR')}
-                    </p>
+            <a href="gestion_producto_mantenimiento.html?editar=${producto._id}" class="producto-reciente-link">
+                <div class="producto-reciente">
+                    <img src="${producto.imagenes && producto.imagenes[0] ? producto.imagenes[0] : 'img/default.jpg'}" 
+                         alt="${producto.nombre}"
+                         class="producto-img">
+                    <div class="producto-info">
+                        <h3>${producto.nombre}</h3>
+                        <p class="producto-desc">
+                            ${producto.descripcion ? producto.descripcion.substring(0, 50) + '...' : 'Sin descripción'}
+                        </p>
+                        <div class="producto-footer">
+                            <span class="producto-precio">$${producto.precio.toLocaleString('es-AR')}</span>
+                            <span class="producto-estado estado-${producto.estado.toLowerCase().replace(/\s/g, '-')}">
+                                ${producto.estado}
+                            </span>
+                        </div>
+                    </div>
+                   
                 </div>
-            </div>
+            </a>
         </li>
     `).join('');
 }
@@ -355,10 +361,12 @@ function mostrarMensajeVacio() {
         <li style="text-align: center; padding: 20px; color: #999;">
             <i class="bi bi-box" style="font-size: 40px; opacity: 0.3;"></i>
             <p>No hay productos registrados</p>
+            <a href="gestion_producto_mantenimiento.html" class="btn btn-primary" style="margin-top: 10px;">
+                <i class="bi bi-plus-lg"></i> Crear primer producto
+            </a>
         </li>
     `;
 }
-
 function mostrarMensajeError() {
     const lista = document.getElementById('top');
     if (!lista) return;
@@ -367,6 +375,9 @@ function mostrarMensajeError() {
         <li style="text-align: center; padding: 20px; color: #e74c3c;">
             <i class="bi bi-exclamation-triangle" style="font-size: 40px; opacity: 0.5;"></i>
             <p>Error al cargar productos</p>
+            <button onclick="cargarProductosRecientes()" class="btn btn-secondary" style="margin-top: 10px;">
+                <i class="bi bi-arrow-clockwise"></i> Reintentar
+            </button>
         </li>
     `;
 }

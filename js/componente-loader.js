@@ -523,6 +523,8 @@ document.addEventListener("DOMContentLoaded", () => {
           setupBuscador(); // 🔥 NUEVA LÍNEA - Activa el buscador
           window.__navInited = true;
         }
+          fillNavbarCategories('nav-cat-list'); 
+
         document.dispatchEvent(new CustomEvent("navbar:ready"));
       });
   }

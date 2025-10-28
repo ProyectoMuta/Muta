@@ -113,8 +113,146 @@ Solución:
 rmdir /s /q vendor
 composer install
 
+3. GOOGLE 
+🔧 PASO 1: CONFIGURAR PHP PARA ENVIAR EMAILS
+═══════════════════════════════════════════════════════════════════
 
-3. Resumen
+1. Descargá el certificado SSL:
+   https://curl.se/ca/cacert.pem
+   (Guardar como → cacert.pem)
+
+2. Creá estas carpetas si no existen:
+   C:\xampp\php\extras\ssl\
+
+3. Copiá el archivo cacert.pem a:
+   C:\xampp\php\extras\ssl\cacert.pem
+
+4. Abrí el archivo: C:\xampp\php\php.ini
+
+5. Buscá estas líneas (CTRL + F) y modificalas:
+
+   ANTES:
+   ;curl.cainfo =
+   
+   DESPUÉS:
+   curl.cainfo = "C:\xampp\php\extras\ssl\cacert.pem"
+
+   ANTES:
+   ;openssl.cafile=
+   
+   DESPUÉS:
+   openssl.cafile = "C:\xampp\php\extras\ssl\cacert.pem"
+
+6. Guardá el archivo php.ini
+
+7. Abrí el Panel de Control de XAMPP y reiniciá Apache:
+   - Stop Apache
+   - Start Apache
+
+
+
+💾 PASO 2: CONFIGURAR LA BASE DE DATOS
+═══════════════════════════════════════════════════════════════════
+
+
+1. Si ya creaste la base de datos "mutaDB" manualmente, otorgá permisos:
+   - SQL → Ejecutá:
+   
+   GRANT ALL PRIVILEGES ON mutaDB.* TO 'muta_dev'@'localhost';
+   FLUSH PRIVILEGES;
+
+
+B) CREAR LA TABLA DE USUARIOS:
+
+1. Seleccioná la base de datos "mutaDB"
+
+2. Andá a la pestaña "SQL"
+
+3. Pegá y ejecutá este código:
+
+ALTER TABLE `usuarios`
+ADD COLUMN `google_id` VARCHAR(255) DEFAULT NULL AFTER `email`,
+ADD COLUMN `reset_token` VARCHAR(64) DEFAULT NULL AFTER `estado`,
+ADD COLUMN `reset_token_expires_at` DATETIME DEFAULT NULL AFTER `reset_token`;
+
+
+📦 PASO 3: INSTALAR PHPMAILER
+═══════════════════════════════════════════════════════════════════
+
+1. Abrí el CMD en la RAÍZ de tu proyecto (donde está la carpeta backend)
+
+   Ejemplo: cd C:\xampp\htdocs\Muta
+
+2. Ejecutá:
+
+   composer require phpmailer/phpmailer
+
+3. Esperá a que termine la instalación. Se creará una carpeta "vendor"
+
+
+
+
+🚀 PASO 4: PROBAR EL SISTEMA
+═══════════════════════════════════════════════════════════════════
+
+1. Abrí tu navegador y andá a:
+   http://localhost/Muta/
+
+22. Probá estas funciones:
+
+   ✅ REGISTRO:
+   - Clic en "Registrarse"
+   - Completá el formulario
+   - Deberías recibir un email de bienvenida
+
+   ✅ LOGIN:
+   - Ingresá con tu email y contraseña
+   - Deberías poder iniciar sesión
+
+   ✅ RECUPERAR CONTRASEÑA:
+   - Clic en "¿Olvidaste tu contraseña?"
+   - Ingresá tu email
+   - Deberías recibir UN SOLO email con un link
+   - Hacé clic en el link
+   - Ingresá tu nueva contraseña
+   - Deberías poder iniciar sesión con la nueva contraseña
+
+
+⚠️ SOLUCIÓN DE PROBLEMAS COMUNES
+═══════════════════════════════════════════════════════════════════
+
+🔴 Error: "Call to undefined function MongoDB\Driver\..."
+   Solución: Instalá la extensión de MongoDB para PHP
+   - Descargá el .dll desde: https://pecl.php.net/package/mongodb
+   - Copialo a C:\xampp\php\ext\
+   - Agregá en php.ini: extension=mongodb
+   - Reiniciá Apache
+
+🔴 Error: "No se puede enviar el email"
+   Solución:
+   - Verificá que configuraste cacert.pem correctamente
+   - Verificá que usaste la contraseña de aplicación de Gmail
+   - Revisá el archivo: backend/mailer_errors.log
+
+🔴 Error: "Access denied for user 'muta_dev'"
+   Solución:
+   - Verificá que creaste el usuario en phpMyAdmin
+   - Verificá que la contraseña sea "muta123"
+   - Ejecutá: GRANT ALL PRIVILEGES ON mutaDB.* TO 'muta_dev'@'localhost';
+
+🔴 Se envían múltiples emails
+   Solución:
+   - Limpiá la caché del navegador (Ctrl + Shift + R)
+   - Verificá que user-session.js tenga la variable recuperacionListenerAdded
+
+🔴 Error: "Token inválido"
+   Solución:
+   - Verificá que las columnas en la BD sean:
+     reset_token (VARCHAR 64)
+     reset_token_expires_at (DATETIME)
+   - No usen guiones en los nombres
+   
+4. Resumen
 MySQL: crear mutaDB
 
 MongoDB: instalar Community Server, no requiere configuración inicial, se autogenera al insertar.
