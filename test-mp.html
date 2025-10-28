@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mercado Pago - MUTA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+        .error {
+            background: #fff3f3;
+            border-left-color: #f44336;
+            color: #f44336;
+        }
+        .success {
+            background: #f0fdf4;
+            border-left-color: #4CAF50;
+            color: #4CAF50;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Integración Mercado Pago</h1>
+
+        <div class="step">
+            <h3>Paso 1: Verificar Configuración</h3>
+            <p>Verifica que las credenciales estén configuradas correctamente.</p>
+            <button onclick="testConfig()">1️⃣ Test Config</button>
+            <div id="config-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Paso 2: Crear Preferencia de Prueba</h3>
+            <p>Crea una preferencia con datos de prueba para verificar la conexión con MP.</p>
+            <button onclick="crearPreferencia()">2️⃣ Crear Preferencia</button>
+            <div id="preferencia-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Paso 3: Ir al Checkout de Mercado Pago</h3>
+            <p>Si la preferencia se creó exitosamente, este botón te redirigirá al checkout de MP.</p>
+            <button id="btn-checkout" onclick="irACheckout()" disabled>3️⃣ Ir a Mercado Pago</button>
+        </div>
+    </div>
+
+    <script>
+        let initPoint = null;
+
+        // Test 1: Verificar configuración
+        async function testConfig() {
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.innerHTML = '<p>⏳ Verificando configuración...</p>';
+
+            try {
+                const response = await fetch('backend/pagosController.php?action=test_config');
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>✅ Configuración Correcta</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <p><strong>Modo:</strong> ${data.data.sandbox_mode ? 'PRUEBA (Sandbox)' : 'PRODUCCIÓN'}</p>
+                            <p><strong>Public Key:</strong> ${data.data.public_key.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Error de Configuración</h4>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Error de Conexión</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test 2: Crear preferencia
+        async function crearPreferencia() {
+            const resultDiv = document.getElementById('preferencia-result');
+            resultDiv.innerHTML = '<p>⏳ Creando preferencia de prueba...</p>';
+
+            const datosTest = {
+                items: [{
+                    id: 'test_001',
+                    nombre: 'Producto de Prueba',
+                    cantidad: 1,
+                    precio_unitario: 1000,
+                    talle: 'M',
+                    color: 'Negro'
+                }],
+                payer: {
+                    nombre: 'Usuario de Prueba',
+                    email: 'test@test.com',
+                    telefono: '+54 261 1234567'
+                },
+                shipment: {
+                    costo: 0,
+                    direccion: {
+                        calle: 'Av. Colón 740',
+                        ciudad: 'Mendoza',
+                        provincia: 'Mendoza',
+                        codigo_postal: '5500',
+                        pais: 'Argentina'
+                    }
+                },
+                pedido_id: 'test-' + Date.now(),
+                usuario_id: '1',
+                numero_pedido: 'TEST-' + Date.now()
+            };
+
+            try {
+                const response = await fetch('backend/pagosController.php?action=crear_preferencia', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosTest)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    initPoint = data.data.init_point;
+                    document.getElementById('btn-checkout').disabled = false;
+
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>✅ Preferencia Creada Exitosamente</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <p><strong>Preferencia ID:</strong> ${data.data.preferencia_id}</p>
+                            <p><strong>Modo:</strong> ${data.data.modo_sandbox ? 'SANDBOX (Prueba)' : 'PRODUCCIÓN'}</p>
+                            <p>✅ Ahora puedes hacer click en "Ir a Mercado Pago"</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Error al Crear Preferencia</h4>
+                            <p><strong>Error:</strong> ${data.error}</p>
+                            ${data.detalles ? `<pre>${JSON.stringify(data.detalles, null, 2)}</pre>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Error de Conexión</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test 3: Ir al checkout
+        function irACheckout() {
+            if (initPoint) {
+                window.location.href = initPoint;
+            } else {
+                alert('Primero debes crear una preferencia exitosamente');
+            }
+        }
+    </script>
+</body>
+</html>

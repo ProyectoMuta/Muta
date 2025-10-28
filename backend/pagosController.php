@@ -88,20 +88,34 @@ class PagosController {
             // Preparar items para Mercado Pago
             $items = [];
             foreach ($input['items'] as $item) {
+                $unitPrice = floatval($item['precio_unitario']);
+
+                // Validar que el precio sea mayor a 0
+                if ($unitPrice <= 0) {
+                    throw new Exception('El precio del producto debe ser mayor a 0. Producto: ' . ($item['nombre'] ?? 'sin nombre'));
+                }
+
                 $items[] = [
                     'id' => $item['id'] ?? uniqid(),
                     'title' => $item['nombre'],
                     'description' => $this->formatearDescripcion($item),
                     'quantity' => intval($item['cantidad']),
-                    'unit_price' => floatval($item['precio_unitario']),
+                    'unit_price' => $unitPrice,
                     'currency_id' => MP_CURRENCY
                 ];
             }
 
             // Preparar datos del comprador
+            $payerEmail = $input['payer']['email'] ?? '';
+
+            // Validar que el email no esté vacío y sea válido
+            if (empty($payerEmail) || !filter_var($payerEmail, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception('El email del comprador es requerido y debe ser válido');
+            }
+
             $payer = [
                 'name' => $input['payer']['nombre'] ?? '',
-                'email' => $input['payer']['email'] ?? '',
+                'email' => $payerEmail,
                 'phone' => [
                     'number' => $input['payer']['telefono'] ?? ''
                 ]
