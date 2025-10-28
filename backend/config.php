@@ -6,6 +6,7 @@ require __DIR__ . '/vendor/autoload.php';
 // --------------------
 try {
     $client = new MongoDB\Client("mongodb://localhost:27017");
+    $mongoClient = $client; // Variable para pagosController.php y otros controladores
     $mongoDB = $client->mutaDB; // base de datos en Mongo
     $db = $mongoDB;
 } catch (Exception $e) {
