@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Rechazado - MUTA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-error {
+            width: 80px;
+            height: 80px;
+            background: #f44336;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .icon-error svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .error-details {
+            background: #fff3f3;
+            border-left: 4px solid #f44336;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .error-title {
+            font-weight: 600;
+            color: #f44336;
+            margin-bottom: 10px;
+        }
+
+        .error-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .reasons {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .reasons h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .reasons ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reasons li {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .reasons li:before {
+            content: "•";
+            color: #f44336;
+            font-weight: bold;
+            position: absolute;
+            left: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 13px;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-error">
+            <svg viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+
+        <h1>Pago Rechazado</h1>
+        <p class="subtitle">No pudimos procesar tu pago</p>
+
+        <div class="error-details">
+            <div class="error-title">¿Qué sucedió?</div>
+            <div class="error-text" id="error-message">
+                Tu pago no pudo ser procesado. Por favor, intenta nuevamente o utiliza otro medio de pago.
+            </div>
+        </div>
+
+        <div class="reasons">
+            <h3>Posibles causas:</h3>
+            <ul>
+                <li>Fondos insuficientes en tu cuenta</li>
+                <li>Datos de la tarjeta incorrectos</li>
+                <li>Tu banco rechazó la transacción</li>
+                <li>Límite de compras alcanzado</li>
+                <li>Problemas de conexión durante el proceso</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="cart.html" class="btn">Intentar Nuevamente</a>
+            <a href="index.html" class="btn btn-secondary">Volver al Inicio</a>
+        </div>
+
+        <p class="info-text">
+            Si el problema persiste, te recomendamos contactar a tu banco o probar con otro medio de pago.
+            Nuestro equipo de soporte está disponible para ayudarte si lo necesitas.
+        </p>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const paymentId = urlParams.get('payment_id');
+        const status = urlParams.get('status');
+        const statusDetail = urlParams.get('status_detail');
+
+        // Mostrar mensaje de error específico si está disponible
+        const errorMessages = {
+            'cc_rejected_bad_filled_card_number': 'Número de tarjeta incorrecto',
+            'cc_rejected_bad_filled_date': 'Fecha de vencimiento incorrecta',
+            'cc_rejected_bad_filled_other': 'Datos incorrectos',
+            'cc_rejected_bad_filled_security_code': 'Código de seguridad incorrecto',
+            'cc_rejected_blacklist': 'Tarjeta bloqueada',
+            'cc_rejected_call_for_authorize': 'Debes autorizar el pago con tu banco',
+            'cc_rejected_card_disabled': 'Tarjeta deshabilitada',
+            'cc_rejected_duplicated_payment': 'Ya realizaste un pago similar',
+            'cc_rejected_high_risk': 'Pago rechazado por seguridad',
+            'cc_rejected_insufficient_amount': 'Fondos insuficientes',
+            'cc_rejected_invalid_installments': 'Cuotas no válidas',
+            'cc_rejected_max_attempts': 'Superaste el límite de intentos',
+            'cc_rejected_other_reason': 'Pago rechazado'
+        };
+
+        if (statusDetail && errorMessages[statusDetail]) {
+            document.getElementById('error-message').textContent =
+                errorMessages[statusDetail] + '. Por favor, intenta nuevamente o utiliza otro medio de pago.';
+        }
+
+        // Log para debugging
+        console.log('Pago rechazado:', {
+            paymentId,
+            status,
+            statusDetail,
+            allParams: Object.fromEntries(urlParams)
+        });
+    </script>
+</body>
+</html>

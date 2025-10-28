@@ -253,7 +253,11 @@ function inicializarProcesoDeCompra() {
     document.addEventListener("submit", (e) => {
         if (e.target.id === 'payment-form') {
             e.preventDefault();
-            finalizarCompra(e.target.querySelector('.finalizar-compra'));
+            // Buscar el botón de submit dentro del formulario
+            const submitButton = e.target.querySelector('button[type="submit"]') ||
+                                 e.target.querySelector('.btn-pagar') ||
+                                 e.target.querySelector('.pagar-mp');
+            finalizarCompra(submitButton);
         }
     });
 }
@@ -471,42 +475,113 @@ try {
 
     console.log("✅ Pedido creado:", pedidoResponse.numero_pedido);
 
-    // 7️⃣ PREPARAR DATOS PARA EMAIL
-    const templateParams = {
-      customer_name: customerName,
-      email_cliente: customerEmail,
-      order_id: pedidoResponse.numero_pedido,
-      items_html: productos.map(p => 
-        `<li>${p.cantidad}x ${p.nombre} (Talle: ${p.talle}) - $${p.subtotal.toLocaleString('es-AR')}</li>`
-      ).join(''),
-      subtotal: `$${subtotal.toLocaleString('es-AR')}`,
-      costo_envio: `$${costoEnvio.toLocaleString('es-AR')}`,
-      total_amount: `$${total.toLocaleString('es-AR')}`,
-      detalles_pago: metodoPago === 'tarjeta' ? 'Tarjeta de crédito/débito' : 'Mercado Pago',
-      detalles_envio: metodoEnvio === 'domicilio' ? 'Envío a domicilio' : 
-                       metodoEnvio === 'punto' ? 'Retiro en punto' : 'Retiro en tienda',
-      detalles_direccion: `${direccionEnvio.calle}, ${direccionEnvio.ciudad}, ${direccionEnvio.provincia}`
-    };
- await emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams)
-    .then(() => {
-      alert(`¡Gracias por tu compra, ${templateParams.customer_name}!Se ha enviado un email de confirmación.`);
+    // 7️⃣ SI ES MERCADO PAGO, CREAR PREFERENCIA Y REDIRIGIR
+    if (metodoPago === 'mercadopago') {
+      console.log("💳 Creando preferencia de Mercado Pago...");
 
-      // Limpiar solo lo necesario
-      localStorage.removeItem("mutaCart");               // carrito
-      localStorage.removeItem("selectedMetodoEnvio");    // modalidad temporal
-      localStorage.removeItem("selectedDireccion");      // solo si usabas localStorage antes
-      localStorage.removeItem("selectedPunto");          // solo si usabas localStorage antes
+      try {
+        // Preparar datos para Mercado Pago
+        const mpData = {
+          items: productos.map(p => ({
+            id: p.producto_id,
+            nombre: p.nombre,
+            cantidad: p.cantidad,
+            precio_unitario: p.precio_unitario,
+            talle: p.talle,
+            color: p.color
+          })),
+          payer: {
+            nombre: customerName,
+            email: customerEmail,
+            telefono: direccionEnvio.telefono
+          },
+          shipment: {
+            costo: costoEnvio,
+            direccion: direccionEnvio
+          },
+          pedido_id: pedidoResponse.pedido_id,
+          usuario_id: userId,
+          numero_pedido: pedidoResponse.numero_pedido
+        };
 
-     
-     alert(`¡Gracias por tu compra, ${customerName}!\n\nNúmero de pedido: ${pedidoResponse.numero_pedido}\n\nHemos enviado un email de confirmación.`);
-  
+        console.log("📤 Datos enviando a MP:", mpData);
+        console.log("📦 Items específicamente:", mpData.items);
+
+        // Crear preferencia en Mercado Pago
+        const mpResponse = await fetch('backend/pagosController.php?action=crear_preferencia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mpData)
+        });
+
+        const mpResult = await mpResponse.json();
+
+        if (!mpResult.success) {
+          console.error('❌ Respuesta completa de MP:', mpResult);
+          throw new Error(mpResult.error || "Error al crear preferencia de Mercado Pago");
+        }
+
+        console.log("✅ Preferencia creada:", mpResult.data.preferencia_id);
+
+        // Limpiar carrito antes de redirigir
+        localStorage.removeItem("mutaCart");
+        localStorage.removeItem("selectedMetodoEnvio");
+        localStorage.removeItem("selectedDireccion");
+        localStorage.removeItem("selectedPunto");
+
+        // Actualizar carrito en BD
+        await fetch("backend/userController.php?action=updateCart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: userId, carrito: [] })
+        });
+
+        // Redirigir a Mercado Pago
+        alert(`Redirigiendo a Mercado Pago para completar el pago...\n\nNúmero de pedido: ${pedidoResponse.numero_pedido}`);
+        window.location.href = mpResult.data.init_point;
+
+      } catch (mpError) {
+        console.error('❌ Error con Mercado Pago:', mpError);
+        alert(`Error al procesar el pago con Mercado Pago: ${mpError.message}\n\nPor favor, intenta nuevamente.`);
+        throw mpError;
+      }
+
+    } else {
+      // 8️⃣ PARA OTROS MÉTODOS DE PAGO (TARJETA), ENVIAR EMAIL Y FINALIZAR
+      const templateParams = {
+        customer_name: customerName,
+        email_cliente: customerEmail,
+        order_id: pedidoResponse.numero_pedido,
+        items_html: productos.map(p =>
+          `<li>${p.cantidad}x ${p.nombre} (Talle: ${p.talle}) - $${p.subtotal.toLocaleString('es-AR')}</li>`
+        ).join(''),
+        subtotal: `$${subtotal.toLocaleString('es-AR')}`,
+        costo_envio: `$${costoEnvio.toLocaleString('es-AR')}`,
+        total_amount: `$${total.toLocaleString('es-AR')}`,
+        detalles_pago: metodoPago === 'tarjeta' ? 'Tarjeta de crédito/débito' : 'Otro método de pago',
+        detalles_envio: metodoEnvio === 'domicilio' ? 'Envío a domicilio' :
+                         metodoEnvio === 'punto' ? 'Retiro en punto' : 'Retiro en tienda',
+        detalles_direccion: `${direccionEnvio.calle}, ${direccionEnvio.ciudad}, ${direccionEnvio.provincia}`
+      };
+
+      await emailjs.send('service_wqlyyxz', 'template_h4p8oiv', templateParams);
+
+      // Limpiar carrito
+      localStorage.removeItem("mutaCart");
+      localStorage.removeItem("selectedMetodoEnvio");
+      localStorage.removeItem("selectedDireccion");
+      localStorage.removeItem("selectedPunto");
+
+      // Actualizar carrito en BD
+      await fetch("backend/userController.php?action=updateCart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: userId, carrito: [] })
+      });
+
+      alert(`¡Gracias por tu compra, ${customerName}!\n\nNúmero de pedido: ${pedidoResponse.numero_pedido}\n\nHemos enviado un email de confirmación.`);
       window.location.href = "index.html";
-    })
-     await fetch("backend/userController.php?action=updateCart", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: userId, carrito: [] })
-    });
+    }
      } catch (error) {
     console.error('❌ ERROR EN CHECKOUT:', error);
     alert(`Error al procesar tu compra: ${error.message}\n\nPor favor, intenta nuevamente o contacta con soporte.`);
