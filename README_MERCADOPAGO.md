@@ -58,20 +58,23 @@ Antes de comenzar, asegúrate de tener:
 
 ### Paso 1: Instalar Dependencias
 
-Desde la raíz del proyecto, ejecuta:
+Desde el directorio **backend/** del proyecto, ejecuta:
 
 ```bash
+cd backend
 composer install
 ```
 
 O si ya tienes composer instalado pero no las dependencias:
 
 ```bash
+cd backend
 composer update
 ```
 
 Esto instalará automáticamente:
 - `mercadopago/dx-php` v3.0+ (SDK oficial de Mercado Pago)
+- MongoDB PHP Library
 - PHPMailer
 - Google API Client
 
@@ -87,7 +90,7 @@ Deberías ver la carpeta `dx-php` con todos los archivos del SDK.
 
 ### Paso 3: Verificar Autoload
 
-El archivo `vendor/autoload.php` debe existir en la raíz del proyecto. Este es necesario para cargar el SDK.
+El archivo `vendor/autoload.php` debe existir en `backend/vendor/autoload.php`. Este es necesario para cargar el SDK.
 
 ---
 
@@ -174,12 +177,15 @@ Muta/
 ├── backend/
 │   ├── mp-config.php              # ⭐ Configuración de credenciales
 │   ├── pagosController.php        # ⭐ Controlador principal de pagos
-│   └── mp-webhook.php             # ⭐ Receptor de notificaciones de MP
+│   ├── mp-webhook.php             # ⭐ Receptor de notificaciones de MP
+│   ├── composer.json              # ✏️ Incluye SDK de Mercado Pago
+│   ├── vendor/                    # Dependencias de Composer
+│   │   └── mercadopago/           # SDK de Mercado Pago
+│   └── logs/
+│       └── mp-notifications.log   # ⭐ Log de webhooks (se crea automáticamente)
 ├── payment-success.html           # ⭐ Página de pago exitoso
 ├── payment-failure.html           # ⭐ Página de pago rechazado
 ├── payment-pending.html           # ⭐ Página de pago pendiente
-├── logs/
-│   └── mp-notifications.log       # ⭐ Log de webhooks (se crea automáticamente)
 └── README_MERCADOPAGO.md          # ⭐ Esta documentación
 ```
 
@@ -187,7 +193,8 @@ Muta/
 
 ```
 Muta/
-├── composer.json                  # ✏️ Agregado SDK de Mercado Pago
+├── backend/
+│   └── composer.json              # ✏️ Agregado SDK de Mercado Pago
 └── js/carritoJS/
     └── checkout.js                # ✏️ Integración con flujo de pago
 ```
@@ -383,7 +390,7 @@ sudo systemctl start apache2
 3. Verifica que te redirija a `payment-success.html`
 
 #### e) Verificar Webhook
-1. Abre el archivo de log: `logs/mp-notifications.log`
+1. Abre el archivo de log: `backend/logs/mp-notifications.log`
 2. Verifica que haya una entrada con el payment_id
 3. Verifica en MongoDB que el pedido se actualizó a estado "pagado"
 
@@ -391,7 +398,7 @@ sudo systemctl start apache2
 
 #### Ver Logs de Webhooks
 ```bash
-tail -f logs/mp-notifications.log
+tail -f backend/logs/mp-notifications.log
 ```
 
 #### Ver Logs de PHP
@@ -502,7 +509,7 @@ Como Mercado Pago necesita una URL pública para enviar webhooks, en desarrollo 
 El archivo `mp-webhook.php` hace lo siguiente:
 
 1. ✅ Recibe notificación de Mercado Pago
-2. ✅ Registra en log (`logs/mp-notifications.log`)
+2. ✅ Registra en log (`backend/logs/mp-notifications.log`)
 3. ✅ Consulta el pago en la API de MP
 4. ✅ Actualiza el estado del pedido en MongoDB
 5. ✅ Envía email de confirmación (si está aprobado)
@@ -511,7 +518,7 @@ El archivo `mp-webhook.php` hace lo siguiente:
 
 ```bash
 # Ver últimas notificaciones
-tail -n 50 logs/mp-notifications.log
+tail -n 50 backend/logs/mp-notifications.log
 ```
 
 Ejemplo de log correcto:
@@ -595,7 +602,7 @@ Debe responder con `200 OK` sin errores de certificado.
 
 Después de lanzar:
 
-- Revisa los logs diariamente: `logs/mp-notifications.log`
+- Revisa los logs diariamente: `backend/logs/mp-notifications.log`
 - Verifica que los webhooks lleguen correctamente
 - Monitorea pedidos "en_espera" que no se actualizan
 
@@ -638,6 +645,9 @@ mongosh
 
 **Solución**:
 ```bash
+# Ir al directorio backend
+cd backend
+
 # Instalar dependencias
 composer install
 
@@ -687,7 +697,7 @@ composer update mercadopago/dx-php
 **Solución**:
 1. Revisa el log de webhooks:
    ```bash
-   tail -f logs/mp-notifications.log
+   tail -f backend/logs/mp-notifications.log
    ```
 2. Si no hay entradas, el webhook no está llegando (ver problema anterior)
 3. Si hay entradas con errores, revisa el error específico
@@ -735,7 +745,7 @@ sudo systemctl restart apache2
 - ⚠️ **NUNCA** subas `mp-config.php` a GitHub con credenciales reales
 - ⚠️ Agrega `mp-config.php` a `.gitignore`
 - ✅ Usa variables de entorno para credenciales en producción
-- ✅ Mantén el SDK actualizado: `composer update`
+- ✅ Mantén el SDK actualizado: `cd backend && composer update`
 
 ### Performance
 

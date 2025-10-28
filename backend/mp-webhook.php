@@ -15,15 +15,15 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // Requerir archivos necesarios
-require_once 'mp-config.php';
-require_once 'config.php';
+require_once __DIR__ . '/mp-config.php';
+require_once __DIR__ . '/config.php';
 
 // Log de las notificaciones recibidas (útil para debugging)
-$logFile = __DIR__ . '/../logs/mp-notifications.log';
+$logFile = __DIR__ . '/logs/mp-notifications.log';
 
 // Crear carpeta de logs si no existe
-if (!file_exists(__DIR__ . '/../logs')) {
-    mkdir(__DIR__ . '/../logs', 0777, true);
+if (!file_exists(__DIR__ . '/logs')) {
+    mkdir(__DIR__ . '/logs', 0777, true);
 }
 
 /**

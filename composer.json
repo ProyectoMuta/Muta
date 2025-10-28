@@ -1,7 +1,0 @@
-{
-    "require": {
-        "phpmailer/phpmailer": "^7.0",
-        "google/apiclient": "2.12",
-        "mercadopago/dx-php": "^3.0"
-    }
-}

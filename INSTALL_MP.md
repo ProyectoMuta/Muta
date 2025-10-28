@@ -9,7 +9,7 @@ Guía rápida para poner en marcha la integración de Mercado Pago en 5 minutos.
 ### 1. Instalar SDK de Mercado Pago
 
 ```bash
-cd /ruta/a/Muta
+cd /ruta/a/Muta/backend
 composer install
 ```
 
@@ -81,6 +81,7 @@ Para instrucciones detalladas, configuración de webhooks, pasar a producción, 
 
 ### "Class MercadoPagoConfig not found"
 ```bash
+cd backend
 composer install
 ```
 

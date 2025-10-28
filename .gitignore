@@ -1,13 +1,13 @@
 # Dependencias de Composer
-/vendor/
-composer.lock
+backend/vendor/
+backend/composer.lock
 
 # Archivos de configuración con credenciales sensibles
 # IMPORTANTE: Si subes mp-config.php al repo, asegúrate de usar credenciales de ejemplo
 # backend/mp-config.php
 
 # Logs
-/logs/
+backend/logs/
 *.log
 
 # Archivos de sistema
