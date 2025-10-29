@@ -329,12 +329,12 @@ async function cargarMisDirecciones(dropdown) {
     const data = await response.json();
 
     if (data.ok && data.direcciones && data.direcciones.domicilios && data.direcciones.domicilios.length > 0) {
-      // Mostrar direcciones en modo solo lectura (sin botones de agregar/eliminar)
+      // Mostrar direcciones con botón de eliminar (sin agregar)
       dropdown.innerHTML = `
         <div class="direcciones-list">
           ${data.direcciones.domicilios.map((dir, index) => `
             <div class="direccion-item" style="padding: 16px; border-bottom: 1px solid #eee;">
-              <div style="display: flex; align-items: start;">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div style="flex: 1;">
                   <i class="bi bi-geo-alt-fill" style="color: #4B6BFE; margin-right: 8px;"></i>
                   <strong style="color: #333;">Dirección ${index + 1}</strong>
@@ -344,6 +344,9 @@ async function cargarMisDirecciones(dropdown) {
                     CP: ${dir.codigo_postal}
                   </p>
                 </div>
+                <button class="btn-eliminar-direccion" data-index="${index}" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 4px 8px; font-size: 18px;" title="Eliminar dirección">
+                  <i class="bi bi-trash"></i>
+                </button>
               </div>
             </div>
           `).join('')}
@@ -352,6 +355,14 @@ async function cargarMisDirecciones(dropdown) {
           </div>
         </div>
       `;
+
+      // Event listener para botón de eliminar
+      dropdown.querySelectorAll('.btn-eliminar-direccion').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.currentTarget.dataset.index);
+          eliminarDireccion(index, dropdown);
+        });
+      });
 
     } else {
       // Sin direcciones guardadas - solo informativo
@@ -372,11 +383,10 @@ async function cargarMisDirecciones(dropdown) {
 }
 
 // ========================================
-// NOTA: Las siguientes funciones están deshabilitadas porque las direcciones
-// ahora son solo de lectura. Se crean automáticamente al hacer un pedido.
+// NOTA: Funciones para eliminar direcciones (sin agregar)
+// Las direcciones se crean automáticamente al hacer un pedido desde el carrito
 // ========================================
 
-/*
 // === Eliminar Dirección ===
 async function eliminarDireccion(index, dropdown) {
   if (!confirm('¿Estás seguro de eliminar esta dirección?')) return;

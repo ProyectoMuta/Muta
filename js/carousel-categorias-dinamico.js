@@ -58,10 +58,55 @@ async function populateCategoriasCarousel() {
       `;
     }).join('');
 
+    // Inicializar funcionalidad del carousel (botones prev/next)
+    initCarouselControls();
+
   } catch (error) {
     console.error('Error cargando carousel de categorías:', error);
     carouselTrack.innerHTML = '<p style="text-align: center; padding: 40px; color: #e74c3c;">Error al cargar categorías</p>';
   }
+}
+
+// Inicializar controles del carousel
+function initCarouselControls() {
+  const carousel = document.getElementById('carousel-categorias');
+  if (!carousel) return;
+
+  const track = carousel.querySelector('.carousel-track');
+  const prevBtn = carousel.querySelector('.carousel-prev');
+  const nextBtn = carousel.querySelector('.carousel-next');
+
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const getGap = () => parseInt(getComputedStyle(track).gap) || 0;
+  const getCardWidth = () => {
+    const card = track.querySelector('.card');
+    return card ? card.getBoundingClientRect().width : 0;
+  };
+  const getStep = () => getCardWidth() + getGap();
+  const getCurrentIndex = () => {
+    const step = getStep();
+    return step ? Math.round(track.scrollLeft / step) : 0;
+  };
+  const scrollToIndex = (idx) => {
+    const step = getStep();
+    track.scrollTo({ left: idx * step, behavior: 'smooth' });
+  };
+
+  prevBtn.addEventListener('click', () => {
+    scrollToIndex(Math.max(0, getCurrentIndex() - 1));
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const totalCards = track.querySelectorAll('.card').length;
+    const visibles = Math.max(1, Math.round(track.clientWidth / getStep()));
+    const maxIndex = Math.max(0, totalCards - visibles);
+    scrollToIndex(Math.min(maxIndex, getCurrentIndex() + 1));
+  });
+
+  window.addEventListener('resize', () => {
+    scrollToIndex(getCurrentIndex());
+  });
 }
 
 // Intentar popular cuando el DOM esté listo
