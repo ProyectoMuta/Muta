@@ -84,6 +84,36 @@ document.addEventListener('DOMContentLoaded', () => {
         head.appendChild(sw);
         card.appendChild(head);
 
+        // Imagen de la categoría
+        const imageSection = el('div','cat-image-section');
+        imageSection.style.padding = '12px';
+        imageSection.style.background = '#fff';
+        imageSection.style.borderTop = '1px solid #eee';
+
+        if (cat.imagen) {
+          imageSection.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="${cat.imagen}" alt="${cat.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+              <div style="flex: 1;">
+                <p style="margin: 0; font-size: 12px; color: #666;">Imagen del carousel</p>
+                <button class="btn-change-image" data-idx="${iCat}" style="margin-top: 4px; padding: 6px 12px; background: #4B6BFE; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                  Cambiar imagen
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          imageSection.innerHTML = `
+            <div style="text-align: center; padding: 12px;">
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Sin imagen para carousel</p>
+              <button class="btn-upload-image" data-idx="${iCat}" style="padding: 8px 16px; background: #4B6BFE; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                Subir imagen
+              </button>
+            </div>
+          `;
+        }
+        card.appendChild(imageSection);
+
         const body = el('div','sub-list'); // fondo blanco
         (cat.subcats||[]).forEach((s,iSub)=>{
           const row = el('div','sub-row');
@@ -98,6 +128,78 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(body);
         listWrap.appendChild(card);
       });
+
+    // Event listeners para botones de imagen
+    document.querySelectorAll('.btn-upload-image, .btn-change-image').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        mostrarSelectorImagen(idx);
+      });
+    });
+  }
+
+  // Función para mostrar selector de imagen
+  function mostrarSelectorImagen(catIndex) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor selecciona una imagen válida');
+        return;
+      }
+
+      // Validar tamaño (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen es muy grande. Máximo 5MB');
+        return;
+      }
+
+      await subirImagenCategoria(catIndex, file);
+    };
+    input.click();
+  }
+
+  // Subir imagen al servidor
+  async function subirImagenCategoria(catIndex, file) {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    formData.append('categoria_slug', state.categories[catIndex].slug);
+
+    try {
+      const res = await fetch('backend/productController.php?action=uploadCategoryImage', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error('Error al subir imagen');
+      }
+
+      const data = await res.json();
+
+      if (data.ok && data.url) {
+        // Actualizar estado local
+        state.categories[catIndex].imagen = data.url;
+
+        // Guardar en backend
+        await saveToBackend();
+
+        // Re-renderizar
+        renderList();
+
+        alert('✅ Imagen subida correctamente');
+      } else {
+        throw new Error(data.error || 'Error desconocido');
+      }
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      alert('❌ Error al subir imagen: ' + error.message);
+    }
   }
 
   // A. Guardar en backend

@@ -57,10 +57,27 @@
   display: block;
 }
 
+/* Título de la categoría */
+#carousel-categorias .card-title {
+  display: block;
+  text-align: center;
+  padding: 12px 8px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #333;
+  text-transform: uppercase;
+}
+
 /* Hover */
 #carousel-categorias .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#carousel-categorias .card:hover .card-title {
+  color: #4B6BFE;
 }
 
 /* Botones flotantes (sin crear padding visual) */

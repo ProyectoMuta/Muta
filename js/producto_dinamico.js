@@ -159,7 +159,8 @@
           imgSel,
           talleSel,
           colorSel,
-          qty
+          qty,
+          p.descripcion || ''
         );
 
         if ($okMsg && agregado) {

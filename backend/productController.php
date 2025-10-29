@@ -385,6 +385,58 @@ try {
       break;
       /* ===== POST (crear) ===== */
       case 'POST':
+          // Subir imagen de categoría
+          if (isset($_GET['action']) && $_GET['action'] === 'uploadCategoryImage') {
+              if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+                  http_response_code(400);
+                  echo json_encode(['ok' => false, 'error' => 'No se recibió imagen válida']);
+                  exit;
+              }
+
+              $categoria_slug = $_POST['categoria_slug'] ?? '';
+              if (!$categoria_slug) {
+                  http_response_code(400);
+                  echo json_encode(['ok' => false, 'error' => 'Falta categoria_slug']);
+                  exit;
+              }
+
+              $uploadDir = __DIR__ . '/../uploads/categorias/';
+              if (!file_exists($uploadDir)) {
+                  mkdir($uploadDir, 0777, true);
+              }
+
+              $file = $_FILES['imagen'];
+              $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+              $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+
+              if (!in_array($ext, $allowedExts)) {
+                  http_response_code(400);
+                  echo json_encode(['ok' => false, 'error' => 'Extensión no permitida']);
+                  exit;
+              }
+
+              $fileName = 'categoria_' . $categoria_slug . '_' . time() . '.' . $ext;
+              $targetPath = $uploadDir . $fileName;
+
+              if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+                  http_response_code(500);
+                  echo json_encode(['ok' => false, 'error' => 'Error al mover archivo']);
+                  exit;
+              }
+
+              $url = 'uploads/categorias/' . $fileName;
+
+              // Actualizar en MongoDB
+              $cfgCol->updateOne(
+                  ['slug' => $categoria_slug],
+                  ['$set' => ['imagen' => $url]],
+                  ['upsert' => true]
+              );
+
+              echo json_encode(['ok' => true, 'url' => $url]);
+              exit;
+          }
+
           // guardar presets de categorías/subs
           if (isset($_GET['action']) && $_GET['action'] === 'catsSave') {
               $raw = file_get_contents('php://input');
@@ -395,9 +447,8 @@ try {
               foreach ($data['categories'] as $cat) {
                   $slug = slugify_local($cat['slug'] ?? ($cat['name'] ?? ''));
                   if (!$slug) continue;
-                  $cfgCol->updateOne(
-                    ['slug'=>$slug],
-                    ['$set'=>[
+
+                  $setData = [
                       'nombre'  => $cat['name'] ?? ucfirst($slug),
                       'enabled' => (bool)($cat['enabled'] ?? false),
                       'subs'    => array_map(fn($s)=>[
@@ -405,7 +456,16 @@ try {
                         'slug'    => slugify_local($s['name'] ?? ''),
                         'enabled' => (bool)($s['enabled'] ?? false),
                       ], ($cat['subcats'] ?? [])),
-                    ]],
+                  ];
+
+                  // Agregar imagen si existe
+                  if (isset($cat['imagen']) && $cat['imagen']) {
+                      $setData['imagen'] = $cat['imagen'];
+                  }
+
+                  $cfgCol->updateOne(
+                    ['slug'=>$slug],
+                    ['$set'=> $setData],
                     ['upsert'=>true]
                   );
               }
