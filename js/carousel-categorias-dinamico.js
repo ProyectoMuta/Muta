@@ -1,10 +1,13 @@
 // carousel-categorias-dinamico.js
 // Carga dinámicamente el carousel de categorías desde la BD
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function populateCategoriasCarousel() {
   const carouselTrack = document.querySelector('#carousel-categorias .carousel-track');
 
-  if (!carouselTrack) return;
+  if (!carouselTrack) {
+    console.warn('Carousel track no encontrado, esperando...');
+    return;
+  }
 
   try {
     // Cargar configuración de categorías
@@ -58,5 +61,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     console.error('Error cargando carousel de categorías:', error);
     carouselTrack.innerHTML = '<p style="text-align: center; padding: 40px; color: #e74c3c;">Error al cargar categorías</p>';
+  }
+}
+
+// Intentar popular cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', populateCategoriasCarousel);
+
+// También intentar cuando el componente sea cargado
+document.addEventListener('componente:cargado', (e) => {
+  if (e.detail.id === 'carousel-categorias') {
+    populateCategoriasCarousel();
   }
 });

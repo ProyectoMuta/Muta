@@ -329,11 +329,12 @@ async function cargarMisDirecciones(dropdown) {
     const data = await response.json();
 
     if (data.ok && data.direcciones && data.direcciones.domicilios && data.direcciones.domicilios.length > 0) {
+      // Mostrar direcciones en modo solo lectura (sin botones de agregar/eliminar)
       dropdown.innerHTML = `
         <div class="direcciones-list">
           ${data.direcciones.domicilios.map((dir, index) => `
             <div class="direccion-item" style="padding: 16px; border-bottom: 1px solid #eee;">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div style="display: flex; align-items: start;">
                 <div style="flex: 1;">
                   <i class="bi bi-geo-alt-fill" style="color: #4B6BFE; margin-right: 8px;"></i>
                   <strong style="color: #333;">Dirección ${index + 1}</strong>
@@ -343,47 +344,26 @@ async function cargarMisDirecciones(dropdown) {
                     CP: ${dir.codigo_postal}
                   </p>
                 </div>
-                <button class="btn-eliminar-direccion" data-index="${index}" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 4px 8px;" title="Eliminar dirección">
-                  <i class="bi bi-trash"></i>
-                </button>
               </div>
             </div>
           `).join('')}
-          <div style="padding: 16px; text-align: center;">
-            <button class="btn-agregar-direccion" style="background: #4B6BFE; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-              <i class="bi bi-plus-circle"></i> Agregar Nueva Dirección
-            </button>
+          <div style="padding: 16px; text-align: center; color: #666; font-size: 13px;">
+            <i class="bi bi-info-circle"></i> Las direcciones se crean automáticamente al realizar un pedido
           </div>
         </div>
       `;
 
-      // Event listeners para botones
-      dropdown.querySelectorAll('.btn-eliminar-direccion').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = parseInt(e.currentTarget.dataset.index);
-          eliminarDireccion(index, dropdown);
-        });
-      });
-
-      dropdown.querySelector('.btn-agregar-direccion')?.addEventListener('click', () => {
-        mostrarFormularioNuevaDireccion(dropdown);
-      });
-
     } else {
-      // Sin direcciones guardadas
+      // Sin direcciones guardadas - solo informativo
       dropdown.innerHTML = `
         <div style="text-align: center; padding: 40px; color: #999;">
           <i class="bi bi-house" style="font-size: 48px; opacity: 0.3;"></i>
           <p>No tienes direcciones guardadas</p>
-          <button class="btn-agregar-direccion" style="background: #4B6BFE; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 16px;">
-            <i class="bi bi-plus-circle"></i> Agregar Dirección
-          </button>
+          <p style="font-size: 13px; color: #666; margin-top: 12px;">
+            Las direcciones se guardan automáticamente cuando realizas un pedido
+          </p>
         </div>
       `;
-
-      dropdown.querySelector('.btn-agregar-direccion')?.addEventListener('click', () => {
-        mostrarFormularioNuevaDireccion(dropdown);
-      });
     }
   } catch (error) {
     console.error('Error cargando direcciones:', error);
@@ -391,6 +371,12 @@ async function cargarMisDirecciones(dropdown) {
   }
 }
 
+// ========================================
+// NOTA: Las siguientes funciones están deshabilitadas porque las direcciones
+// ahora son solo de lectura. Se crean automáticamente al hacer un pedido.
+// ========================================
+
+/*
 // === Eliminar Dirección ===
 async function eliminarDireccion(index, dropdown) {
   if (!confirm('¿Estás seguro de eliminar esta dirección?')) return;
@@ -485,3 +471,4 @@ async function guardarNuevaDireccion(form, dropdown) {
     alert('❌ Error de conexión');
   }
 }
+*/
