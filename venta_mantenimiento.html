@@ -12,6 +12,69 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="img/favicon.jpeg">
+
+  <style>
+    .dropdown-menu {
+      min-width: 150px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-top: 4px;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.2s;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f5f5f5;
+      color: #4B6BFE;
+    }
+
+    .detalle-row {
+      transition: all 0.3s ease;
+    }
+
+    .detalle-content {
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .detail-group {
+      margin-bottom: 12px;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -173,7 +236,7 @@
       }
 
       tbody.innerHTML = pedidos.map(pedido => `
-        <tr>
+        <tr data-pedido-id="${pedido.id}">
           <td><strong>${pedido.numero_pedido}</strong></td>
           <td>${formatearFecha(pedido.fecha_compra)}</td>
           <td>${pedido.usuario_id}</td>
@@ -182,12 +245,28 @@
           <td>${ESTADO_BADGES[pedido.estado] || pedido.estado}</td>
           <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
           <td>
-            <button class="btn-action" onclick="verDetalles('${pedido.id}')">
-              <i class="bi bi-eye"></i> Ver
+            <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
+              <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
             </button>
-            <button class="btn-action" onclick="cambiarEstado('${pedido.id}', '${pedido.estado}')">
-              <i class="bi bi-arrow-repeat"></i> Estado
-            </button>
+            <div class="dropdown" style="display: inline-block; position: relative;">
+              <button class="btn-action dropdown-toggle" onclick="toggleEstadoDropdown(event, '${pedido.id}')">
+                <i class="bi bi-arrow-repeat"></i> Estado
+              </button>
+              <div class="dropdown-menu" id="dropdown-${pedido.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px;">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'en_espera'); return false;">En Espera</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'pagado'); return false;">Pagado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'enviado'); return false;">Enviado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'recibido'); return false;">Recibido</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'cancelado'); return false;">Cancelado</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="detalle-row" id="detalle-${pedido.id}" style="display: none;">
+          <td colspan="8" style="padding: 0;">
+            <div class="detalle-content" style="padding: 20px; background: #f9f9f9; border-top: 1px solid #eee;">
+              <div class="loading-detalle">Cargando detalles...</div>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -203,46 +282,78 @@
       document.getElementById('pedidosPendientes').textContent = pendientes;
     }
 
-    // Ver detalles del pedido
-    async function verDetalles(id) {
+    // Toggle detalles desplegables en la tabla
+    async function toggleDetalles(id) {
+      const detalleRow = document.getElementById(`detalle-${id}`);
+      const btn = event.target.closest('button');
+      const toggleText = btn.querySelector('.toggle-text');
+
+      if (detalleRow.style.display === 'none') {
+        // Cerrar todos los demás detalles abiertos
+        document.querySelectorAll('.detalle-row').forEach(row => {
+          row.style.display = 'none';
+        });
+        document.querySelectorAll('.toggle-text').forEach(text => {
+          text.textContent = 'Ver';
+        });
+
+        // Abrir este detalle
+        detalleRow.style.display = 'table-row';
+        toggleText.textContent = 'Ocultar';
+
+        // Cargar detalles si no están cargados
+        if (detalleRow.dataset.loaded !== 'true') {
+          await cargarDetallesPedido(id);
+        }
+      } else {
+        // Cerrar este detalle
+        detalleRow.style.display = 'none';
+        toggleText.textContent = 'Ver';
+      }
+    }
+
+    // Cargar detalles del pedido
+    async function cargarDetallesPedido(id) {
       try {
         const response = await fetch(`backend/pedidosController.php?action=obtener&id=${id}`);
         const data = await response.json();
 
         if (data.success) {
           const pedido = data.pedido;
-          const modal = document.getElementById('modalDetalles');
-          const modalBody = document.getElementById('modalBody');
+          const detalleRow = document.getElementById(`detalle-${id}`);
+          const detalleContent = detalleRow.querySelector('.detalle-content');
 
-          modalBody.innerHTML = `
-            <div class="detail-group">
-              <div class="detail-label">Número de Pedido</div>
-              <div class="detail-value"><strong>${pedido.numero_pedido}</strong></div>
+          detalleContent.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+              <div class="detail-group">
+                <div class="detail-label">Número de Pedido</div>
+                <div class="detail-value"><strong>${pedido.numero_pedido}</strong></div>
+              </div>
+
+              <div class="detail-group">
+                <div class="detail-label">Usuario ID</div>
+                <div class="detail-value">${pedido.usuario_id}</div>
+              </div>
+
+              <div class="detail-group">
+                <div class="detail-label">Fecha de Compra</div>
+                <div class="detail-value">${formatearFecha(pedido.fecha_compra)}</div>
+              </div>
+
+              <div class="detail-group">
+                <div class="detail-label">Estado</div>
+                <div class="detail-value">${ESTADO_BADGES[pedido.estado]}</div>
+              </div>
             </div>
 
-            <div class="detail-group">
-              <div class="detail-label">Usuario ID</div>
-              <div class="detail-value">${pedido.usuario_id}</div>
-            </div>
-
-            <div class="detail-group">
-              <div class="detail-label">Fecha de Compra</div>
-              <div class="detail-value">${formatearFecha(pedido.fecha_compra)}</div>
-            </div>
-
-            <div class="detail-group">
-              <div class="detail-label">Estado</div>
-              <div class="detail-value">${ESTADO_BADGES[pedido.estado]}</div>
-            </div>
-
-            <div class="detail-group">
+            <div class="detail-group" style="margin-top: 20px;">
               <div class="detail-label">Productos</div>
-              <div class="productos-list">
+              <div class="productos-list" style="display: grid; gap: 10px; margin-top: 10px;">
                 ${pedido.productos.map(prod => `
-                  <div class="producto-item">
+                  <div class="producto-item" style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 4px; border: 1px solid #e0e0e0;">
                     <div>
                       <strong>${prod.nombre}</strong><br>
-                      <small>Talle: ${prod.talle} | Color: ${prod.color} | Cant: ${prod.cantidad}</small>
+                      <small style="color: #666;">Talle: ${prod.talle} | Color: ${prod.color} | Cant: ${prod.cantidad}</small>
                     </div>
                     <div><strong>${fmt(prod.subtotal)}</strong></div>
                   </div>
@@ -250,91 +361,112 @@
               </div>
             </div>
 
-            <div class="detail-group">
-              <div class="detail-label">Dirección de Envío</div>
-              <div class="detail-value">
-                ${pedido.direccion_envio.calle}<br>
-                ${pedido.direccion_envio.ciudad}, ${pedido.direccion_envio.provincia}<br>
-                CP: ${pedido.direccion_envio.codigo_postal}<br>
-                Tel: ${pedido.direccion_envio.telefono}
-                ${pedido.direccion_envio.referencia ? `<br>Ref: ${pedido.direccion_envio.referencia}` : ''}
-              </div>
-            </div>
-
-            <div class="detail-group">
-              <div class="detail-label">Totales</div>
-              <div class="detail-value">
-                Subtotal: ${fmt(pedido.subtotal)}<br>
-                Envío: ${fmt(pedido.costo_envio)}<br>
-                ${pedido.descuento > 0 ? `Descuento: ${fmt(pedido.descuento)}<br>` : ''}
-                <strong>Total: ${fmt(pedido.total)}</strong>
-              </div>
-            </div>
-
-            ${pedido.numero_tracking ? `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
               <div class="detail-group">
-                <div class="detail-label">Número de Tracking</div>
-                <div class="detail-value">${pedido.numero_tracking}</div>
+                <div class="detail-label">Dirección de Envío</div>
+                <div class="detail-value">
+                  ${pedido.direccion_envio.calle}<br>
+                  ${pedido.direccion_envio.ciudad}, ${pedido.direccion_envio.provincia}<br>
+                  CP: ${pedido.direccion_envio.codigo_postal}<br>
+                  Tel: ${pedido.direccion_envio.telefono}
+                  ${pedido.direccion_envio.referencia ? `<br>Ref: ${pedido.direccion_envio.referencia}` : ''}
+                </div>
               </div>
-            ` : ''}
 
-            ${pedido.notas_cliente ? `
               <div class="detail-group">
-                <div class="detail-label">Notas del Cliente</div>
-                <div class="detail-value">${pedido.notas_cliente}</div>
+                <div class="detail-label">Totales</div>
+                <div class="detail-value">
+                  Subtotal: ${fmt(pedido.subtotal)}<br>
+                  Envío: ${fmt(pedido.costo_envio)}<br>
+                  ${pedido.descuento > 0 ? `Descuento: ${fmt(pedido.descuento)}<br>` : ''}
+                  <strong>Total: ${fmt(pedido.total)}</strong>
+                </div>
               </div>
-            ` : ''}
+
+              ${pedido.numero_tracking ? `
+                <div class="detail-group">
+                  <div class="detail-label">Número de Tracking</div>
+                  <div class="detail-value">${pedido.numero_tracking}</div>
+                </div>
+              ` : ''}
+
+              ${pedido.notas_cliente ? `
+                <div class="detail-group">
+                  <div class="detail-label">Notas del Cliente</div>
+                  <div class="detail-value">${pedido.notas_cliente}</div>
+                </div>
+              ` : ''}
+            </div>
           `;
 
-          modal.classList.add('active');
+          detalleRow.dataset.loaded = 'true';
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error al cargar detalles');
+        const detalleRow = document.getElementById(`detalle-${id}`);
+        const detalleContent = detalleRow.querySelector('.detalle-content');
+        detalleContent.innerHTML = '<p style="color: #e74c3c;">Error al cargar detalles del pedido</p>';
       }
     }
 
-    // Cambiar estado del pedido
-    async function cambiarEstado(id, estadoActual) {
-      const estados = ['en_espera', 'pagado', 'enviado', 'recibido', 'cancelado'];
-      const estadosNombres = ['En Espera', 'Pagado', 'Enviado', 'Recibido', 'Cancelado'];
+    // Toggle dropdown de estado
+    function toggleEstadoDropdown(event, id) {
+      event.stopPropagation();
+      const dropdown = document.getElementById(`dropdown-${id}`);
 
-      const nuevoEstado = prompt(`Cambiar estado del pedido:\n\n${estados.map((e, i) => `${i + 1}. ${estadosNombres[i]}`).join('\n')}\n\nIngrese el número (1-5):`);
-
-      if (nuevoEstado && nuevoEstado >= 1 && nuevoEstado <= 5) {
-        const estadoSeleccionado = estados[nuevoEstado - 1];
-        
-        let tracking = null;
-        if (estadoSeleccionado === 'enviado') {
-          tracking = prompt('Ingrese número de tracking (opcional):');
+      // Cerrar todos los otros dropdowns
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== `dropdown-${id}`) {
+          menu.style.display = 'none';
         }
+      });
 
-        try {
-          const response = await fetch('backend/pedidosController.php?action=actualizar_estado', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: id,
-              estado: estadoSeleccionado,
-              numero_tracking: tracking,
-              nota: `Estado actualizado por administrador`
-            })
-          });
+      // Toggle este dropdown
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
 
-          const data = await response.json();
+    // Cambiar estado desde dropdown
+    async function cambiarEstadoDropdown(id, nuevoEstado) {
+      // Cerrar dropdown
+      document.getElementById(`dropdown-${id}`).style.display = 'none';
 
-          if (data.success) {
-            alert('✅ Estado actualizado correctamente');
-            cargarPedidos();
-          } else {
-            alert('❌ Error: ' + data.error);
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          alert('❌ Error al actualizar estado');
+      let tracking = null;
+      if (nuevoEstado === 'enviado') {
+        tracking = prompt('Ingrese número de tracking (opcional):');
+      }
+
+      try {
+        const response = await fetch('backend/pedidosController.php?action=actualizar_estado', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            estado: nuevoEstado,
+            numero_tracking: tracking,
+            nota: `Estado actualizado por administrador`
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ Estado actualizado correctamente');
+          cargarPedidos();
+        } else {
+          alert('❌ Error: ' + data.error);
         }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al actualizar estado');
       }
     }
+
+    // Cerrar dropdowns al hacer clic fuera
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    });
 
     // Cerrar modal
     function cerrarModal() {

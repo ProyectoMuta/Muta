@@ -550,5 +550,6 @@ function mostrarMensajeError() {
 
     // Inicialización
     await cargarNotas();
+    await cargarProductosRecientes();
     renderizarCalendario(fechaActual);
 });

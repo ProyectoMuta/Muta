@@ -108,6 +108,7 @@ function setupCart() {
     cart.forEach((item, index) => {
       const lineTotal = item.price * item.quantity;
       const color = item.color || '#000';
+      const descripcion = item.descripcion || '';
       html += `
         <div class="cart-item">
           <img src="${item.img}" alt="${item.name}">
@@ -118,6 +119,7 @@ function setupCart() {
                 <i class="bi bi-trash" style="font-size:14px;"></i>
               </button>
             </div>
+            ${descripcion ? `<p class="item-description mb-0" style="font-size:11px; color:#666; margin-top:2px;">${descripcion.substring(0, 40)}...</p>` : ''}
             <p class="item-details mb-0">
               TALLE: ${item.size} |
               COLOR: <span class="color-dot mini" style="background:${color}"></span>
@@ -178,6 +180,7 @@ function setupCart() {
     cart.forEach((item, index) => {
       const lineTotal = item.price * item.quantity;
       total += lineTotal;
+      const descripcion = item.descripcion || '';
 
       const li = document.createElement("li");
       li.classList.add("d-flex", "align-items-start", "gap-3");
@@ -185,6 +188,7 @@ function setupCart() {
         <img src="${item.img}" alt="${item.name}">
         <div class="cart-item-info flex-grow-1">
           <h5>${item.name}</h5>
+          ${descripcion ? `<p style="font-size:13px; color:#666; margin:4px 0 8px 0;">${descripcion}</p>` : ''}
           <div class="inline-specs">
             <span>TALLE: ${item.size}</span> |
             <span>COLOR: <span class="color-dot" style="background:${item.color}"></span></span> |
@@ -259,7 +263,7 @@ function setupCart() {
   // ================================
   // API pública para agregar productos
   // ================================
-  window.addToCart = async (id, name, price, img, size, color, qty = 1) => {
+  window.addToCart = async (id, name, price, img, size, color, qty = 1, descripcion = '') => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
       // Mostrar modal de login si no hay sesión
@@ -272,7 +276,7 @@ function setupCart() {
     if (existing) {
       existing.quantity += qty;
     } else {
-      cart.push({ id, name, price, img, size, color, quantity: qty });
+      cart.push({ id, name, price, img, size, color, quantity: qty, descripcion });
     }
 
     await saveCart();
