@@ -129,7 +129,6 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-
 .cart-item img,
 #cart-page-items li img {
   width: 100px;
@@ -416,6 +415,14 @@ button:focus, .remove-item:focus, .checkout-btn:focus, input:focus {
   outline: 3px solid rgba(99, 98, 98, 0.9);
   outline-offset: 1px;
 }
+.cart-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cart-link:hover {
+  text-decoration: underline;
+}
 /* ================================= */
 /* === AJUSTES RESPONSIVE === */
 /* ================================= */
@@ -542,10 +549,173 @@ button:focus, .remove-item:focus, .checkout-btn:focus, input:focus {
   white-space: nowrap;
 }
 
+
 @media (max-width: 680px) {
   .inline-specs {
     flex-wrap: wrap;
     gap: 8px;
     white-space: normal;
+  }  
+}
+@media (max-width: 400px) {
+  .cart-dropdown {
+    position: fixed;
+    top: 60px; /* ajusta según la altura de tu navbar */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95vw;
+    max-height: calc(100vh - 80px); /* evita que se corte */
+    overflow-y: auto;
+    z-index: 9999;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 16px;
   }
+
+  .cart-items-container {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  .cart-footer {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 10px 0;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+  }
+}
+/* ===== layout UNIFICADO para todos los celulares ≤ 480px ===== */
+@media (max-width: 480px) {
+
+  #cart-page-items {
+    margin-right: 0; /* por si uno de arriba le puso margen */
+  }
+
+  #cart-page-items li {
+    display: grid !important;
+    grid-template-columns: 90px minmax(0, 1.35fr) min-content;
+    gap: 12px;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;           /* que no se achique */
+  }
+
+  #cart-page-items li img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  #cart-page-items li .cart-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  #cart-page-items li .cart-item-info h5 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  #cart-page-items li .cart-item-info p {
+    margin-top: -2px;
+    font-size: 12.5px;
+    color: #666;
+  }
+
+  #cart-page-items li .inline-specs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 13px;
+    color: #444;
+  }
+
+  #cart-page-items li .qty-row,
+  #cart-page-items li .inline-specs + div,
+  #cart-page-items li .inline-specs + p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  #cart-page-items li input.update-qty {
+    width: 66px;
+    padding: 3px 4px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  #cart-page-items li .line-total {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  #cart-page-items li > .remove-item {
+    display: inline-flex;
+    justify-self: end;
+    align-self: start;
+    margin-top: 4px;
+    background: none;
+    border: none;
+    color: #c00;
+  }
+}
+
+/* === Ajuste alineación del texto en el carrito desplegable (navbar) === */
+.cart-dropdown .cart-items-container .cart-item,
+.cart-dropdown .cart-items-container .item {
+  gap: 10px;
+}
+
+/* contenedor de la info (donde está el nombre) */
+.cart-dropdown .item-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;  /* 👈 todo a la izquierda */
+  margin-left: 0;           /* 👈 quita desplazamientos raros */
+}
+
+/* nombre del producto */
+.cart-dropdown .item-info .cart-link,
+.cart-dropdown .item-name {
+  margin-left: 0 !important;  /* 👈 así queda alineado con "algodón" */
+  line-height: 1.1;           /* un poco más pegado */
+}
+
+/* líneas de abajo (descripción, talle, precio) */
+.cart-dropdown .item-description,
+.cart-dropdown .item-details,
+.cart-dropdown .item-price {
+  margin-left: 0 !important;
+}
+/* === Corrige posición del tacho en carrito desplegable === */
+.cart-dropdown .item-info {
+  position: relative; /* permite posicionar el tacho dentro del bloque */
+}
+
+/* Ícono de eliminar (tacho) */
+.cart-dropdown .remove-item {
+  position: absolute;
+  right: 0;              /* lo envía al borde derecho */
+  top: 0;                /* lo alinea con el nombre */
+  transform: translateY(2px); /* ajusta leve hacia abajo */
+  color: #c00;
+  font-size: 14px;
+}
+
+.cart-dropdown .remove-item:hover {
+  color: #900;
+}
+
+/* Asegura que el nombre no se superponga */
+.cart-dropdown .item-info .cart-link {
+  padding-right: 22px; /* deja espacio libre para el tacho */
 }

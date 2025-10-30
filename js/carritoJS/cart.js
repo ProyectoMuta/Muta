@@ -114,7 +114,11 @@ function setupCart() {
           <img src="${item.img}" alt="${item.name}">
           <div class="item-info">
             <div class="d-flex justify-content-between align-items-start">
-              <p class="item-name mb-0">${item.name}</p>
+              <p class="item-name mb-0">
+                <a href="producto_dinamico.html?id=${encodeURIComponent(item.id)}" class="cart-link">
+                  ${item.name}
+                </a>
+              </p>
               <button data-index="${index}" class="remove-item btn btn-link text-danger p-0 ms-2" title="Eliminar">
                 <i class="bi bi-trash" style="font-size:14px;"></i>
               </button>
@@ -185,9 +189,15 @@ function setupCart() {
       const li = document.createElement("li");
       li.classList.add("d-flex", "align-items-start", "gap-3");
       li.innerHTML = `
-        <img src="${item.img}" alt="${item.name}">
+        <a href="producto_dinamico.html?id=${encodeURIComponent(item.id)}">
+          <img src="${item.img}" alt="${item.name}">
+        </a>
         <div class="cart-item-info flex-grow-1">
-          <h5>${item.name}</h5>
+          <h5>
+            <a href="producto_dinamico.html?id=${encodeURIComponent(item.id)}" class="cart-link">
+              ${item.name}
+            </a>
+          </h5>
           ${descripcion ? `<p style="font-size:13px; color:#666; margin:4px 0 8px 0;">${descripcion}</p>` : ''}
           <div class="inline-specs">
             <span>TALLE: ${item.size}</span> |
@@ -216,7 +226,49 @@ function setupCart() {
       checkoutBtn.classList.remove("disabled");
     }
   }
+  // ================================
+  // Render mini-carrusel en resumen de compra (cart.html)
+  // ================================
+  function renderMiniCartCarousel() {
+    const track = document.getElementById("mini-cart-carousel-track");
+    if (!track) return; // no estoy en cart.html
 
+    // carrito vacío
+    if (!cart || cart.length === 0) {
+      track.innerHTML = `<p style="font-size: 13px; color: #777;">Sin productos</p>`;
+      return;
+    }
+
+    // armo las mini cards
+    const html = cart.map(item => {
+      const alt = item.name || "Producto";
+      return `
+        <div class="mini-cart-thumb" title="${alt}">
+          <img src="${item.img}" alt="${alt}">
+        </div>
+      `;
+    }).join("");
+
+    track.innerHTML = html;
+  }
+    // ================================
+    // Controles del mini-carrusel
+    // ================================
+    function wireMiniCartCarouselButtons() {
+      const track = document.getElementById("mini-cart-carousel-track");
+      const prev = document.querySelector(".mini-cart-carousel .carousel-prev");
+      const next = document.querySelector(".mini-cart-carousel .carousel-next");
+      if (!track || !prev || !next) return;
+
+      // Mueve el carrusel a izquierda/derecha
+      prev.addEventListener("click", () => {
+        track.scrollBy({ left: -80, behavior: "smooth" });
+      });
+      next.addEventListener("click", () => {
+        track.scrollBy({ left: 80, behavior: "smooth" });
+      });
+    }
+  
   // ================================
   // Eventos globales
   // ================================
@@ -232,6 +284,7 @@ function setupCart() {
     }
     renderMiniCart();
     renderFixedCart();
+    renderMiniCartCarousel();
   });
 
     document.body.addEventListener("click", async (e) => {
@@ -242,6 +295,7 @@ function setupCart() {
       await saveCart();
       renderMiniCart();
       renderFixedCart();
+      renderMiniCartCarousel();
     }
   });
 
@@ -254,6 +308,7 @@ function setupCart() {
         await saveCart();
         renderMiniCart();
         renderFixedCart();
+        renderMiniCartCarousel();
       } else {
         e.target.value = cart[index].quantity; // revertir si es inválido
       }
@@ -282,6 +337,7 @@ function setupCart() {
     await saveCart();
     renderMiniCart();
     renderFixedCart();
+    renderMiniCartCarousel();
     return true; // indicar que sí se agregó
   };
 
@@ -441,6 +497,8 @@ function setupCart() {
       wireProductPage();
       renderMiniCart();
       renderFixedCart();
+      renderMiniCartCarousel();
+      wireMiniCartCarouselButtons();
       await validateCartItems();
     } catch (err) {
       wireProductPage(); // fallback
