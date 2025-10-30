@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // --- Paginación (10 por página) ---
   let currentPage = 1;
-  const pageSize = 15;
+  const pageSize = 20;
 
   function paginar(arr) {
     const start = (currentPage - 1) * pageSize;
