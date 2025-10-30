@@ -106,17 +106,48 @@ Primero vamos a configurarlo en modo de prueba:
 
 ---
 
-## 📝 Paso 5: Verificar que se Guardó Correctamente
+## 📝 Paso 5: Copiar la Clave Secreta (Secret Key)
+
+⚠️ **MUY IMPORTANTE**: Después de guardar el webhook, Mercado Pago te mostrará una **Clave Secreta** (Secret Key).
+
+### ¿Qué es la Clave Secreta?
+
+Es una clave que Mercado Pago usa para **firmar cada notificación** que te envía. Tu servidor puede verificar esa firma para asegurarse de que la notificación realmente viene de Mercado Pago y no de un atacante.
+
+### Cómo Obtenerla y Configurarla
+
+1. **Copia la clave secreta** que te muestra Mercado Pago (es un string largo alfanumérico)
+
+2. **Abre el archivo** `backend/mp-config.php`
+
+3. **Busca esta línea:**
+   ```php
+   define('MP_WEBHOOK_SECRET', 'TU_CLAVE_SECRETA_AQUI');
+   ```
+
+4. **Reemplázala con tu clave real:**
+   ```php
+   define('MP_WEBHOOK_SECRET', 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3');
+   ```
+
+5. **Guarda el archivo**
+
+📖 **Más información detallada**: Lee el archivo `CONFIGURAR_CLAVE_SECRETA_WEBHOOK.md`
+
+---
+
+## 📝 Paso 6: Verificar que se Guardó Correctamente
 
 Después de guardar, deberías ver:
 
 - ✅ Tu URL del webhook listada
 - ✅ Estado: **"Activo"** o **"Habilitado"**
 - ✅ Eventos: **"payment"** o **"Pagos"**
+- ✅ Clave secreta copiada y configurada en tu código
 
 ---
 
-## 🧪 Paso 6: Probar el Webhook
+## 🧪 Paso 7: Probar el Webhook
 
 ### Opción 1: Desde el Panel de Mercado Pago
 

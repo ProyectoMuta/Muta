@@ -36,6 +36,68 @@ function logNotificacion($mensaje) {
 }
 
 /**
+ * Valida la firma del webhook para asegurar que viene de Mercado Pago
+ */
+function validarFirmaWebhook() {
+    // Verificar si la clave secreta está configurada
+    if (!defined('MP_WEBHOOK_SECRET') || MP_WEBHOOK_SECRET === 'TU_CLAVE_SECRETA_AQUI') {
+        logNotificacion("ADVERTENCIA: Clave secreta del webhook no configurada. Saltando validación de firma.");
+        return true; // Permitir sin validación si no está configurada
+    }
+
+    // Obtener headers de la petición
+    $xSignature = $_SERVER['HTTP_X_SIGNATURE'] ?? null;
+    $xRequestId = $_SERVER['HTTP_X_REQUEST_ID'] ?? null;
+
+    if (!$xSignature || !$xRequestId) {
+        logNotificacion("ADVERTENCIA: No se recibieron headers de firma (x-signature o x-request-id)");
+        return true; // Por ahora permitir sin firma (Mercado Pago no siempre la envía en sandbox)
+    }
+
+    // Separar el tipo de firma y el hash
+    $parts = explode(',', $xSignature);
+    $ts = null;
+    $hash = null;
+
+    foreach ($parts as $part) {
+        $keyValue = explode('=', $part, 2);
+        if (count($keyValue) === 2) {
+            $key = trim($keyValue[0]);
+            $value = trim($keyValue[1]);
+
+            if ($key === 'ts') {
+                $ts = $value;
+            } elseif ($key === 'v1') {
+                $hash = $value;
+            }
+        }
+    }
+
+    if (!$ts || !$hash) {
+        logNotificacion("ADVERTENCIA: Firma incompleta (falta ts o v1)");
+        return true;
+    }
+
+    // Construir el manifest según la documentación de Mercado Pago
+    $dataId = $_GET['data.id'] ?? $_GET['id'] ?? '';
+    $manifest = "id:{$xRequestId};request-id:{$xRequestId};ts:{$ts};";
+
+    // Calcular el hash esperado
+    $secret = MP_WEBHOOK_SECRET;
+    $expectedHash = hash_hmac('sha256', $manifest, $secret);
+
+    // Comparar hashes
+    if (hash_equals($expectedHash, $hash)) {
+        logNotificacion("✅ Firma del webhook validada correctamente");
+        return true;
+    } else {
+        logNotificacion("❌ ALERTA: Firma del webhook inválida. Posible intento de suplantación.");
+        logNotificacion("Expected: {$expectedHash}, Received: {$hash}");
+        return false;
+    }
+}
+
+/**
  * Obtiene los datos del webhook
  */
 function obtenerDatosWebhook() {
@@ -334,6 +396,18 @@ function descontarStockProductos($pedido) {
 // ========================================
 
 try {
+    // Validar firma del webhook (seguridad)
+    if (!validarFirmaWebhook()) {
+        // Si la firma es inválida, rechazar la notificación
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Firma inválida'
+        ]);
+        logNotificacion("❌ Notificación rechazada por firma inválida");
+        exit;
+    }
+
     // Obtener datos del webhook
     $webhookData = obtenerDatosWebhook();
     $data = $webhookData['data'];

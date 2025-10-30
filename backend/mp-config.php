@@ -21,9 +21,15 @@
 define('MP_ACCESS_TOKEN', 'APP_USR-3893971663823189-102814-dd7369f60a747e73101e614bc616f5db-2942643227');
 define('MP_PUBLIC_KEY', 'APP_USR-73f42220-0bc3-4c56-b54e-62d538bed367');
 
+// Clave secreta del Webhook (Secret Key)
+// La obtienes en el panel de MP cuando configuras el webhook
+// IMPORTANTE: Esta clave sirve para validar que las notificaciones realmente vienen de Mercado Pago
+define('MP_WEBHOOK_SECRET', 'TU_CLAVE_SECRETA_AQUI');
+
 // Cuando vayas a producción, cambia estas credenciales por las de producción
 // define('MP_ACCESS_TOKEN', 'APP-TU_ACCESS_TOKEN_PRODUCCION');
-// define('MP_PUBLIC_KEY', 'APP-TU_PUBLIC_KEY_PRODUCCION')
+// define('MP_PUBLIC_KEY', 'APP-TU_PUBLIC_KEY_PRODUCCION');
+// define('MP_WEBHOOK_SECRET', 'TU_CLAVE_SECRETA_PRODUCCION');
 // ========================================
 // CONFIGURACIÓN DEL ENTORNO
 // ========================================
