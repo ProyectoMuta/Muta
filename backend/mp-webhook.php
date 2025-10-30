@@ -173,8 +173,12 @@ function actualizarEstadoPedido($paymentData) {
             "Estado: {$estadoPedido} - Payment ID: {$paymentData['id']}"
         );
 
-        // Enviar email de confirmación si el pago fue aprobado
+        // Si el pago fue aprobado, descontar stock y enviar email
         if ($estadoPago === 'aprobado') {
+            // Descontar stock de productos
+            descontarStockProductos($pedido);
+
+            // Enviar email de confirmación
             enviarEmailConfirmacionPago($pedido, $paymentData);
         }
 
@@ -198,6 +202,131 @@ function enviarEmailConfirmacionPago($pedido, $paymentData) {
     );
 
     // TODO: Integrar con EmailJS o PHPMailer para enviar email de confirmación
+}
+
+/**
+ * Descuenta el stock de los productos cuando el pago es aprobado
+ */
+function descontarStockProductos($pedido) {
+    global $mongoClient;
+
+    try {
+        $db = $mongoClient->mutaDB;
+        $productosCollection = $db->products;
+
+        // Obtener lista de productos del pedido
+        $productosPedido = $pedido['productos'] ?? [];
+
+        if (empty($productosPedido)) {
+            logNotificacion("No hay productos en el pedido para descontar stock");
+            return false;
+        }
+
+        foreach ($productosPedido as $item) {
+            $productoId = $item['producto_id'] ?? null;
+            $cantidad = (int)($item['cantidad'] ?? 0);
+            $talleComprado = $item['talle'] ?? null;
+
+            if (!$productoId || $cantidad <= 0) {
+                logNotificacion("Item inválido en pedido: sin producto_id o cantidad");
+                continue;
+            }
+
+            // Buscar el producto en la base de datos
+            try {
+                $producto = $productosCollection->findOne([
+                    '_id' => new MongoDB\BSON\ObjectId($productoId)
+                ]);
+
+                if (!$producto) {
+                    logNotificacion("Producto no encontrado: {$productoId}");
+                    continue;
+                }
+
+                $variantes = $producto['variantes'] ?? [];
+                $stockActual = (int)($producto['stock'] ?? 0);
+
+                // Actualizar stock en las variantes
+                $variantesActualizadas = [];
+                $stockDescontado = 0;
+
+                foreach ($variantes as $variante) {
+                    $talle = $variante['talle'] ?? null;
+                    $stockVariante = (int)($variante['stock'] ?? 0);
+
+                    // Si el talle coincide, descontar stock
+                    if ($talle === $talleComprado) {
+                        $nuevoStock = max(0, $stockVariante - $cantidad);
+                        $stockDescontado += ($stockVariante - $nuevoStock);
+
+                        $variante['stock'] = $nuevoStock;
+                        logNotificacion(
+                            "Stock actualizado - Producto: {$productoId}, " .
+                            "Talle: {$talle}, Stock anterior: {$stockVariante}, " .
+                            "Stock nuevo: {$nuevoStock}"
+                        );
+                    }
+
+                    $variantesActualizadas[] = $variante;
+                }
+
+                // Calcular nuevo stock total
+                $nuevoStockTotal = max(0, $stockActual - $stockDescontado);
+
+                // Determinar nuevo estado según el stock
+                $nuevoEstado = $producto['estado'] ?? 'Activo';
+                if ($nuevoStockTotal === 0) {
+                    $nuevoEstado = 'Sin stock';
+                } elseif ($nuevoStockTotal <= 5) {
+                    $nuevoEstado = 'Bajo stock';
+                }
+
+                // Actualizar publicable
+                $publicable = in_array($nuevoEstado, ['Activo', 'Bajo stock']) && ($nuevoStockTotal > 0);
+
+                // Actualizar producto en la base de datos
+                $resultado = $productosCollection->updateOne(
+                    ['_id' => new MongoDB\BSON\ObjectId($productoId)],
+                    [
+                        '$set' => [
+                            'variantes' => $variantesActualizadas,
+                            'stock' => $nuevoStockTotal,
+                            'estado' => $nuevoEstado,
+                            'publicable' => $publicable
+                        ]
+                    ]
+                );
+
+                if ($resultado->getModifiedCount() > 0) {
+                    logNotificacion(
+                        "Stock descontado exitosamente - Producto: {$productoId}, " .
+                        "Pedido: {$pedido['numero_pedido']}, " .
+                        "Stock total anterior: {$stockActual}, " .
+                        "Stock total nuevo: {$nuevoStockTotal}, " .
+                        "Estado: {$nuevoEstado}"
+                    );
+                } else {
+                    logNotificacion(
+                        "No se modificó el stock del producto: {$productoId} " .
+                        "(puede que ya estuviera actualizado)"
+                    );
+                }
+
+            } catch (Exception $e) {
+                logNotificacion(
+                    "Error procesando producto {$productoId}: " .
+                    $e->getMessage()
+                );
+                continue;
+            }
+        }
+
+        return true;
+
+    } catch (Exception $e) {
+        logNotificacion("Error general descontando stock: " . $e->getMessage());
+        return false;
+    }
 }
 
 // ========================================
