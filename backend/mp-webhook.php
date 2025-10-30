@@ -40,7 +40,7 @@ function logNotificacion($mensaje) {
  */
 function validarFirmaWebhook() {
     // Verificar si la clave secreta está configurada
-    if (!defined('MP_WEBHOOK_SECRET') || MP_WEBHOOK_SECRET === 'TU_CLAVE_SECRETA_AQUI') {
+    if (!defined('MP_WEBHOOK_SECRET') || MP_WEBHOOK_SECRET === '9f35b38926c0ddfd20ba3f77cac69b3efd8c89fa9e31f403995e961ec8fdbb15') {
         logNotificacion("ADVERTENCIA: Clave secreta del webhook no configurada. Saltando validación de firma.");
         return true; // Permitir sin validación si no está configurada
     }
