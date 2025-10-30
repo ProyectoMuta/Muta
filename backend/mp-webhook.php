@@ -78,9 +78,25 @@ function validarFirmaWebhook() {
         return true;
     }
 
-    // Construir el manifest según la documentación de Mercado Pago
-    $dataId = $_GET['data.id'] ?? $_GET['id'] ?? '';
-    $manifest = "id:{$xRequestId};request-id:{$xRequestId};ts:{$ts};";
+    // Obtener el data.id de diferentes posibles ubicaciones
+    $input = file_get_contents('php://input');
+    $postData = json_decode($input, true);
+
+    // Intentar obtener el ID del recurso de múltiples fuentes
+    $dataId = $_GET['data.id'] ??
+              $_GET['id'] ??
+              $_GET['data_id'] ??
+              ($postData['data']['id'] ?? null) ??
+              ($postData['id'] ?? null);
+
+    if (!$dataId) {
+        logNotificacion("ADVERTENCIA: No se pudo obtener data.id para validar firma");
+        return true; // Permitir si no hay data.id
+    }
+
+    // Construir el manifest según la documentación oficial de Mercado Pago
+    // Template: id:[data.id];request-id:[x-request-id];ts:[ts];
+    $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
 
     // Calcular el hash esperado
     $secret = MP_WEBHOOK_SECRET;
@@ -89,12 +105,32 @@ function validarFirmaWebhook() {
     // Comparar hashes
     if (hash_equals($expectedHash, $hash)) {
         logNotificacion("✅ Firma del webhook validada correctamente");
+        logNotificacion("   Manifest usado: {$manifest}");
         return true;
-    } else {
-        logNotificacion("❌ ALERTA: Firma del webhook inválida. Posible intento de suplantación.");
-        logNotificacion("Expected: {$expectedHash}, Received: {$hash}");
-        return false;
     }
+
+    // Si no coincide, intentar sin el punto y coma final (algunas versiones de MP)
+    $manifest2 = "id:{$dataId};request-id:{$xRequestId};ts:{$ts}";
+    $expectedHash2 = hash_hmac('sha256', $manifest2, $secret);
+
+    if (hash_equals($expectedHash2, $hash)) {
+        logNotificacion("✅ Firma del webhook validada correctamente (formato sin ; final)");
+        logNotificacion("   Manifest usado: {$manifest2}");
+        return true;
+    }
+
+    // No coincide con ningún formato conocido
+    logNotificacion("❌ ALERTA: Firma del webhook inválida. Posible intento de suplantación.");
+    logNotificacion("   data.id usado: {$dataId}");
+    logNotificacion("   x-request-id: {$xRequestId}");
+    logNotificacion("   timestamp: {$ts}");
+    logNotificacion("   Manifest probado 1: {$manifest}");
+    logNotificacion("   Expected hash 1: {$expectedHash}");
+    logNotificacion("   Manifest probado 2: {$manifest2}");
+    logNotificacion("   Expected hash 2: {$expectedHash2}");
+    logNotificacion("   Received hash: {$hash}");
+    logNotificacion("   ⚠️ SUGERENCIA: Ejecuta backend/debug-webhook-firma.php para diagnosticar");
+    return false;
 }
 
 /**
