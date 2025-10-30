@@ -504,4 +504,25 @@ function setupCart() {
       wireProductPage(); // fallback
     }
   });
+  document.addEventListener("DOMContentLoaded", function () {
+  const miniCarousel = document.querySelector(".mini-cart-carousel");
+  if (!miniCarousel) return;
+
+  const track = miniCarousel.querySelector(".carousel-track");
+  const prevBtn = miniCarousel.querySelector(".carousel-prev");
+  const nextBtn = miniCarousel.querySelector(".carousel-next");
+
+  let currentScroll = 0;
+  const scrollStep = 100;
+
+  prevBtn.addEventListener("click", () => {
+    currentScroll = Math.max(currentScroll - scrollStep, 0);
+    track.style.transform = `translateX(-${currentScroll}px)`;
+  });
+
+  nextBtn.addEventListener("click", () => {
+    currentScroll += scrollStep;
+    track.style.transform = `translateX(-${currentScroll}px)`;
+  });
+});
 } // ← cierre de setupCart()
