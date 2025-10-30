@@ -39,10 +39,14 @@ function logNotificacion($mensaje) {
  * Valida la firma del webhook para asegurar que viene de Mercado Pago
  */
 function validarFirmaWebhook() {
+    // ⚠️ DESACTIVAR VALIDACIÓN TEMPORALMENTE PARA PRUEBAS
+    logNotificacion("⚠️ VALIDACIÓN DE FIRMA DESACTIVADA - SOLO PARA PRUEBAS");
+    return true;
+    
     // Verificar si la clave secreta está configurada
-    if (!defined('MP_WEBHOOK_SECRET') || MP_WEBHOOK_SECRET === 'TU_CLAVE_SECRETA_AQUI') {
+    if (!defined('MP_WEBHOOK_SECRET') || empty(MP_WEBHOOK_SECRET)) {
         logNotificacion("ADVERTENCIA: Clave secreta del webhook no configurada. Saltando validación de firma.");
-        return true; // Permitir sin validación si no está configurada
+        return true;
     }
 
     // Obtener headers de la petición

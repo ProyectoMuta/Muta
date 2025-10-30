@@ -18,13 +18,13 @@
 
 // Credenciales de PRUEBA (Sandbox)
 // Reemplaza estos valores con tus propias credenciales de prueba
-define('MP_ACCESS_TOKEN', 'APP_USR-3893971663823189-102814-dd7369f60a747e73101e614bc616f5db-2942643227');
-define('MP_PUBLIC_KEY', 'APP_USR-73f42220-0bc3-4c56-b54e-62d538bed367');
+define('MP_ACCESS_TOKEN', 'APP_USR-7815982440521226-103008-44564fb0ea35ee123719338e1ba3c0af-2942643227');
+define('MP_PUBLIC_KEY', 'APP_USR-a14cfd8e-ed45-44c1-8700-03d9e5468e8b');
 
 // Clave secreta del Webhook (Secret Key)
 // La obtienes en el panel de MP cuando configuras el webhook
 // IMPORTANTE: Esta clave sirve para validar que las notificaciones realmente vienen de Mercado Pago
-define('MP_WEBHOOK_SECRET', 'TU_CLAVE_SECRETA_AQUI');
+define('MP_WEBHOOK_SECRET', '347dc71a974aae10142fc456e45e6e762be2f8ad917272b1a1962f533386d5fc');
 
 // Cuando vayas a producción, cambia estas credenciales por las de producción
 // define('MP_ACCESS_TOKEN', 'APP-TU_ACCESS_TOKEN_PRODUCCION');
