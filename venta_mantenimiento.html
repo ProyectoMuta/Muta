@@ -18,6 +18,15 @@
       min-width: 150px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       margin-top: 4px;
+      /* Posicionamiento absoluto para el menú */
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000; /* Alto z-index para el menú en sí */
+      display: none;
+      right: 0; /* Alineado a la derecha por defecto */
     }
 
     .dropdown-item {
@@ -36,6 +45,13 @@
     .dropdown-item:hover {
       background-color: #f5f5f5;
       color: #4B6BFE;
+    }
+    
+    /* Contenedor del dropdown */
+    .dropdown {
+        display: inline-block;
+        position: relative; /* Clave para el z-index */
+        z-index: 1; /* z-index base */
     }
 
     .detalle-row {
@@ -78,7 +94,6 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Sidebar -->
     <aside class="side">
       <div class="brand">MUTA</div>
       <nav class="side-nav">
@@ -91,7 +106,6 @@
       </nav>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <header class="topbar">
         <h1>Gestión de Ventas</h1>
@@ -170,13 +184,22 @@
     let filtroActual = 'todos';
     let busqueda = '';
 
-    // Mapeo de estados
+    // Mapeo de ESTADO GENERAL (envío)
     const ESTADO_BADGES = {
       'en_espera': '<span class="badge pay-pend">En Espera</span>',
       'pagado': '<span class="badge pay-ok">Pagado</span>',
       'enviado': '<span class="badge ship-ok">Enviado</span>',
       'recibido': '<span class="badge ship-ok">Recibido</span>',
       'cancelado': '<span class="badge danger">Cancelado</span>'
+    };
+    
+    // --- NUEVO ---
+    // Mapeo de ESTADO PAGO
+    const ESTADO_PAGO_BADGES = {
+      'pendiente': '<span class="badge pay-pend">Pendiente</span>',
+      'aprobado': '<span class="badge pay-ok">Aprobado</span>',
+      'rechazado': '<span class="badge danger">Rechazado</span>',
+      'reembolsado': '<span class="badge warn">Reembolsado</span>'
     };
 
     const METODO_PAGO = {
@@ -242,26 +265,44 @@
           <td>${pedido.usuario_id}</td>
           <td><strong>${fmt(pedido.total)}</strong></td>
           <td>${pedido.productos.length} producto(s)</td>
-          <td>${ESTADO_BADGES[pedido.estado] || pedido.estado}</td>
-          <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
+          
           <td>
-            <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
-              <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
-            </button>
-            <div class="dropdown" style="display: inline-block; position: relative;">
-              <button class="btn-action dropdown-toggle" onclick="toggleEstadoDropdown(event, '${pedido.id}')">
-                <i class="bi bi-arrow-repeat"></i> Estado
+            ${ESTADO_PAGO_BADGES[pedido.estado_pago] || pedido.estado_pago}
+            <div class="dropdown">
+              <button class="btn-action dropdown-toggle" onclick="toggleDropdown(event, 'dropdown-pago-${pedido.id}')">
+                <i class="bi bi-pencil-square"></i>
               </button>
-              <div class="dropdown-menu" id="dropdown-${pedido.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px;">
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'en_espera'); return false;">En Espera</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'pagado'); return false;">Pagado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'enviado'); return false;">Enviado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'recibido'); return false;">Recibido</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'cancelado'); return false;">Cancelado</a>
+              <div class="dropdown-menu" id="dropdown-pago-${pedido.id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'pendiente'); return false;">Pendiente</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'aprobado'); return false;">Aprobado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'rechazado'); return false;">Rechazado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'reembolsado'); return false;">Reembolsado</a>
               </div>
             </div>
           </td>
-        </tr>
+          <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
+          
+          <td>
+            ${ESTADO_BADGES[pedido.estado] || pedido.estado}
+            
+            <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
+              <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
+            </button>
+            
+            <div class="dropdown" style="z-index: 1;">
+              <button class="btn-action dropdown-toggle" onclick="toggleDropdown(event, 'dropdown-envio-${pedido.id}')">
+                <i class="bi bi-arrow-repeat"></i> Estado
+              </button>
+              <div class="dropdown-menu" id="dropdown-envio-${pedido.id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'en_espera'); return false;">En Espera</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'pagado'); return false;">Pagado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'enviado'); return false;">Enviado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'recibido'); return false;">Recibido</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'cancelado'); return false;">Cancelado</a>
+              </div>
+            </div>
+          </td>
+          </tr>
         <tr class="detalle-row" id="detalle-${pedido.id}" style="display: none;">
           <td colspan="8" style="padding: 0;">
             <div class="detalle-content" style="padding: 20px; background: #f9f9f9; border-top: 1px solid #eee;">
@@ -341,9 +382,15 @@
               </div>
 
               <div class="detail-group">
-                <div class="detail-label">Estado</div>
+                <div class="detail-label">Estado (Envío)</div>
                 <div class="detail-value">${ESTADO_BADGES[pedido.estado]}</div>
               </div>
+              
+              <div class="detail-group">
+                <div class="detail-label">Estado de Pago</div>
+                <div class="detail-value">${ESTADO_PAGO_BADGES[pedido.estado_pago]}</div>
+              </div>
+              
             </div>
 
             <div class="detail-group" style="margin-top: 20px;">
@@ -409,26 +456,36 @@
       }
     }
 
-    // Toggle dropdown de estado
-    function toggleEstadoDropdown(event, id) {
+    // --- CAMBIO 3: Función de Toggle Genérica (Maneja Z-INDEX) ---
+    // Esta función reemplaza a tu 'toggleEstadoDropdown'
+    function toggleDropdown(event, dropdownId) {
       event.stopPropagation();
-      const dropdown = document.getElementById(`dropdown-${id}`);
+      const dropdown = document.getElementById(dropdownId);
+      const wrapper = dropdown.closest('.dropdown');
 
-      // Cerrar todos los otros dropdowns
+      // Cerrar todos los otros dropdowns y resetear su z-index
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        if (menu.id !== `dropdown-${id}`) {
+        if (menu.id !== dropdownId) {
           menu.style.display = 'none';
+          menu.closest('.dropdown').style.zIndex = 1;
         }
       });
 
       // Toggle este dropdown
-      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      if (dropdown.style.display === 'none' || !dropdown.style.display) {
+        dropdown.style.display = 'block';
+        wrapper.style.zIndex = 999; // Sube este dropdown por encima de otros
+      } else {
+        dropdown.style.display = 'none';
+        wrapper.style.zIndex = 1; // Resetea z-index al cerrar
+      }
     }
 
-    // Cambiar estado desde dropdown
-    async function cambiarEstadoDropdown(id, nuevoEstado) {
-      // Cerrar dropdown
-      document.getElementById(`dropdown-${id}`).style.display = 'none';
+    // --- CAMBIO 4: Función para Estado de ENVÍO ---
+    // Renombrada de 'cambiarEstadoDropdown' a 'cambiarEstadoEnvio'
+    async function cambiarEstadoEnvio(id, nuevoEstado) {
+      document.getElementById(`dropdown-envio-${id}`).style.display = 'none';
+      document.getElementById(`dropdown-envio-${id}`).closest('.dropdown').style.zIndex = 1;
 
       let tracking = null;
       if (nuevoEstado === 'enviado') {
@@ -436,6 +493,7 @@
       }
 
       try {
+        // Llama a la acción original para el estado general/envío
         const response = await fetch('backend/pedidosController.php?action=actualizar_estado', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -443,28 +501,63 @@
             id: id,
             estado: nuevoEstado,
             numero_tracking: tracking,
-            nota: `Estado actualizado por administrador`
+            nota: `Estado (envío) actualizado por administrador`
           })
         });
 
         const data = await response.json();
 
         if (data.success) {
-          alert('✅ Estado actualizado correctamente');
+          alert('✅ Estado de envío actualizado correctamente');
           cargarPedidos();
         } else {
           alert('❌ Error: ' + data.error);
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ Error al actualizar estado');
+        alert('❌ Error al actualizar estado de envío');
+      }
+    }
+    
+    // --- CAMBIO 5: NUEVA Función para Estado de PAGO ---
+    async function cambiarEstadoPago(id, nuevoEstadoPago) {
+      document.getElementById(`dropdown-pago-${id}`).style.display = 'none';
+      document.getElementById(`dropdown-pago-${id}`).closest('.dropdown').style.zIndex = 1;
+
+      try {
+        // Llama a la NUEVA acción que creamos en el backend
+        const response = await fetch('backend/pedidosController.php?action=actualizar_pago', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            estado_pago: nuevoEstadoPago,
+            nota: `Estado de pago actualizado por administrador`
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ Estado de pago actualizado correctamente');
+          cargarPedidos();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al actualizar estado de pago');
       }
     }
 
-    // Cerrar dropdowns al hacer clic fuera
+
+    // --- CAMBIO 6: Event listener de clic global (Maneja Z-INDEX) ---
     document.addEventListener('click', function() {
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.style.display = 'none';
+        if (menu.style.display !== 'none') {
+            menu.style.display = 'none';
+            menu.closest('.dropdown').style.zIndex = 1; // Resetea z-index
+        }
       });
     });
 
