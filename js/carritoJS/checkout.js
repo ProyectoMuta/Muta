@@ -1118,7 +1118,7 @@ async function inicializarDirecciones() {
       await fetch("backend/userController.php?action=saveDomicilio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: userId, direccion: nueva })
+        body: JSON.stringify({ id_usuario: userId, domicilio: nueva })
       });
       inicializarDirecciones(); // recargar lista
     } catch (err) {

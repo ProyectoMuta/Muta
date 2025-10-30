@@ -415,7 +415,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH' && $_GET['action'] === 'setEnvioSelec
         echo json_encode(["error" => "Faltan datos"]);
         exit;
     }
-
     $mongoDB->usuarios_datos->updateOne(
         ["id_usuario" => $idUsuario],
         ['$set' => ["envioSeleccionado" => $metodo]]
@@ -521,7 +520,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'forgot-passwor
     $stmt = $pdo->prepare("UPDATE usuarios SET reset_token = ?, reset_token_expires_at = ? WHERE id = ?");
     $stmt->execute([$token, $expires, $user['id']]);
 
-    $link = "http://localhost/Muta/reset_password.html?token=".$token;
+    $link = "https://bethany-unpouched-explicitly.ngrok-free.dev/Muta/reset_password.html?token=".$token;
 
     enviarMailRecuperar($email, $user['nombre'], $link);
 
@@ -570,6 +569,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'reset-password
     echo json_encode(["ok" => true, "message" => "Contraseña actualizada correctamente"]);
     exit;
 }
-
-
-

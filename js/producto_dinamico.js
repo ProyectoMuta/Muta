@@ -131,17 +131,9 @@
         if ($errTalle) $errTalle.style.display = 'none';
         if ($okMsg) $okMsg.style.display = 'none';
 
-        // Detectar selección o valores únicos
-        const colorSelBtn = $cols?.querySelector('.color-option.active');
-        const talleSelBtn = $sizes?.querySelector('.talle.active');
-
-        // Como ahora siempre hay un único color/talle, tomamos dataset o fallback
-        let colorSel = colorSelBtn?.dataset.color || $cols?.dataset.singleColor || '#000000';
-        let talleSel = talleSelBtn?.textContent?.trim() || $sizes?.dataset.singleTalle || '';
-
-        // Asegurar valores válidos
-        if (!colorSel) colorSel = '#000000';
-        if (!talleSel) talleSel = '';
+        // Usar las variables ya definidas en lugar de buscar en el DOM
+        let colorSel = color || '#000000';
+        let talleSel = talle || '';
 
         // Validar cantidad
         const qty = clampQty($cant?.value);
@@ -159,7 +151,8 @@
           imgSel,
           talleSel,
           colorSel,
-          qty
+          qty,
+          p.descripcion || ''
         );
 
         if ($okMsg && agregado) {

@@ -329,8 +329,8 @@ function renderizarProductos(productos) {
 
     lista.innerHTML = productos.map(producto => `
         <li>
-            <div class="producto">
-                <img src="${producto.imagenes && producto.imagenes[0] ? producto.imagenes[0] : 'img/default.jpg'}" 
+            <a href="nuevo_producto_mantenimiento.html?id=${producto._id}" class="producto" style="display: flex; gap: 12px; text-decoration: none; color: inherit; padding: 8px; border-radius: 8px; transition: background 0.2s; cursor: pointer;">
+                <img src="${producto.imagenes && producto.imagenes[0] ? producto.imagenes[0] : 'img/default.jpg'}"
                      alt="${producto.nombre}"
                      style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                 <div>
@@ -342,9 +342,19 @@ function renderizarProductos(productos) {
                         $${producto.precio.toLocaleString('es-AR')}
                     </p>
                 </div>
-            </div>
+            </a>
         </li>
     `).join('');
+
+    // Agregar hover effect
+    lista.querySelectorAll('.producto').forEach(item => {
+        item.addEventListener('mouseenter', (e) => {
+            e.currentTarget.style.background = '#f5f5f5';
+        });
+        item.addEventListener('mouseleave', (e) => {
+            e.currentTarget.style.background = 'transparent';
+        });
+    });
 }
 
 function mostrarMensajeVacio() {
@@ -550,5 +560,6 @@ function mostrarMensajeError() {
 
     // Inicialización
     await cargarNotas();
+    await cargarProductosRecientes();
     renderizarCalendario(fechaActual);
 });

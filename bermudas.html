@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -25,7 +25,7 @@
   <main>
     <!-- Hero -->
     <section class="hero">
-      <img id="hero-img" src="img/fondos/fondo-bermuda.jpg" alt="Hero Bermudas">
+      <img src="img/fondos/fondo-bermuda.jpg" alt="Hero Bermudas">
     </section>
     <!-- Carrusel: Clásicas -->
     <h2 class="section-title" id="h2-clasicas">CLÁSICAS</h2>
@@ -66,21 +66,21 @@
   <script defer src="js/favoritos.js"></script>
   <script src="js/carritoJS/cart.js"></script>
   <script>setupCart();</script>
-    <!-- Configuración específica de la categoría -->
+
+  <!-- Configuración específica de la categoría -->
   <script>
-  window.CAT_CONFIG = {
-    PAGE_TITLE: 'Bermudas',
-    CAT_SLUG: 'bermudas',
-    HERO_IMG: 'fondo-bermudas.jpg',
-    CAROUSEL_IDS: {
-      clasicas: 'carousel-bermudas-clasicas',
-      novedades: 'carousel-bermudas-novedades',
-      estiloMuta: 'carousel-bermudas-estilo-muta'
-    }
-  };
-</script>
-<!-- Carga el script común -->
+    window.CAT_CONFIG = {
+      PAGE_TITLE: 'Bermudas',
+      CAT_SLUG: 'bermudas',
+      HERO_IMG: 'fondo-bermudas.jpg',
+      CAROUSEL_IDS: {
+        clasicas: 'carousel-bermudas-clasicas',
+        novedades: 'carousel-bermudas-novedades',
+        estiloMuta: 'carousel-bermudas-estilo-muta'
+      }
+    };
+  </script>
+  <!-- Carga el script común -->
   <script src="js/categorias_dinamicas.js"></script>
 </body>
 </html>
-

@@ -75,43 +75,43 @@ try {
             // ============================================
             // LISTAR PEDIDOS
             // ============================================
-            if ($action === 'listar') {
+            if ($action === 'listar' || $action === 'listar_usuario') {
                 $filtro = [];
-                
+
                 // Filtrar por usuario
                 if (isset($_GET['usuario_id']) && $_GET['usuario_id'] !== '') {
                     $filtro['usuario_id'] = $_GET['usuario_id'];
                 }
-                
+
                 // Filtrar por estado
                 if (isset($_GET['estado']) && $_GET['estado'] !== 'todos' && $_GET['estado'] !== '') {
                     $filtro['estado'] = $_GET['estado'];
                 }
-                
+
                 // Buscar por número de pedido
                 if (isset($_GET['buscar']) && $_GET['buscar'] !== '') {
                     $filtro['numero_pedido'] = new MongoDB\BSON\Regex($_GET['buscar'], 'i');
                 }
-                
+
                 // Paginación
                 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 100;
                 $skip = isset($_GET['skip']) ? (int)$_GET['skip'] : 0;
-                
+
                 $opciones = [
                     'sort' => ['fecha_compra' => -1],
                     'limit' => $limit,
                     'skip' => $skip
                 ];
-                
+
                 $cursor = $pedidosCol->find($filtro, $opciones);
                 $pedidos = [];
-                
+
                 foreach ($cursor as $pedido) {
                     $pedidos[] = bsonToArray($pedido);
                 }
-                
+
                 $total = $pedidosCol->countDocuments($filtro);
-                
+
                 echo json_encode([
                     'success' => true,
                     'total' => $total,

@@ -1,195 +1,87 @@
-<script>
-  (function(){
-   // ===== Helpers y render =====
 
-    const moneyAR = (n)=> (typeof n==="number"?n:parseFloat(n||0)||0).toLocaleString("es-AR");
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MUTA - Vestidos</title>
+  <!-- Estilos globales y de componentes -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/carritoCSS/cart.css">
+  <link rel="stylesheet" href="css/favoritos.css">
+  <!-- Estilos específicos -->
+  <link rel="stylesheet" href="css/carousel-categorias-ropa.css">
+  <link rel="stylesheet" href="css/remeras.css">
+  <!-- Librerías externas -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="icon" type="image/png" href="img/favicon.jpeg">
+</head>
+<body>
+  <!-- Navbar -->
+  <div id="navbar"></div>
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <img src="img/fondos/fondo-vestidos.jpg" alt="Hero Vestidos">
+    </section>
+    <!-- Carrusel: Clásicas -->
+    <h2 class="section-title" id="h2-clasicas">CLÁSICAS</h2>
+    <div id="carousel-vestidos-clasicas" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <!-- Carrusel: Novedades -->
+    <h2 class="section-title" id="h2-novedades">NOVEDADES</h2>
+    <div id="carousel-vestidos-novedades" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <!-- Carrusel: Estilo MUTA -->
+    <h2 class="section-title" id="h2-estilo">ESTILO MUTA</h2>
+    <div id="carousel-vestidos-estilo-muta" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <!-- Nuevos ingresos -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </main>
+  <!-- Modales/footers -->
+  <div id="acceso-usuario"></div>
+  <div id="footer"></div>
+  <div id="chatbot"></div>
+  <div id="favoritos"></div>
+  <!-- Carga de componentes y carrito -->
+  <script src="js/componente-loader.js"></script>
+  <script defer src="js/favoritos.js"></script>
+  <script src="js/carritoJS/cart.js"></script>
+  <script>setupCart();</script>
 
-    const $ = (id)=>document.getElementById(id);
-
-
-
-    function renderCards(items){
-      return items.map(p=>{
-        const img = (p.imagenes?.[0]) || 'img/default.jpg';
-        const precio = moneyAR(p.precio);
-        const isOOS = (String(p.estado||'').toLowerCase()==='sin stock') || Number(p.stock||0)===0;
-        const href = isOOS ? 'javascript:void(0)' : `producto_dinamico.html?id=${p._id}`;
-        return `
-
-          <a href="${href}" class="card ${isOOS?'is-out':''} categoria-card"
-
-             data-id="${p._id}" data-nombre="${p.nombre||''}"
-
-             data-precio="$${precio}" data-img="${img}" data-oos="${isOOS?'1':'0'}">
-
-            ${isOOS?'<span class="oos-badge">SIN STOCK</span>':''}
-
-            <img src="${img}" alt="${p.nombre||'Producto'}">
-
-            <div class="info"><h4>${p.nombre||''}</h4><p>$${precio}</p></div>
-          </a>`;
-      }).join("");
-    }
-    // ADDED: helpers de categoría habilitada
-    async function getCatStatus(slug){
-      const r = await fetch(`backend/productController.php?action=cat_status&slug=${encodeURIComponent(slug)}`, {cache:'no-store'});
-      return r.ok ? r.json() : {enabled:false, subcats:[]};
-    }
-    function isSubEnabled(catStatus, subSlug){
-      return (catStatus.subcats||[]).some(s => s.slug === subSlug && s.enabled);
-    }
-    async function guardCategoryEnabledOrBlank(catSlug){
-      const status = await getCatStatus(catSlug);
-      if(!status.enabled){
-        const main = document.querySelector('main');
-        if (main){
-          main.innerHTML = `<section style="padding:3rem 1rem;text-align:center">
-            <h2>${catSlug.toUpperCase()} no disponible</h2>
-            <p>La categoría se encuentra deshabilitada.</p>
-          </section>`;
-        }
-        return null;
+  <!-- Configuración específica de la categoría -->
+  <script>
+    window.CAT_CONFIG = {
+      PAGE_TITLE: 'Vestidos',
+      CAT_SLUG: 'vestidos',
+      HERO_IMG: 'fondo-vestidos.jpg',
+      CAROUSEL_IDS: {
+        clasicas: 'carousel-vestidos-clasicas',
+        novedades: 'carousel-vestidos-novedades',
+        estiloMuta: 'carousel-vestidos-estilo-muta'
       }
-      return status;
-    }
-
-    // API productos por cat/sub
-    async function fetchProducts({catSlug, subSlug, limit=8, skip=0}){
-      const url = `backend/productController.php?action=list&limit=${limit}&skip=${skip}`+
-                  `&categoriaSlug=${encodeURIComponent(catSlug)}`+
-                  (subSlug?`&subcategoriaSlug=${encodeURIComponent(subSlug)}`:'');
-      const r = await fetch(url, {cache:'no-store'});
-      return r.json();
-    }
-
-    async function loadSubCarousel({catSlug, subSlug, hostId, titleText}) {
-      const host = document.getElementById(hostId);
-      if(!host) return;
-      const track = host.querySelector(".carousel-track");
-
-      try{
-        const data  = await fetchProducts({catSlug, subSlug, limit:8, skip:0});
-        const items = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
-
-        if (!items.length) {
-          const sectionTitle = host.previousElementSibling;
-          if (sectionTitle?.classList.contains('section-title')) sectionTitle.style.display = 'none';
-          host.style.display = 'none';
-          return;
-        }
-
-        if (titleText) {
-          const sectionTitle = host.previousElementSibling;
-          if (sectionTitle?.classList.contains('section-title')) {
-            sectionTitle.textContent = titleText.toUpperCase();
-            sectionTitle.style.display = '';
-          }
-        }
-
-        track.innerHTML = renderCards(items);
-        // setupCarousel es global de tu sitio
-        if (typeof setupCarousel === 'function') setupCarousel(hostId);
-        document.dispatchEvent(new CustomEvent("nuevos:render"));
-      }catch(e){
-        console.error("Error carrusel", catSlug, subSlug, e);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      // Chequear categoría habilitada
-      const status = await guardCategoryEnabledOrBlank('remeras');
-      if(!status) return;
-
-      // CLÁSICAS
-      if (isSubEnabled(status,'clasicas')){
-        await loadSubCarousel({catSlug:'remeras', subSlug:'clasicas', hostId:'carousel-remeras-clasicas', titleText:'CLÁSICAS'});
-      } else {
-        $('h2-clasicas')?.remove(); $('carousel-remeras-clasicas')?.remove();
-      }
-
-      // NOVEDADES
-      if (isSubEnabled(status,'novedades')){
-        await loadSubCarousel({catSlug:'remeras', subSlug:'novedades', hostId:'carousel-remeras-novedades', titleText:'NOVEDADES'});
-      } else {
-        $('h2-novedades')?.remove(); $('carousel-remeras-novedades')?.remove();
-      }
-
-      // ESTILO MUTA
-      if (isSubEnabled(status,'estilo-muta')){
-        await loadSubCarousel({catSlug:'remeras', subSlug:'estilo-muta', hostId:'carousel-remeras-estilo-muta', titleText:'ESTILO MUTA'});
-      } else {
-        $('h2-estilo')?.remove(); $('carousel-remeras-estilo-muta')?.remove();
-      }
-
-      // ===== NUEVOS INGRESOS con endpoint específico =====
-      const raizSeccion   = document.getElementById("seccion-nuevos");
-      const anclaCarrusel = document.getElementById("carousel-nuevos");
-      if (!raizSeccion || !anclaCarrusel) return;
-
-      const chunk = (arr, n = 8) => arr.reduce((a, x, i) => (i % n ? a[a.length - 1].push(x) : a.push([x]), a), []);
-
-      try {
-        const res = await fetch("backend/productController.php?action=new_arrivals&categoriaSlug=remeras", { cache: "no-store" });
-        const data = await res.json();
-        const nuevos = Array.isArray(data?.items) ? data.items : [];
-        if (!nuevos.length) {
-          anclaCarrusel.remove();
-          raizSeccion.style.display = "none";
-          return;
-        }
-
-        const grupos = chunk(nuevos, 8);
-        const padre = anclaCarrusel.parentElement;
-
-        const crearCarrusel = (id, items) => {
-          const carr = anclaCarrusel.cloneNode(true);
-          carr.id = id;
-          const track = carr.querySelector(".carousel-track");
-          track.innerHTML = renderCards(items);
-          carr.classList.add("categoria-carousel");
-          return carr;
-        };
-
-        // Reemplazar el primero
-        const primero = crearCarrusel("carousel-nuevos-1", grupos[0]);
-        padre.replaceChild(primero, anclaCarrusel);
-        if (typeof setupCarousel === 'function') setupCarousel(primero.id);;
-        document.dispatchEvent(new CustomEvent("nuevos:render"));
-
-        // Bloques siguientes
-        for (let i = 1; i < grupos.length; i++) {
-          const bloque = document.createElement("div");
-          bloque.className = "nuevos-bloque is-hidden";
-          const carr = crearCarrusel(`carousel-nuevos-${i + 1}`, grupos[i]);
-          bloque.appendChild(carr);
-          padre.appendChild(bloque);
-        }
-
-        // Botón "Ver más"
-        const quedanBloques = () => !!padre.querySelector(".nuevos-bloque.is-hidden");
-        if (quedanBloques()) {
-          const btn = document.createElement("button");
-          btn.id = "btn-ver-mas";
-          btn.className = "btn-ver-mas";
-          btn.innerHTML = `<i class="bi bi-chevron-down"></i> VER MÁS PRODUCTOS`;
-          padre.appendChild(btn);
-
-          btn.addEventListener("click", () => {
-            const next = padre.querySelector(".nuevos-bloque.is-hidden");
-            if (!next) { btn.remove(); return; }
-            next.classList.remove("is-hidden");
-
-            const carr = next.querySelector(".categoria-carousel");
-            if (carr?.id && typeof setupCarousel === 'function') setupCarousel(carr.id);
-            document.dispatchEvent(new CustomEvent("nuevos:render"));
-
-            next.scrollIntoView({ behavior: "smooth", block: "start" });
-            if (!quedanBloques()) btn.remove();
-          });
-        }
-      } catch (err) {
-        console.error("❌ Error cargando nuevos ingresos:", err);
-      }
-    });
-  })();
+    };
   </script>
+  <!-- Carga el script común -->
+  <script src="js/categorias_dinamicas.js"></script>
+</body>
+</html>

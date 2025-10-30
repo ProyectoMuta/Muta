@@ -224,6 +224,15 @@
   background: #fafafa;
   border-radius: 5px;
   font-size: 13px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.perfil-dropdown.active {
+  display: block;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .btn-logout {
