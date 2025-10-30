@@ -760,7 +760,35 @@ try {
                   "productId" => $id
               ]);
               break;
-      }
+              
+          case 'DELETE':
+              // ID viene por query: ?id=...
+              $id = $_GET['id'] ?? null;
+              if (!$id) {
+                  http_response_code(400);
+                  echo json_encode([
+                      "status" => "error",
+                      "message" => "ID requerido para eliminar"
+                  ]);
+                  break;
+              }
+
+              // Marcar como eliminado y cambiar estado
+              $db->products->updateOne(
+                  ["_id" => new MongoDB\BSON\ObjectId($id)],
+                  ['$set' => [
+                      "eliminado"  => true,
+                      "estado"     => "Eliminado",
+                      "updated_at" => new MongoDB\BSON\UTCDateTime()
+                  ]]
+              );
+
+              echo json_encode([
+                  "status"  => "ok",
+                  "message" => "Producto marcado como eliminado"
+              ]);
+              break;
+          }
 } catch (Exception $e) {
   http_response_code(500);
   echo json_encode(["error"=>"Error en servidor","detalle"=>$e->getMessage()]);
