@@ -415,7 +415,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH' && $_GET['action'] === 'setEnvioSelec
         echo json_encode(["error" => "Faltan datos"]);
         exit;
     }
-
     $mongoDB->usuarios_datos->updateOne(
         ["id_usuario" => $idUsuario],
         ['$set' => ["envioSeleccionado" => $metodo]]
@@ -443,85 +442,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $_GET['action'] === 'getDirecciones'
         exit;
     }
 
-    echo json_encode(["ok" => true, "direcciones" => $mongoUser["direcciones"] ?? []]);
-    exit;
-}
-
-// === Agregar dirección ===
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'agregarDireccion') {
-    $data = json_decode(file_get_contents("php://input"), true);
-    $idUsuario = intval($data['id_usuario'] ?? 0);
-    $direccion = $data['direccion'] ?? null;
-
-    if (!$idUsuario || !$direccion) {
-        http_response_code(400);
-        echo json_encode(["ok" => false, "error" => "Faltan datos"]);
-        exit;
-    }
-
-    // Validar campos requeridos de la dirección
-    $camposRequeridos = ['calle', 'ciudad', 'provincia', 'codigo_postal', 'pais'];
-    foreach ($camposRequeridos as $campo) {
-        if (empty($direccion[$campo])) {
-            http_response_code(400);
-            echo json_encode(["ok" => false, "error" => "Falta el campo: $campo"]);
-            exit;
-        }
-    }
-
-    // Agregar la dirección al array de domicilios
-    $mongoDB->usuarios_datos->updateOne(
-        ["id_usuario" => $idUsuario],
-        ['$push' => ["direcciones.domicilios" => $direccion]],
-        ['upsert' => true]
-    );
-
-    echo json_encode(["ok" => true]);
-    exit;
-}
-
-// === Eliminar dirección por índice ===
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'eliminarDireccion') {
-    $data = json_decode(file_get_contents("php://input"), true);
-    $idUsuario = intval($data['id_usuario'] ?? 0);
-    $index = intval($data['index'] ?? -1);
-
-    if (!$idUsuario || $index < 0) {
-        http_response_code(400);
-        echo json_encode(["ok" => false, "error" => "Faltan datos o índice inválido"]);
-        exit;
-    }
-
-    // Obtener usuario actual
-    $mongoUser = $mongoDB->usuarios_datos->findOne(["id_usuario" => $idUsuario]);
-
-    if (!$mongoUser) {
-        http_response_code(404);
-        echo json_encode(["ok" => false, "error" => "Usuario no encontrado"]);
-        exit;
-    }
-
-    // Obtener direcciones actuales
-    $direcciones = $mongoUser["direcciones"] ?? [];
-    $domicilios = $direcciones["domicilios"] ?? [];
-
-    // Verificar que el índice existe
-    if ($index >= count($domicilios)) {
-        http_response_code(400);
-        echo json_encode(["ok" => false, "error" => "Índice fuera de rango"]);
-        exit;
-    }
-
-    // Remover la dirección del array
-    array_splice($domicilios, $index, 1);
-
-    // Actualizar en MongoDB
-    $mongoDB->usuarios_datos->updateOne(
-        ["id_usuario" => $idUsuario],
-        ['$set' => ["direcciones.domicilios" => $domicilios]]
-    );
-
-    echo json_encode(["ok" => true]);
+    echo json_encode($mongoUser["direcciones"] ?? []);
     exit;
 }
 
@@ -599,7 +520,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'forgot-passwor
     $stmt = $pdo->prepare("UPDATE usuarios SET reset_token = ?, reset_token_expires_at = ? WHERE id = ?");
     $stmt->execute([$token, $expires, $user['id']]);
 
-    $link = "http://localhost/Muta/reset_password.html?token=".$token;
+    $link = "https://bethany-unpouched-explicitly.ngrok-free.dev/Muta/reset_password.html?token=".$token;
 
     enviarMailRecuperar($email, $user['nombre'], $link);
 
@@ -648,6 +569,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'reset-password
     echo json_encode(["ok" => true, "message" => "Contraseña actualizada correctamente"]);
     exit;
 }
-
-
-

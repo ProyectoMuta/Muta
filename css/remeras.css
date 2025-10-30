@@ -2,6 +2,9 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
 }
 
 .hero img {
@@ -9,6 +12,7 @@
   height: auto;
   display: block;
   object-fit: cover;
+  vertical-align: bottom;
 }
 
 .hero-text {

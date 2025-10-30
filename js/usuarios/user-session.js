@@ -1,4 +1,8 @@
 // user-session.js
+
+// Variable global para evitar múltiples listeners
+let recuperacionListenerAdded = false;
+
 document.addEventListener("componente:cargado", (e) => {
   // === Cuando se carga el componente de acceso de usuario ===
   if (e.detail.id === "acceso-usuario") {
@@ -70,7 +74,7 @@ document.addEventListener("componente:cargado", (e) => {
             localStorage.setItem("userId", data.id);
             localStorage.setItem("userName", data.nombre);
             localStorage.setItem("userEmail", data.email);
-            localStorage.setItem("userRol", data.rol); // Guardamos el rol
+            localStorage.setItem("userRol", data.rol);
             if (data.mongo) {
               localStorage.setItem("userMongo", JSON.stringify(data.mongo));
             }
@@ -79,22 +83,21 @@ document.addEventListener("componente:cargado", (e) => {
             document.getElementById("acceso-usuario-container").style.display = "none";
             actualizarNavbarUsuario(data.nombre);
 
+            // 2. Comprobamos el ROL para la redirección
+            if (data.rol === 'admin') {
+              alert("Bienvenido, Administrador. Serás redirigido al panel.");
+              window.location.href = "home_mantenimiento.html";
+            } else {
+              alert("Bienvenido " + data.nombre);
+              mostrarVistaPerfil();
+            }
+
             // ✅ Traer favoritos desde DB
             try {
               const resFav = await fetch(`backend/userController.php?action=getFavoritos&id=${data.id}`);
               const favs = await resFav.json();
               localStorage.setItem("muta_favoritos", JSON.stringify(favs));
               document.dispatchEvent(new CustomEvent("favoritos:updated"));
-              // Reinyectar corazones
-              if (typeof window.injectHeartsIntoCategoryCards === "function") {
-                console.log("🔄 Reinserto corazones tras login con favoritos:", favs);
-                window.injectHeartsIntoCategoryCards();
-              }
-              // Refrescar modal
-              if (typeof window.renderFavorites === "function") {
-                console.log("🔄 Refrescando modal de favoritos tras login");
-                window.renderFavorites();
-              }
             } catch (err) {
               console.error("Error cargando favoritos desde DB:", err);
             }
@@ -109,16 +112,6 @@ document.addEventListener("componente:cargado", (e) => {
               console.error("Error cargando carrito desde DB:", err);
             }
 
-            // 2. Comprobamos el ROL para la redirección
-            if (data.rol === 'admin') {
-              alert("Bienvenido, Administrador. Serás redirigido al panel.");
-              window.location.href = "home_mantenimiento.html";
-            } else {
-              alert("Bienvenido " + data.nombre);
-              // 🔧 Ahora recargamos al final, después de sincronizar favoritos y carrito
-              window.location.reload();
-            }
-
           } else {
             alert("Error: " + (data.error || "Credenciales inválidas"));
           }
@@ -127,6 +120,12 @@ document.addEventListener("componente:cargado", (e) => {
           alert("Error de conexión con el servidor");
         }
       });
+    }
+
+    // === Configurar recuperación de contraseña (SOLO UNA VEZ) ===
+    if (!recuperacionListenerAdded) {
+      setupRecuperacionPassword();
+      recuperacionListenerAdded = true;
     }
   }
 
@@ -145,6 +144,83 @@ document.addEventListener("componente:cargado", (e) => {
     }
   }
 });
+
+
+// === FUNCIÓN PARA CONFIGURAR RECUPERACIÓN DE CONTRASEÑA (FUERA DEL EVENTO) ===
+function setupRecuperacionPassword() {
+  const btnRecuperar = document.getElementById("btn-recuperar");
+  const linkRecuperar = document.getElementById("link-recuperar");
+  const cerrarRecuperar = document.getElementById("cerrar-recuperar");
+  const recuperarContainer = document.getElementById("recuperar-container");
+  const recuperarEmail = document.getElementById("recuperar-email");
+
+  // Mostrar modal
+  if (linkRecuperar && !linkRecuperar.dataset.listenerAdded) {
+    linkRecuperar.dataset.listenerAdded = "true";
+    linkRecuperar.addEventListener("click", function(e) {
+      e.preventDefault();
+      recuperarContainer.style.display = "flex";
+    });
+  }
+
+  // Cerrar modal
+  if (cerrarRecuperar && !cerrarRecuperar.dataset.listenerAdded) {
+    cerrarRecuperar.dataset.listenerAdded = "true";
+    cerrarRecuperar.addEventListener("click", function(e) {
+      e.preventDefault();
+      recuperarContainer.style.display = "none";
+    });
+  }
+
+  // Enviar email de recuperación
+  if (btnRecuperar && !btnRecuperar.dataset.listenerAdded) {
+    btnRecuperar.dataset.listenerAdded = "true";
+    
+    btnRecuperar.addEventListener("click", async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Verificar si ya está procesando
+      if (this.disabled) return;
+
+      const email = recuperarEmail.value.trim();
+      if (!email) {
+        alert("Ingresá un email válido");
+        return;
+      }
+
+      // Deshabilitar botón para evitar múltiples clicks
+      this.disabled = true;
+      const textoOriginal = this.textContent;
+      this.textContent = "Enviando...";
+
+      try {
+        const res = await fetch("backend/userController.php?action=forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+        alert(data.message || data.error);
+
+        if (data.ok) {
+          recuperarContainer.style.display = "none";
+          recuperarEmail.value = "";
+        }
+      } catch (error) {
+        console.error("Error al enviar email de recuperación:", error);
+        alert("Error de conexión. Intentá de nuevo.");
+      } finally {
+        // Rehabilitar botón después de 2 segundos (para evitar spam)
+        setTimeout(() => {
+          this.disabled = false;
+          this.textContent = textoOriginal;
+        }, 2000);
+      }
+    }, { once: false }); // No usar once:true porque queremos reutilizar el botón
+  }
+}
 
 // === Función auxiliar para actualizar navbar ===
 function actualizarNavbarUsuario(nombre) {
@@ -180,305 +256,3 @@ window.addEventListener("pageshow", () => {
     actualizarNavbarUsuario(localStorage.getItem("userName"));
   }
 });
-
-// === Manejo de dropdowns en perfil ===
-document.addEventListener('click', (e) => {
-  // Toggle dropdowns del perfil
-  if (e.target.classList.contains('perfil-btn') || e.target.closest('.perfil-btn')) {
-    const btn = e.target.closest('.perfil-btn');
-    const target = btn.dataset.target;
-
-    if (target === 'historial-pedidos') {
-      toggleHistorialPedidos();
-    } else if (target === 'mis-direcciones') {
-      toggleMisDirecciones();
-    }
-  }
-});
-
-// === Toggle Historial de Pedidos ===
-async function toggleHistorialPedidos() {
-  const dropdown = document.getElementById('historial-pedidos-dropdown');
-
-  if (!dropdown) return;
-
-  // Si ya está visible, ocultarlo
-  if (dropdown.classList.contains('active')) {
-    dropdown.classList.remove('active');
-    return;
-  }
-
-  // Cerrar otros dropdowns
-  document.querySelectorAll('.perfil-dropdown').forEach(d => d.classList.remove('active'));
-
-  // Mostrar este dropdown
-  dropdown.classList.add('active');
-
-  // Cargar pedidos si no se han cargado
-  if (!dropdown.dataset.loaded) {
-    await cargarHistorialPedidos(dropdown);
-    dropdown.dataset.loaded = 'true';
-  }
-}
-
-// === Cargar Historial de Pedidos ===
-async function cargarHistorialPedidos(dropdown) {
-  const userId = localStorage.getItem('userId');
-
-  if (!userId) {
-    dropdown.innerHTML = '<p style="color: #e74c3c;">No se encontró sesión de usuario</p>';
-    return;
-  }
-
-  dropdown.innerHTML = '<p style="text-align: center; padding: 20px;"><i class="bi bi-hourglass-split"></i> Cargando pedidos...</p>';
-
-  try {
-    const response = await fetch(`backend/pedidosController.php?action=listar_usuario&usuario_id=${userId}`);
-    const data = await response.json();
-
-    if (data.success && data.pedidos && data.pedidos.length > 0) {
-      dropdown.innerHTML = `
-        <div class="pedidos-list" style="max-height: 400px; overflow-y: auto;">
-          ${data.pedidos.map(pedido => `
-            <div class="pedido-item" style="padding: 16px; border-bottom: 1px solid #eee; cursor: pointer;" onclick="verDetallePedido('${pedido.id}')">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div>
-                  <strong style="color: #333;">${pedido.numero_pedido}</strong>
-                  <p style="margin: 4px 0; font-size: 13px; color: #666;">
-                    ${new Date(pedido.fecha_compra).toLocaleDateString('es-AR')} - ${pedido.productos.length} producto(s)
-                  </p>
-                </div>
-                <div style="text-align: right;">
-                  <strong style="color: #4B6BFE;">$${Number(pedido.total).toLocaleString('es-AR')}</strong>
-                  <p style="margin: 4px 0; font-size: 12px;">
-                    ${obtenerBadgeEstado(pedido.estado)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    } else {
-      dropdown.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #999;">
-          <i class="bi bi-inbox" style="font-size: 48px; opacity: 0.3;"></i>
-          <p>No tienes pedidos registrados</p>
-        </div>
-      `;
-    }
-  } catch (error) {
-    console.error('Error cargando pedidos:', error);
-    dropdown.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Error al cargar pedidos</p>';
-  }
-}
-
-// === Ver Detalle de Pedido (Modal) ===
-function verDetallePedido(pedidoId) {
-  // Abrir modal de detalle (puedes reutilizar el que ya tienes o crear uno nuevo)
-  alert(`Ver detalle del pedido: ${pedidoId}\n(Esta funcionalidad puede expandirse con un modal)`);
-}
-
-// === Obtener Badge de Estado ===
-function obtenerBadgeEstado(estado) {
-  const badges = {
-    'en_espera': '<span style="background: #ffc107; color: #333; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">EN ESPERA</span>',
-    'pagado': '<span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">PAGADO</span>',
-    'enviado': '<span style="background: #17a2b8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">ENVIADO</span>',
-    'recibido': '<span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">RECIBIDO</span>',
-    'cancelado': '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">CANCELADO</span>'
-  };
-  return badges[estado] || estado;
-}
-
-// === Toggle Mis Direcciones ===
-async function toggleMisDirecciones() {
-  const dropdown = document.getElementById('mis-direcciones-dropdown');
-
-  if (!dropdown) return;
-
-  // Si ya está visible, ocultarlo
-  if (dropdown.classList.contains('active')) {
-    dropdown.classList.remove('active');
-    return;
-  }
-
-  // Cerrar otros dropdowns
-  document.querySelectorAll('.perfil-dropdown').forEach(d => d.classList.remove('active'));
-
-  // Mostrar este dropdown
-  dropdown.classList.add('active');
-
-  // Cargar direcciones
-  await cargarMisDirecciones(dropdown);
-}
-
-// === Cargar Mis Direcciones ===
-async function cargarMisDirecciones(dropdown) {
-  const userId = localStorage.getItem('userId');
-
-  if (!userId) {
-    dropdown.innerHTML = '<p style="color: #e74c3c;">No se encontró sesión de usuario</p>';
-    return;
-  }
-
-  dropdown.innerHTML = '<p style="text-align: center; padding: 20px;"><i class="bi bi-hourglass-split"></i> Cargando direcciones...</p>';
-
-  try {
-    const response = await fetch(`backend/userController.php?action=getDirecciones&id=${userId}`);
-    const data = await response.json();
-
-    if (data.ok && data.direcciones && data.direcciones.domicilios && data.direcciones.domicilios.length > 0) {
-      // Mostrar direcciones con botón de eliminar (sin agregar)
-      dropdown.innerHTML = `
-        <div class="direcciones-list">
-          ${data.direcciones.domicilios.map((dir, index) => `
-            <div class="direccion-item" style="padding: 16px; border-bottom: 1px solid #eee;">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div style="flex: 1;">
-                  <i class="bi bi-geo-alt-fill" style="color: #4B6BFE; margin-right: 8px;"></i>
-                  <strong style="color: #333;">Dirección ${index + 1}</strong>
-                  <p style="margin: 8px 0 4px 0; font-size: 14px; color: #555;">
-                    ${dir.calle}<br>
-                    ${dir.ciudad}, ${dir.provincia}<br>
-                    CP: ${dir.codigo_postal}
-                  </p>
-                </div>
-                <button class="btn-eliminar-direccion" data-index="${index}" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 4px 8px; font-size: 18px;" title="Eliminar dirección">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('')}
-          <div style="padding: 16px; text-align: center; color: #666; font-size: 13px;">
-            <i class="bi bi-info-circle"></i> Las direcciones se crean automáticamente al realizar un pedido
-          </div>
-        </div>
-      `;
-
-      // Event listener para botón de eliminar
-      dropdown.querySelectorAll('.btn-eliminar-direccion').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = parseInt(e.currentTarget.dataset.index);
-          eliminarDireccion(index, dropdown);
-        });
-      });
-
-    } else {
-      // Sin direcciones guardadas - solo informativo
-      dropdown.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #999;">
-          <i class="bi bi-house" style="font-size: 48px; opacity: 0.3;"></i>
-          <p>No tienes direcciones guardadas</p>
-          <p style="font-size: 13px; color: #666; margin-top: 12px;">
-            Las direcciones se guardan automáticamente cuando realizas un pedido
-          </p>
-        </div>
-      `;
-    }
-  } catch (error) {
-    console.error('Error cargando direcciones:', error);
-    dropdown.innerHTML = '<p style="color: #e74c3c; padding: 20px;">Error al cargar direcciones</p>';
-  }
-}
-
-// ========================================
-// NOTA: Funciones para eliminar direcciones (sin agregar)
-// Las direcciones se crean automáticamente al hacer un pedido desde el carrito
-// ========================================
-
-// === Eliminar Dirección ===
-async function eliminarDireccion(index, dropdown) {
-  if (!confirm('¿Estás seguro de eliminar esta dirección?')) return;
-
-  const userId = localStorage.getItem('userId');
-
-  try {
-    const response = await fetch('backend/userController.php?action=eliminarDireccion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_usuario: userId, index: index })
-    });
-
-    const data = await response.json();
-
-    if (data.ok) {
-      alert('✅ Dirección eliminada correctamente');
-      await cargarMisDirecciones(dropdown);
-    } else {
-      alert('❌ Error: ' + (data.error || 'No se pudo eliminar'));
-    }
-  } catch (error) {
-    console.error('Error eliminando dirección:', error);
-    alert('❌ Error de conexión');
-  }
-}
-
-// === Mostrar Formulario Nueva Dirección ===
-function mostrarFormularioNuevaDireccion(dropdown) {
-  dropdown.innerHTML = `
-    <div style="padding: 20px;">
-      <h4 style="margin: 0 0 16px; color: #333;">Nueva Dirección</h4>
-      <form id="form-nueva-direccion" style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="text" name="calle" placeholder="Calle y número" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" name="ciudad" placeholder="Ciudad" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" name="provincia" placeholder="Provincia" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" name="codigo_postal" placeholder="Código Postal" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" name="pais" placeholder="País" value="Argentina" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button type="submit" style="flex: 1; background: #4B6BFE; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-            Guardar
-          </button>
-          <button type="button" class="btn-cancelar" style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </div>
-  `;
-
-  const form = dropdown.querySelector('#form-nueva-direccion');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    await guardarNuevaDireccion(form, dropdown);
-  });
-
-  dropdown.querySelector('.btn-cancelar').addEventListener('click', () => {
-    cargarMisDirecciones(dropdown);
-  });
-}
-
-// === Guardar Nueva Dirección ===
-async function guardarNuevaDireccion(form, dropdown) {
-  const userId = localStorage.getItem('userId');
-  const formData = new FormData(form);
-
-  const nuevaDireccion = {
-    calle: formData.get('calle'),
-    ciudad: formData.get('ciudad'),
-    provincia: formData.get('provincia'),
-    codigo_postal: formData.get('codigo_postal'),
-    pais: formData.get('pais')
-  };
-
-  try {
-    const response = await fetch('backend/userController.php?action=agregarDireccion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_usuario: userId, direccion: nuevaDireccion })
-    });
-
-    const data = await response.json();
-
-    if (data.ok) {
-      alert('✅ Dirección guardada correctamente');
-      await cargarMisDirecciones(dropdown);
-    } else {
-      alert('❌ Error: ' + (data.error || 'No se pudo guardar'));
-    }
-  } catch (error) {
-    console.error('Error guardando dirección:', error);
-    alert('❌ Error de conexión');
-  }
-}
-*/
