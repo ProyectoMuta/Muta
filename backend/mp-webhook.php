@@ -114,27 +114,137 @@ function obtenerDatosWebhook() {
 }
 
 /**
- * Consulta el estado de un pago en Mercado Pago
+ * Consulta el estado de un pago en Mercado Pago con reintentos
  */
-function consultarPago($paymentId) {
+function consultarPago($paymentId, $intentos = 3) {
+    for ($i = 0; $i < $intentos; $i++) {
+        // Esperar 2 segundos entre reintentos (excepto el primero)
+        if ($i > 0) {
+            logNotificacion("Reintentando consulta de pago {$paymentId} (intento " . ($i + 1) . "/{$intentos})");
+            sleep(2);
+        }
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, "https://api.mercadopago.com/v1/payments/{$paymentId}");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . MP_ACCESS_TOKEN,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($httpCode === 200) {
+            logNotificacion("✅ Pago {$paymentId} consultado exitosamente");
+            return json_decode($response, true);
+        }
+
+        // Log detallado del error
+        $errorMsg = "Error al consultar pago {$paymentId}: HTTP {$httpCode}";
+        if ($curlError) {
+            $errorMsg .= " | cURL Error: {$curlError}";
+        }
+        if ($response) {
+            $errorData = json_decode($response, true);
+            if ($errorData) {
+                $errorMsg .= " | Respuesta API: " . json_encode($errorData);
+            }
+        }
+        logNotificacion($errorMsg);
+
+        // Si es 404, continuar reintentando (el pago puede no estar indexado aún)
+        if ($httpCode !== 404 && $i < $intentos - 1) {
+            // Si no es 404, no tiene sentido reintentar
+            break;
+        }
+    }
+
+    logNotificacion("❌ No se pudo consultar el pago {$paymentId} después de {$intentos} intentos");
+    return null;
+}
+
+/**
+ * Consulta una orden de comercio (merchant_order) en Mercado Pago
+ */
+function consultarMerchantOrder($merchantOrderId) {
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL, "https://api.mercadopago.com/v1/payments/{$paymentId}");
+    curl_setopt($ch, CURLOPT_URL, "https://api.mercadopago.com/merchant_orders/{$merchantOrderId}");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . MP_ACCESS_TOKEN
+        'Authorization: Bearer ' . MP_ACCESS_TOKEN,
+        'Content-Type: application/json'
     ]);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
 
-    if ($httpCode !== 200) {
-        logNotificacion("Error al consultar pago {$paymentId}: HTTP {$httpCode}");
-        return null;
+    if ($httpCode === 200) {
+        logNotificacion("✅ Merchant Order {$merchantOrderId} consultada exitosamente");
+        return json_decode($response, true);
     }
 
-    return json_decode($response, true);
+    $errorMsg = "Error al consultar merchant order {$merchantOrderId}: HTTP {$httpCode}";
+    if ($curlError) {
+        $errorMsg .= " | cURL Error: {$curlError}";
+    }
+    logNotificacion($errorMsg);
+
+    return null;
+}
+
+/**
+ * Procesa una merchant_order extrayendo sus pagos
+ * Algunos medios de pago (Rapipago, PagoFácil) notifican primero merchant_order
+ */
+function procesarMerchantOrder($merchantOrderData) {
+    if (!$merchantOrderData) {
+        return false;
+    }
+
+    logNotificacion("📦 Procesando Merchant Order ID: {$merchantOrderData['id']}");
+
+    // Obtener los pagos asociados a esta orden
+    $payments = $merchantOrderData['payments'] ?? [];
+
+    if (empty($payments)) {
+        logNotificacion("⚠️ Merchant Order sin pagos asociados");
+        return false;
+    }
+
+    // Procesar cada pago de la orden
+    $processed = false;
+    foreach ($payments as $payment) {
+        $paymentId = $payment['id'] ?? null;
+        $status = $payment['status'] ?? null;
+
+        if (!$paymentId) {
+            continue;
+        }
+
+        logNotificacion("💳 Payment en Merchant Order - ID: {$paymentId}, Status: {$status}");
+
+        // Solo procesar pagos aprobados
+        if ($status === 'approved') {
+            // Consultar el pago completo para obtener todos los detalles
+            $paymentData = consultarPago($paymentId);
+
+            if ($paymentData) {
+                actualizarEstadoPedido($paymentData);
+                $processed = true;
+            }
+        } else {
+            logNotificacion("ℹ️ Payment {$paymentId} con status '{$status}' - no se procesa aún");
+        }
+    }
+
+    return $processed;
 }
 
 /**
@@ -164,6 +274,17 @@ function actualizarEstadoPedido($paymentData) {
             logNotificacion("No se encontró pedido con numero_pedido: {$externalReference}");
             return false;
         }
+
+        // 🔒 IDEMPOTENCIA: Verificar si este payment_id ya fue procesado
+        $paymentId = $paymentData['id'];
+        $paymentsProcessed = $pedido['mercadopago']['payments_procesados'] ?? [];
+
+        if (in_array($paymentId, $paymentsProcessed)) {
+            logNotificacion("⚠️ IDEMPOTENCIA: Payment ID {$paymentId} ya fue procesado para pedido {$externalReference}. Ignorando notificación duplicada.");
+            return true; // No es error, simplemente ya se procesó
+        }
+
+        logNotificacion("✅ Payment ID {$paymentId} es nuevo. Procesando actualización del pedido {$externalReference}...");
 
         // Determinar el nuevo estado según el status de MP
         $estadoPago = 'pendiente';
@@ -216,6 +337,10 @@ function actualizarEstadoPedido($paymentData) {
                     'fecha' => new MongoDB\BSON\UTCDateTime(),
                     'nota' => "Pago {$estadoPago} - MP Payment ID: {$paymentData['id']}"
                 ]
+            ],
+            // 🔒 IDEMPOTENCIA: Agregar este payment_id a la lista de procesados
+            '$addToSet' => [
+                'mercadopago.payments_procesados' => $paymentId
             ]
         ];
 
@@ -413,9 +538,17 @@ try {
     $data = $webhookData['data'];
     $params = $webhookData['params'];
 
-    // Mercado Pago envía el tipo de notificación en el parámetro 'topic'
-    $topic = $params['topic'] ?? ($data['type'] ?? null);
-    $id = $params['id'] ?? ($data['data']['id'] ?? null);
+    // Mercado Pago usa diferentes formatos de webhook:
+    // Formato antiguo: ?topic=payment&id=123
+    // Formato nuevo v1: ?type=payment&data_id=123 (GET) + POST con data.id
+    $topic = $params['topic'] ?? ($params['type'] ?? ($data['type'] ?? null));
+
+    // Extraer ID del pago de múltiples posibles ubicaciones
+    $id = $params['id'] ??
+          $params['data_id'] ??
+          ($params['data.id'] ??
+          ($data['data']['id'] ??
+          ($data['id'] ?? null)));
 
     logNotificacion("Procesando notificación - Topic: {$topic}, ID: {$id}");
 
@@ -440,8 +573,17 @@ try {
 
         case 'merchant_order':
             // Notificación de orden de comercio
-            logNotificacion("Merchant order recibida: {$id}");
-            // Puedes procesar órdenes de comercio aquí si lo necesitas
+            // Algunos medios de pago (Rapipago, PagoFácil, etc.) notifican primero merchant_order
+            logNotificacion("📦 Merchant order recibida: {$id}");
+
+            if ($id) {
+                $merchantOrderData = consultarMerchantOrder($id);
+
+                if ($merchantOrderData) {
+                    // Procesar la orden y sus pagos asociados
+                    procesarMerchantOrder($merchantOrderData);
+                }
+            }
             break;
 
         default:
