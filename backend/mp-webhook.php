@@ -595,6 +595,7 @@ try {
     // Procesar según el tipo de notificación
     switch ($topic) {
         case 'payment':
+        case 'topic_payment_wh':
             // Notificación de pago
             if ($id) {
                 // Consultar el pago en Mercado Pago para obtener todos los datos
@@ -608,6 +609,7 @@ try {
             break;
 
         case 'merchant_order':
+        case 'topic_merchant_order_wh':
             // Notificación de orden de comercio
             // Algunos medios de pago (Rapipago, PagoFácil, etc.) notifican primero merchant_order
             logNotificacion("📦 Merchant order recibida: {$id}");
@@ -623,7 +625,9 @@ try {
             break;
 
         default:
-            logNotificacion("Tipo de notificación desconocida: {$topic}");
+            logNotificacion("⚠️ Tipo de notificación desconocida: {$topic}");
+            logNotificacion("   ID recibido: {$id}");
+            logNotificacion("   Tipos soportados: payment, topic_payment_wh, merchant_order, topic_merchant_order_wh");
             break;
     }
 
