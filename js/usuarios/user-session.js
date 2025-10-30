@@ -247,7 +247,179 @@ function mostrarVistaPerfil() {
     document.getElementById("acceso-usuario-login").classList.remove("active");
     document.getElementById("acceso-usuario-register").classList.remove("active");
     document.getElementById("acceso-usuario-perfil").classList.add("active");
+
+    // Configurar los botones de dropdown
+    configurarDropdownsPerfil();
   }
+}
+
+// === Configurar dropdowns del perfil ===
+function configurarDropdownsPerfil() {
+  // Botón de Historial de Pedidos
+  const btnHistorial = document.querySelector('[data-target="historial-pedidos"]');
+  const btnDirecciones = document.querySelector('[data-target="mis-direcciones"]');
+
+  if (btnHistorial) {
+    btnHistorial.addEventListener("click", function() {
+      const dropdown = document.getElementById("historial-pedidos-dropdown");
+      toggleDropdown(dropdown);
+
+      // Solo cargar si está vacío o si se está abriendo
+      if (dropdown.classList.contains("active") && !dropdown.dataset.loaded) {
+        cargarHistorialPedidos();
+        dropdown.dataset.loaded = "true";
+      }
+    });
+  }
+
+  if (btnDirecciones) {
+    btnDirecciones.addEventListener("click", function() {
+      const dropdown = document.getElementById("mis-direcciones-dropdown");
+      toggleDropdown(dropdown);
+
+      // Solo cargar si está vacío o si se está abriendo
+      if (dropdown.classList.contains("active") && !dropdown.dataset.loaded) {
+        cargarDirecciones();
+        dropdown.dataset.loaded = "true";
+      }
+    });
+  }
+}
+
+// === Toggle dropdown ===
+function toggleDropdown(dropdown) {
+  dropdown.classList.toggle("active");
+}
+
+// === Cargar historial de pedidos ===
+async function cargarHistorialPedidos() {
+  const userId = localStorage.getItem("userId");
+  const dropdown = document.getElementById("historial-pedidos-dropdown");
+
+  if (!userId) {
+    dropdown.innerHTML = '<p class="mensaje-info">No se pudo obtener el usuario</p>';
+    return;
+  }
+
+  dropdown.innerHTML = '<p class="mensaje-info">Cargando pedidos...</p>';
+
+  try {
+    const res = await fetch(`backend/pedidosController.php?action=por_usuario&usuario_id=${userId}`);
+    const data = await res.json();
+
+    if (data.success && data.pedidos && data.pedidos.length > 0) {
+      mostrarPedidos(data.pedidos);
+    } else {
+      dropdown.innerHTML = '<p class="mensaje-info">No tienes pedidos registrados.</p>';
+    }
+  } catch (err) {
+    console.error("Error cargando historial de pedidos:", err);
+    dropdown.innerHTML = '<p class="mensaje-error">Error al cargar el historial de pedidos.</p>';
+  }
+}
+
+// === Mostrar pedidos en el dropdown ===
+function mostrarPedidos(pedidos) {
+  const dropdown = document.getElementById("historial-pedidos-dropdown");
+
+  const html = pedidos.map(pedido => {
+    const fecha = pedido.fecha_compra ? new Date(pedido.fecha_compra).toLocaleDateString('es-AR') : 'Sin fecha';
+    const total = pedido.total ? `$${parseFloat(pedido.total).toLocaleString('es-AR')}` : 'N/A';
+    const estado = pedido.estado || 'Desconocido';
+    const numeroPedido = pedido.numero_pedido || 'Sin número';
+
+    // Mapeo de estados a clases CSS y textos legibles
+    const estadoTexto = {
+      'en_espera': 'En espera',
+      'pagado': 'Pagado',
+      'enviado': 'Enviado',
+      'recibido': 'Recibido',
+      'cancelado': 'Cancelado'
+    };
+
+    return `
+      <div class="pedido-item">
+        <div class="pedido-header">
+          <strong>Pedido #${numeroPedido}</strong>
+          <span class="pedido-estado estado-${estado}">${estadoTexto[estado] || estado}</span>
+        </div>
+        <div class="pedido-detalles">
+          <p><i class="bi bi-calendar3"></i> Fecha: ${fecha}</p>
+          <p><i class="bi bi-cash"></i> Total: ${total}</p>
+          ${pedido.numero_tracking ? `<p><i class="bi bi-box-seam"></i> Tracking: ${pedido.numero_tracking}</p>` : ''}
+        </div>
+        ${pedido.productos && pedido.productos.length > 0 ? `
+          <div class="pedido-productos">
+            <strong>Productos:</strong>
+            <ul>
+              ${pedido.productos.map(p => `
+                <li>${p.nombre || 'Producto'} - Cantidad: ${p.cantidad || 1} ${p.talle ? `(${p.talle})` : ''}</li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  dropdown.innerHTML = html || '<p class="mensaje-info">No hay pedidos para mostrar.</p>';
+}
+
+// === Cargar direcciones ===
+async function cargarDirecciones() {
+  const userId = localStorage.getItem("userId");
+  const dropdown = document.getElementById("mis-direcciones-dropdown");
+
+  if (!userId) {
+    dropdown.innerHTML = '<p class="mensaje-info">No se pudo obtener el usuario</p>';
+    return;
+  }
+
+  dropdown.innerHTML = '<p class="mensaje-info">Cargando direcciones...</p>';
+
+  try {
+    const res = await fetch(`backend/userController.php?action=getDirecciones&id=${userId}`);
+    const data = await res.json();
+
+    if (data && data.domicilios && data.domicilios.length > 0) {
+      mostrarDirecciones(data.domicilios);
+    } else {
+      dropdown.innerHTML = '<p class="mensaje-info">No tienes direcciones guardadas.</p>';
+    }
+  } catch (err) {
+    console.error("Error cargando direcciones:", err);
+    dropdown.innerHTML = '<p class="mensaje-error">Error al cargar las direcciones.</p>';
+  }
+}
+
+// === Mostrar direcciones en el dropdown ===
+function mostrarDirecciones(direcciones) {
+  const dropdown = document.getElementById("mis-direcciones-dropdown");
+
+  const html = direcciones.map((dir, index) => {
+    const calle = dir.calle || 'Sin calle';
+    const numero = dir.numero || '';
+    const ciudad = dir.ciudad || 'Sin ciudad';
+    const provincia = dir.provincia || '';
+    const codigoPostal = dir.codigoPostal || dir.codigo_postal || '';
+    const seleccionada = dir.seleccionada ? '<span class="direccion-activa"><i class="bi bi-check-circle-fill"></i> Activa</span>' : '';
+
+    return `
+      <div class="direccion-item ${dir.seleccionada ? 'seleccionada' : ''}">
+        <div class="direccion-header">
+          <strong><i class="bi bi-geo-alt-fill"></i> Dirección ${index + 1}</strong>
+          ${seleccionada}
+        </div>
+        <div class="direccion-detalles">
+          <p>${calle} ${numero}</p>
+          <p>${ciudad}${provincia ? ', ' + provincia : ''}</p>
+          ${codigoPostal ? `<p>CP: ${codigoPostal}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  dropdown.innerHTML = html || '<p class="mensaje-info">No hay direcciones para mostrar.</p>';
 }
 
 window.addEventListener("pageshow", () => {

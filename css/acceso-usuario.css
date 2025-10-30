@@ -254,6 +254,199 @@
 .btn-logout:hover {
   background: #c00;
 }
+
+/* === Estilos para contenido de dropdowns === */
+
+/* Mensajes informativos y de error */
+.mensaje-info {
+  padding: 12px;
+  background: #f0f8ff;
+  border-left: 3px solid #2196F3;
+  color: #1976D2;
+  font-size: 13px;
+  margin: 0;
+  border-radius: 4px;
+}
+
+.mensaje-error {
+  padding: 12px;
+  background: #ffebee;
+  border-left: 3px solid #f44336;
+  color: #c62828;
+  font-size: 13px;
+  margin: 0;
+  border-radius: 4px;
+}
+
+/* --- Estilos para Pedidos --- */
+.pedido-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.pedido-item:last-child {
+  margin-bottom: 0;
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pedido-header strong {
+  color: #333;
+  font-size: 14px;
+}
+
+.pedido-estado {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.estado-en_espera {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.estado-pagado {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-enviado {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.estado-recibido {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.estado-cancelado {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.pedido-detalles {
+  margin-bottom: 8px;
+}
+
+.pedido-detalles p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pedido-detalles i {
+  color: #999;
+  font-size: 12px;
+}
+
+.pedido-productos {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pedido-productos strong {
+  font-size: 12px;
+  color: #555;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pedido-productos ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.pedido-productos li {
+  font-size: 12px;
+  color: #666;
+  padding: 3px 0;
+  padding-left: 16px;
+  position: relative;
+}
+
+.pedido-productos li:before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: #999;
+}
+
+/* --- Estilos para Direcciones --- */
+.direccion-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.direccion-item:last-child {
+  margin-bottom: 0;
+}
+
+.direccion-item.seleccionada {
+  border-color: #4CAF50;
+  background: #f1f8f4;
+}
+
+.direccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.direccion-header strong {
+  color: #333;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.direccion-header i {
+  color: #666;
+}
+
+.direccion-activa {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.direccion-activa i {
+  font-size: 14px;
+}
+
+.direccion-detalles p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #666;
+}
 /* ========================================
    ESTILOS PARA MODAL DE RECUPERACIÓN
 ======================================== */
