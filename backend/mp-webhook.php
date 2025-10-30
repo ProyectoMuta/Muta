@@ -156,12 +156,12 @@ function obtenerDatosWebhook() {
 /**
  * Consulta el estado de un pago en Mercado Pago con reintentos
  */
-function consultarPago($paymentId, $intentos = 3) {
+function consultarPago($paymentId, $intentos = 5) {
     for ($i = 0; $i < $intentos; $i++) {
         // Esperar 2 segundos entre reintentos (excepto el primero)
         if ($i > 0) {
             logNotificacion("Reintentando consulta de pago {$paymentId} (intento " . ($i + 1) . "/{$intentos})");
-            sleep(2);
+            sleep(5);  // ← Cambia a sleep(5); para esperar más
         }
 
         $ch = curl_init();
