@@ -10,23 +10,23 @@
   <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="img/favicon.jpeg">
 
   <style>
+    /* --- INICIO DE CAMBIOS CSS --- */
+
     .dropdown-menu {
       min-width: 150px;
+      width: auto; /* AÑADIDO: Evita que el menú ocupe todo el ancho */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       margin-top: 4px;
-      /* Posicionamiento absoluto para el menú */
       position: absolute;
       background: white;
       border: 1px solid #ddd;
       border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      z-index: 1000; /* Alto z-index para el menú en sí */
+      z-index: 1000;
       display: none;
-      right: 0; /* Alineado a la derecha por defecto */
+      right: 0;
     }
 
     .dropdown-item {
@@ -47,12 +47,33 @@
       color: #4B6BFE;
     }
     
-    /* Contenedor del dropdown */
     .dropdown {
         display: inline-block;
-        position: relative; /* Clave para el z-index */
-        z-index: 1; /* z-index base */
+        position: relative;
+        z-index: 1;
+        vertical-align: middle; /* AÑADIDO: Alinea botones verticalmente */
     }
+
+    /* AÑADIDO: Nuevas reglas para forzar alineación horizontal */
+    .celda-estado-pago,
+    .celda-estado-envio {
+        display: flex;
+        align-items: center; /* Centra verticalmente el badge y los botones */
+        gap: 8px; /* Espacio entre elementos (badge, botones) */
+        white-space: nowrap; /* Evita que los botones se separen */
+    }
+    
+    .celda-estado-pago .badge,
+    .celda-estado-envio .badge {
+        flex-shrink: 0; /* Evita que el badge se encoja */
+    }
+
+    .celda-estado-envio .btn-action {
+        display: inline-block; /* Asegura que el botón "Ver" esté en línea */
+        vertical-align: middle;
+    }
+    
+    /* --- FIN DE CAMBIOS CSS --- */
 
     .detalle-row {
       transition: all 0.3s ease;
@@ -167,7 +188,6 @@
     </main>
   </div>
 
-  <!-- Modal de detalles -->
   <div class="modal-overlay" id="modalDetalles">
     <div class="modal-content">
       <div class="modal-header">
@@ -193,7 +213,6 @@
       'cancelado': '<span class="badge danger">Cancelado</span>'
     };
     
-    // --- NUEVO ---
     // Mapeo de ESTADO PAGO
     const ESTADO_PAGO_BADGES = {
       'pendiente': '<span class="badge pay-pend">Pendiente</span>',
@@ -266,10 +285,10 @@
           <td><strong>${fmt(pedido.total)}</strong></td>
           <td>${pedido.productos.length} producto(s)</td>
           
-          <td>
-            ${ESTADO_PAGO_BADGES[pedido.estado_pago] || pedido.estado_pago}
+          <td class="celda-estado-pago">
+            <span class="badge">${ESTADO_PAGO_BADGES[pedido.estado_pago] || pedido.estado_pago}</span>
             <div class="dropdown">
-              <button class="btn-action dropdown-toggle" onclick="toggleDropdown(event, 'dropdown-pago-${pedido.id}')">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-pago-${pedido.id}')">
                 <i class="bi bi-pencil-square"></i>
               </button>
               <div class="dropdown-menu" id="dropdown-pago-${pedido.id}">
@@ -282,15 +301,15 @@
           </td>
           <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
           
-          <td>
-            ${ESTADO_BADGES[pedido.estado] || pedido.estado}
+          <td class="celda-estado-envio">
+            <span class="badge">${ESTADO_BADGES[pedido.estado] || pedido.estado}</span>
             
             <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
               <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
             </button>
             
             <div class="dropdown" style="z-index: 1;">
-              <button class="btn-action dropdown-toggle" onclick="toggleDropdown(event, 'dropdown-envio-${pedido.id}')">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-envio-${pedido.id}')">
                 <i class="bi bi-arrow-repeat"></i> Estado
               </button>
               <div class="dropdown-menu" id="dropdown-envio-${pedido.id}">
@@ -456,9 +475,9 @@
       }
     }
 
-    // --- CAMBIO 3: Función de Toggle Genérica (Maneja Z-INDEX) ---
-    // Esta función reemplaza a tu 'toggleEstadoDropdown'
-    function toggleDropdown(event, dropdownId) {
+    // Función de Toggle Genérica (Maneja Z-INDEX)
+    // (Renombrada para evitar conflictos con user-session.js)
+    function toggleAdminDropdown(event, dropdownId) {
       event.stopPropagation();
       const dropdown = document.getElementById(dropdownId);
       const wrapper = dropdown.closest('.dropdown');
@@ -474,15 +493,14 @@
       // Toggle este dropdown
       if (dropdown.style.display === 'none' || !dropdown.style.display) {
         dropdown.style.display = 'block';
-        wrapper.style.zIndex = 999; // Sube este dropdown por encima de otros
+        wrapper.style.zIndex = 999;
       } else {
         dropdown.style.display = 'none';
-        wrapper.style.zIndex = 1; // Resetea z-index al cerrar
+        wrapper.style.zIndex = 1;
       }
     }
 
-    // --- CAMBIO 4: Función para Estado de ENVÍO ---
-    // Renombrada de 'cambiarEstadoDropdown' a 'cambiarEstadoEnvio'
+    // Función para Estado de ENVÍO
     async function cambiarEstadoEnvio(id, nuevoEstado) {
       document.getElementById(`dropdown-envio-${id}`).style.display = 'none';
       document.getElementById(`dropdown-envio-${id}`).closest('.dropdown').style.zIndex = 1;
@@ -493,7 +511,6 @@
       }
 
       try {
-        // Llama a la acción original para el estado general/envío
         const response = await fetch('backend/pedidosController.php?action=actualizar_estado', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -519,13 +536,12 @@
       }
     }
     
-    // --- CAMBIO 5: NUEVA Función para Estado de PAGO ---
+    // NUEVA Función para Estado de PAGO
     async function cambiarEstadoPago(id, nuevoEstadoPago) {
       document.getElementById(`dropdown-pago-${id}`).style.display = 'none';
       document.getElementById(`dropdown-pago-${id}`).closest('.dropdown').style.zIndex = 1;
 
       try {
-        // Llama a la NUEVA acción que creamos en el backend
         const response = await fetch('backend/pedidosController.php?action=actualizar_pago', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -551,7 +567,7 @@
     }
 
 
-    // --- CAMBIO 6: Event listener de clic global (Maneja Z-INDEX) ---
+    // Event listener de clic global (Maneja Z-INDEX)
     document.addEventListener('click', function() {
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
         if (menu.style.display !== 'none') {
