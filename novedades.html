@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MUTA - novedades</title>
+  <!-- Estilos globales y de componentes -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/acceso-usuario.css">
+  <link rel="stylesheet" href="css/carritoCSS/cart.css">
+  <link rel="stylesheet" href="css/favoritos.css">
+  <!-- Estilos específicos -->
+  <link rel="stylesheet" href="css/carousel-categorias-ropa.css">
+  <link rel="stylesheet" href="css/remeras.css">
+  <link rel="stylesheet" href="css/sale.css">
+
+  <!-- Librerías externas -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="icon" type="image/png" href="img/favicon.jpeg">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+</head>
+<body>
+  <!-- Navbar -->
+  <div id="navbar"></div>
+  <main>
+    <!-- Hero Minimalista -->
+    <section class="hero-minimal">
+      <h1 class="sale-title">NEW IN</h1>
+      <p class="sale-subtitle">Todos los nuevos ingresos</p>
+      
+    </section>
+
+  
+
+    <!-- Carrusel: Novedades -->
+    <h2 class="section-title" id="h2-novedades">NOVEDADES</h2>
+    <div id="carousel-remeras-novedades" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+
+  
+
+    <!-- Nuevos ingresos -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"><!-- JS --></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </main>
+    <!-- Nuevos ingresos -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"><!-- JS --></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </main>
+    <!-- Nuevos ingresos -->
+    <h2 id="seccion-nuevos" class="section-title">NUEVOS INGRESOS</h2>
+    <div id="carousel-nuevos" class="carousel categoria-carousel">
+      <button class="carousel-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+      <div class="carousel-track"><!-- JS --></div>
+      <button class="carousel-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </main>
+
+  <!-- Modales/footers -->
+  <div id="acceso-usuario"></div>
+  <div id="footer"></div>
+  <div id="chatbot"></div>
+  <div id="favoritos"></div>
+
+  <!-- Carga de componentes y carrito -->
+  <script src="js/componente-loader.js"></script>
+  <script src="js/usuarios/user-session.js"></script>
+  <script src="js/carritoJS/cart.js"></script>
+  <script defer src="js/favoritos.js"></script>
+  <script src='https://cdn.jotfor.ms/agent/embedjs/0199edc25850752f8dd01a2672b5d39088b4/embed.js'></script>
+  <script>
+    window.CAT_CONFIG = {
+      PAGE_TITLE: 'Remeras',
+      CAT_SLUG: 'remeras',
+      HERO_IMG: 'fondo-remeras.png',
+      CAROUSEL_IDS: {
+        clasicas: 'carousel-remeras-clasicas',
+        novedades: 'carousel-remeras-novedades',
+        estiloMuta: 'carousel-remeras-estilo-muta'
+      }
+    };
+  </script>
+  <script src="js/categorias_dinamicas.js"></script>
+  <script>
+    setupCart();
+  </script>
+</body>
+</html>
