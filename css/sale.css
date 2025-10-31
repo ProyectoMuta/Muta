@@ -1,0 +1,191 @@
+
+    .hero-minimal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem 3rem;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      gap: 2rem;
+    }
+
+    .sale-title {
+      font-size: clamp(4rem, 12vw, 9rem);
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: #000;
+      margin: 0;
+      text-transform: uppercase;
+      position: relative;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    .sale-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: #000;
+    }
+
+    .sale-subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      color: #666;
+      text-transform: uppercase;
+      margin: 0;
+      animation: fadeIn 1s ease-out 0.3s both;
+    }
+
+    .hero-image-container {
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero-image-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .hero-image-container:hover img {
+      transform: scale(1.05);
+    }
+    /* Estilos para carousel de promociones */
+#carousel-promociones .card {
+  min-width: 280px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+#carousel-promociones .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+#carousel-promociones .card-imagen-wrapper {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+}
+
+#carousel-promociones .card-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#carousel-promociones .badge-descuento {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #e74c3c;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+#carousel-promociones .card-info {
+  padding: 20px;
+}
+
+#carousel-promociones .card-nombre {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+#carousel-promociones .card-precios {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+#carousel-promociones .precio-tachado {
+  font-size: 16px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+#carousel-promociones .precio-promo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+#carousel-promociones .btn-ver-detalle {
+  width: 100%;
+  padding: 12px;
+  background: #000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#carousel-promociones .btn-ver-detalle:hover {
+  background: #333;
+}
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero-minimal {
+        padding: 3rem 1.5rem 2rem;
+      }
+      
+      .hero-image-container {
+        max-width: 350px;
+      }
+    }
+  
