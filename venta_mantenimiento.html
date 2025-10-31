@@ -10,14 +10,23 @@
   <link rel="stylesheet" href="css/acceso-usuario.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="img/favicon.jpeg">
 
   <style>
+    /* --- INICIO DE CAMBIOS CSS --- */
+
     .dropdown-menu {
       min-width: 150px;
+      width: auto; /* AÑADIDO: Evita que el menú ocupe todo el ancho */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       margin-top: 4px;
+      position: absolute;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      z-index: 1000;
+      display: none;
+      right: 0;
     }
 
     .dropdown-item {
@@ -37,6 +46,34 @@
       background-color: #f5f5f5;
       color: #4B6BFE;
     }
+    
+    .dropdown {
+        display: inline-block;
+        position: relative;
+        z-index: 1;
+        vertical-align: middle; /* AÑADIDO: Alinea botones verticalmente */
+    }
+
+    /* AÑADIDO: Nuevas reglas para forzar alineación horizontal */
+    .celda-estado-pago,
+    .celda-estado-envio {
+        display: flex;
+        align-items: center; /* Centra verticalmente el badge y los botones */
+        gap: 8px; /* Espacio entre elementos (badge, botones) */
+        white-space: nowrap; /* Evita que los botones se separen */
+    }
+    
+    .celda-estado-pago .badge,
+    .celda-estado-envio .badge {
+        flex-shrink: 0; /* Evita que el badge se encoja */
+    }
+
+    .celda-estado-envio .btn-action {
+        display: inline-block; /* Asegura que el botón "Ver" esté en línea */
+        vertical-align: middle;
+    }
+    
+    /* --- FIN DE CAMBIOS CSS --- */
 
     .detalle-row {
       transition: all 0.3s ease;
@@ -78,7 +115,6 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Sidebar -->
     <aside class="side">
       <div class="brand">MUTA</div>
       <nav class="side-nav">
@@ -91,7 +127,6 @@
       </nav>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <header class="topbar">
         <h1>Gestión de Ventas</h1>
@@ -153,7 +188,6 @@
     </main>
   </div>
 
-  <!-- Modal de detalles -->
   <div class="modal-overlay" id="modalDetalles">
     <div class="modal-content">
       <div class="modal-header">
@@ -170,13 +204,21 @@
     let filtroActual = 'todos';
     let busqueda = '';
 
-    // Mapeo de estados
+    // Mapeo de ESTADO GENERAL (envío)
     const ESTADO_BADGES = {
       'en_espera': '<span class="badge pay-pend">En Espera</span>',
       'pagado': '<span class="badge pay-ok">Pagado</span>',
       'enviado': '<span class="badge ship-ok">Enviado</span>',
       'recibido': '<span class="badge ship-ok">Recibido</span>',
       'cancelado': '<span class="badge danger">Cancelado</span>'
+    };
+    
+    // Mapeo de ESTADO PAGO
+    const ESTADO_PAGO_BADGES = {
+      'pendiente': '<span class="badge pay-pend">Pendiente</span>',
+      'aprobado': '<span class="badge pay-ok">Aprobado</span>',
+      'rechazado': '<span class="badge danger">Rechazado</span>',
+      'reembolsado': '<span class="badge warn">Reembolsado</span>'
     };
 
     const METODO_PAGO = {
@@ -235,34 +277,56 @@
         return;
       }
 
+      // --- INICIO: CAMBIOS ---
+      // Reemplazados todos los 'pedido.id' por 'pedido._id'
       tbody.innerHTML = pedidos.map(pedido => `
-        <tr data-pedido-id="${pedido.id}">
+        <tr data-pedido-id="${pedido._id}">
           <td><strong>${pedido.numero_pedido}</strong></td>
           <td>${formatearFecha(pedido.fecha_compra)}</td>
           <td>${pedido.usuario_id}</td>
           <td><strong>${fmt(pedido.total)}</strong></td>
           <td>${pedido.productos.length} producto(s)</td>
-          <td>${ESTADO_BADGES[pedido.estado] || pedido.estado}</td>
-          <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
-          <td>
-            <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
-              <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
-            </button>
-            <div class="dropdown" style="display: inline-block; position: relative;">
-              <button class="btn-action dropdown-toggle" onclick="toggleEstadoDropdown(event, '${pedido.id}')">
-                <i class="bi bi-arrow-repeat"></i> Estado
+          
+          <td class="celda-estado-pago">
+            <span class="badge">${ESTADO_PAGO_BADGES[pedido.estado_pago] || pedido.estado_pago}</span>
+            <div class="dropdown">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-pago-${pedido._id}')">
+                <i class="bi bi-pencil-square"></i>
               </button>
-              <div class="dropdown-menu" id="dropdown-${pedido.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px;">
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'en_espera'); return false;">En Espera</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'pagado'); return false;">Pagado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'enviado'); return false;">Enviado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'recibido'); return false;">Recibido</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoDropdown('${pedido.id}', 'cancelado'); return false;">Cancelado</a>
+              <div class="dropdown-menu" id="dropdown-pago-${pedido._id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'pendiente'); return false;">Pendiente</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'aprobado'); return false;">Aprobado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'rechazado'); return false;">Rechazado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'reembolsado'); return false;">Reembolsado</a>
               </div>
             </div>
           </td>
+          
+          <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
+          
+          <td class="celda-estado-envio">
+            <span class="badge">${ESTADO_BADGES[pedido.estado] || pedido.estado}</span>
+            
+            <button class="btn-action" onclick="toggleDetalles('${pedido._id}')">
+              <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
+            </button>
+            
+            <div class="dropdown" style="z-index: 1;">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-envio-${pedido._id}')">
+                <i class="bi bi-arrow-repeat"></i> Estado
+              </button>
+              <div class="dropdown-menu" id="dropdown-envio-${pedido._id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'en_espera'); return false;">En Espera</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'pagado'); return false;">Pagado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'enviado'); return false;">Enviado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'recibido'); return false;">Recibido</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'cancelado'); return false;">Cancelado</a>
+              </div>
+            </div>
+          </td>
+          
         </tr>
-        <tr class="detalle-row" id="detalle-${pedido.id}" style="display: none;">
+        <tr class="detalle-row" id="detalle-${pedido._id}" style="display: none;">
           <td colspan="8" style="padding: 0;">
             <div class="detalle-content" style="padding: 20px; background: #f9f9f9; border-top: 1px solid #eee;">
               <div class="loading-detalle">Cargando detalles...</div>
@@ -270,6 +334,7 @@
           </td>
         </tr>
       `).join('');
+      // --- FIN: CAMBIOS ---
     }
 
     // Actualizar estadísticas
@@ -341,9 +406,15 @@
               </div>
 
               <div class="detail-group">
-                <div class="detail-label">Estado</div>
+                <div class="detail-label">Estado (Envío)</div>
                 <div class="detail-value">${ESTADO_BADGES[pedido.estado]}</div>
               </div>
+              
+              <div class="detail-group">
+                <div class="detail-label">Estado de Pago</div>
+                <div class="detail-value">${ESTADO_PAGO_BADGES[pedido.estado_pago]}</div>
+              </div>
+              
             </div>
 
             <div class="detail-group" style="margin-top: 20px;">
@@ -409,26 +480,34 @@
       }
     }
 
-    // Toggle dropdown de estado
-    function toggleEstadoDropdown(event, id) {
+    // Función de Toggle Genérica (Maneja Z-INDEX)
+    function toggleAdminDropdown(event, dropdownId) {
       event.stopPropagation();
-      const dropdown = document.getElementById(`dropdown-${id}`);
+      const dropdown = document.getElementById(dropdownId);
+      const wrapper = dropdown.closest('.dropdown');
 
-      // Cerrar todos los otros dropdowns
+      // Cerrar todos los otros dropdowns y resetear su z-index
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        if (menu.id !== `dropdown-${id}`) {
+        if (menu.id !== dropdownId) {
           menu.style.display = 'none';
+          menu.closest('.dropdown').style.zIndex = 1;
         }
       });
 
       // Toggle este dropdown
-      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      if (dropdown.style.display === 'none' || !dropdown.style.display) {
+        dropdown.style.display = 'block';
+        wrapper.style.zIndex = 999;
+      } else {
+        dropdown.style.display = 'none';
+        wrapper.style.zIndex = 1;
+      }
     }
 
-    // Cambiar estado desde dropdown
-    async function cambiarEstadoDropdown(id, nuevoEstado) {
-      // Cerrar dropdown
-      document.getElementById(`dropdown-${id}`).style.display = 'none';
+    // Función para Estado de ENVÍO
+    async function cambiarEstadoEnvio(id, nuevoEstado) {
+      document.getElementById(`dropdown-envio-${id}`).style.display = 'none';
+      document.getElementById(`dropdown-envio-${id}`).closest('.dropdown').style.zIndex = 1;
 
       let tracking = null;
       if (nuevoEstado === 'enviado') {
@@ -443,28 +522,62 @@
             id: id,
             estado: nuevoEstado,
             numero_tracking: tracking,
-            nota: `Estado actualizado por administrador`
+            nota: `Estado (envío) actualizado por administrador`
           })
         });
 
         const data = await response.json();
 
         if (data.success) {
-          alert('✅ Estado actualizado correctamente');
+          alert('✅ Estado de envío actualizado correctamente');
           cargarPedidos();
         } else {
           alert('❌ Error: ' + data.error);
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ Error al actualizar estado');
+        alert('❌ Error al actualizar estado de envío');
+      }
+    }
+    
+    // NUEVA Función para Estado de PAGO
+    async function cambiarEstadoPago(id, nuevoEstadoPago) {
+      document.getElementById(`dropdown-pago-${id}`).style.display = 'none';
+      document.getElementById(`dropdown-pago-${id}`).closest('.dropdown').style.zIndex = 1;
+
+      try {
+        const response = await fetch('backend/pedidosController.php?action=actualizar_pago', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            estado_pago: nuevoEstadoPago,
+            nota: `Estado de pago actualizado por administrador`
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ Estado de pago actualizado correctamente');
+          cargarPedidos();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al actualizar estado de pago');
       }
     }
 
-    // Cerrar dropdowns al hacer clic fuera
+
+    // Event listener de clic global (Maneja Z-INDEX)
     document.addEventListener('click', function() {
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        menu.style.display = 'none';
+        if (menu.style.display !== 'none') {
+            menu.style.display = 'none';
+            menu.closest('.dropdown').style.zIndex = 1; // Resetea z-index
+        }
       });
     });
 

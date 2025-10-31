@@ -374,6 +374,67 @@ try {
                 }
                 exit;
             }
+
+            // ============================================
+            // ACCIÓN NUEVA: ACTUALIZAR SÓLO EL PAGO
+            // ============================================
+            if ($action === 'actualizar_pago') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                if (empty($data['id']) || empty($data['estado_pago'])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'error' => 'id y estado_pago son requeridos'
+                    ]);
+                    exit;
+                }
+                
+                $estadosPagoValidos = ['pendiente', 'aprobado', 'rechazado', 'reembolsado'];
+                
+                if (!in_array($data['estado_pago'], $estadosPagoValidos)) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'error' => 'Estado de pago inválido.'
+                    ]);
+                    exit;
+                }
+
+                $actualizacion = [
+                    'estado_pago' => $data['estado_pago'],
+                    'actualizado_en' => new MongoDB\BSON\UTCDateTime()
+                ];
+                
+                try {
+                    $pedidosCol->updateOne(
+                        ['_id' => new MongoDB\BSON\ObjectId($data['id'])],
+                        [
+                            '$set' => $actualizacion,
+                            '$push' => [
+                                'historial' => [
+                                    'estado' => $data['estado_pago'],
+                                    'fecha' => new MongoDB\BSON\UTCDateTime(),
+                                    'nota' => $data['nota'] ?? 'Estado de pago actualizado'
+                                ]
+                            ]
+                        ]
+                    );
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Estado de pago actualizado exitosamente'
+                    ], JSON_UNESCAPED_UNICODE);
+                    
+                } catch (Exception $e) {
+                    http_response_code(500);
+                    echo json_encode([
+                        'success' => false,
+                        'error' => 'Error al actualizar el pago: ' . $e->getMessage()
+                    ]);
+                }
+                exit;
+            }
             
             break;
             
