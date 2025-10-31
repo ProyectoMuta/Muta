@@ -277,8 +277,10 @@
         return;
       }
 
+      // --- INICIO: CAMBIOS ---
+      // Reemplazados todos los 'pedido.id' por 'pedido._id'
       tbody.innerHTML = pedidos.map(pedido => `
-        <tr data-pedido-id="${pedido.id}">
+        <tr data-pedido-id="${pedido._id}">
           <td><strong>${pedido.numero_pedido}</strong></td>
           <td>${formatearFecha(pedido.fecha_compra)}</td>
           <td>${pedido.usuario_id}</td>
@@ -288,41 +290,43 @@
           <td class="celda-estado-pago">
             <span class="badge">${ESTADO_PAGO_BADGES[pedido.estado_pago] || pedido.estado_pago}</span>
             <div class="dropdown">
-              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-pago-${pedido.id}')">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-pago-${pedido._id}')">
                 <i class="bi bi-pencil-square"></i>
               </button>
-              <div class="dropdown-menu" id="dropdown-pago-${pedido.id}">
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'pendiente'); return false;">Pendiente</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'aprobado'); return false;">Aprobado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'rechazado'); return false;">Rechazado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido.id}', 'reembolsado'); return false;">Reembolsado</a>
+              <div class="dropdown-menu" id="dropdown-pago-${pedido._id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'pendiente'); return false;">Pendiente</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'aprobado'); return false;">Aprobado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'rechazado'); return false;">Rechazado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoPago('${pedido._id}', 'reembolsado'); return false;">Reembolsado</a>
               </div>
             </div>
           </td>
+          
           <td>${METODO_PAGO[pedido.metodo_pago] || pedido.metodo_pago}</td>
           
           <td class="celda-estado-envio">
             <span class="badge">${ESTADO_BADGES[pedido.estado] || pedido.estado}</span>
             
-            <button class="btn-action" onclick="toggleDetalles('${pedido.id}')">
+            <button class="btn-action" onclick="toggleDetalles('${pedido._id}')">
               <i class="bi bi-eye"></i> <span class="toggle-text">Ver</span>
             </button>
             
             <div class="dropdown" style="z-index: 1;">
-              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-envio-${pedido.id}')">
+              <button class="btn-action dropdown-toggle" onclick="toggleAdminDropdown(event, 'dropdown-envio-${pedido._id}')">
                 <i class="bi bi-arrow-repeat"></i> Estado
               </button>
-              <div class="dropdown-menu" id="dropdown-envio-${pedido.id}">
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'en_espera'); return false;">En Espera</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'pagado'); return false;">Pagado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'enviado'); return false;">Enviado</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'recibido'); return false;">Recibido</a>
-                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido.id}', 'cancelado'); return false;">Cancelado</a>
+              <div class="dropdown-menu" id="dropdown-envio-${pedido._id}">
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'en_espera'); return false;">En Espera</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'pagado'); return false;">Pagado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'enviado'); return false;">Enviado</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'recibido'); return false;">Recibido</a>
+                <a class="dropdown-item" href="#" onclick="cambiarEstadoEnvio('${pedido._id}', 'cancelado'); return false;">Cancelado</a>
               </div>
             </div>
           </td>
-          </tr>
-        <tr class="detalle-row" id="detalle-${pedido.id}" style="display: none;">
+          
+        </tr>
+        <tr class="detalle-row" id="detalle-${pedido._id}" style="display: none;">
           <td colspan="8" style="padding: 0;">
             <div class="detalle-content" style="padding: 20px; background: #f9f9f9; border-top: 1px solid #eee;">
               <div class="loading-detalle">Cargando detalles...</div>
@@ -330,6 +334,7 @@
           </td>
         </tr>
       `).join('');
+      // --- FIN: CAMBIOS ---
     }
 
     // Actualizar estadísticas
@@ -476,7 +481,6 @@
     }
 
     // Función de Toggle Genérica (Maneja Z-INDEX)
-    // (Renombrada para evitar conflictos con user-session.js)
     function toggleAdminDropdown(event, dropdownId) {
       event.stopPropagation();
       const dropdown = document.getElementById(dropdownId);
